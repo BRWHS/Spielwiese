@@ -2,51 +2,101 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Buchung – Schritt 1</title>
+  <meta charset="UTF-8">
+  <title>Buchung – hasco</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f9f9f9; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; }
-    button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #343a40;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      margin-bottom: 15px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .form-row > div {
+      flex: 1;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 20px auto;
+      width: 150px;
+    }
   </style>
 </head>
 <body>
-  <h2>Schritt 1: Buchungsformular</h2>
-  <label for="hotel">Hotel *</label>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" class="logo" alt="Logo">
+  <h2>Hotelbuchung erfassen</h2>
+
+  <label for="hotel">Hotel <span style="color: red;">*</span></label>
   <select id="hotel">
-    <option value="">Bitte wählen</option>
-    <option value="MASEVEN - Dornach">MASEVEN - Dornach</option>
-    <option value="MASEVEN - Trudering">MASEVEN - Trudering</option>
-    <option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option>
-    <option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option>
+    <option value="">-- Bitte wählen --</option>
     <option value="Tante Alma - Sonnen">Tante Alma - Sonnen</option>
-    <option value="Fidelity - Robenstein">Fidelity - Robenstein</option>
-    <option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option>
+    <option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option>
+    <option value="MASEVEN - Trudering">MASEVEN - Trudering</option>
+    <option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option>
+    <option value="MASEVEN - Dornach">MASEVEN - Dornach</option>
     <option value="Fidelity - Struck">Fidelity - Struck</option>
+    <option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option>
+    <option value="Fidelity - Robenstein">Fidelity - Robenstein</option>
   </select>
 
-  <label for="checkin">Anreise *</label>
-  <input type="date" id="checkin">
-
-  <label for="checkout">Abreise *</label>
-  <input type="date" id="checkout">
+  <div class="form-row">
+    <div>
+      <label for="checkin">Anreise <span style="color: red;">*</span></label>
+      <input type="date" id="checkin">
+    </div>
+    <div>
+      <label for="checkout">Abreise <span style="color: red;">*</span></label>
+      <input type="date" id="checkout">
+    </div>
+  </div>
 
   <label for="firstName">Vorname</label>
   <input type="text" id="firstName">
 
-  <label for="lastName">Nachname *</label>
+  <label for="lastName">Nachname <span style="color: red;">*</span></label>
   <input type="text" id="lastName">
 
-  <label for="email">E-Mail *</label>
+  <label for="email">E-Mail <span style="color: red;">*</span></label>
   <input type="email" id="email">
 
   <label for="phone">Telefon</label>
   <input type="text" id="phone">
 
-  <label for="notes">Kommentar</label>
-  <textarea id="notes" rows="3"></textarea>
+  <label for="notes">Gastwünsche / Kommentare</label>
+  <textarea id="notes" rows="4"></textarea>
 
   <button onclick="weiter()">Weiter zu Schritt 2</button>
 
