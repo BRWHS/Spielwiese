@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Buchungssystem</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.3/dist/umd/supabase.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-bottom: 10px; }
+    label { font-weight: bold; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+  <h2>Buchungsformular</h2>
+
+  <label for="hotel">Hotel</label>
+  <select id="hotel" required>
+    <option value="">-- Bitte wählen --</option>
+    <option value="Tante Alma - Sonnen">Tante Alma - Sonnen</option>
+    <option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option>
+    <option value="MASEVEN - Trudering">MASEVEN - Trudering</option>
+    <option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option>
+    <option value="MASEVEN - Dornach">MASEVEN - Dornach</option>
+    <option value="Fidelity - Struck">Fidelity - Struck</option>
+    <option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option>
+    <option value="Fidelity - Robenstein">Fidelity - Robenstein</option>
+  </select>
+
+  <label for="checkin">Anreise</label>
+  <input type="date" id="checkin">
+
+  <label for="checkout">Abreise</label>
+  <input type="date" id="checkout">
+
+  <label for="firstName">Vorname</label>
+  <input type="text" id="firstName">
+
+  <label for="lastName">Nachname</label>
+  <input type="text" id="lastName">
+
+  <label for="email">E-Mail</label>
+  <input type="email" id="email">
+
+  <label for="phone">Telefon</label>
+  <input type="text" id="phone">
+
+  <label for="notes">Gastwünsche / Kommentare</label>
+  <textarea id="notes" rows="4"></textarea>
+
+  <button onclick="submitBooking()">Buchung speichern</button>
+
+  <p id="status"></p>
+
+  <script>
+    const { createClient } = supabase;
+
+    const supabaseClient = createClient(
+      'https://tqivbegnjwschwgrkqfm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
+    );
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function submitBooking() {
+      const hotel = document.getElementById("hotel").value;
+      const checkIn = document.getElementById("checkin").value;
+      const checkOut = document.getElementById("checkout").value;
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const notes = document.getElementById("notes").value.trim();
+      const status = document.getElementById("status");
+
+      // Validierung
+      if (!hotel || !checkIn || !checkOut || !firstName || !lastName || !email) {
+        status.textContent = "Bitte fülle alle Pflichtfelder aus.";
+        status.className = "error";
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        status.textContent = "Bitte gib eine gültige E-Mail-Adresse ein.";
+        status.className = "error";
+        return;
+      }
+
+      const booking = {
+        hotel,
+        check_in: checkIn,
+        check_out: checkOut,
+        guest_first_name: firstName,
+        guest_last_name: lastName,
+        email,
+        phone,
+        notes
+      };
+
+      const { data, error } = await supabaseClient.from("bookings").insert([booking]);
+
+      if (error) {
+        console.error(error);
+        status.textContent = "❌ Fehler beim Speichern.";
+        status.className = "error";
+      } else {
+        status.textContent = "✅ Buchung erfolgreich gespeichert!";
+        status.className = "success";
+        document.querySelector("form")?.reset?.();  // optionales Zurücksetzen
+      }
+    }
+  </script>
+</body>
+</html>
