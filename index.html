@@ -2,156 +2,80 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Zimmerauswahl – Schritt 2</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            width: 300px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .card-content {
-            padding: 15px;
-            flex: 1;
-        }
-        .card h2 {
-            font-size: 18px;
-            margin: 0 0 10px;
-        }
-        .card p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .card button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            border-top: 1px solid #ddd;
-        }
-        .card button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Buchung – Schritt 1</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f9f9f9; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; }
+    button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+  </style>
 </head>
 <body>
-    <h1>Zimmerauswahl – Schritt 2</h1>
-    <div class="grid">
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAC.PNG?csf=1&web=1&e=mLoQNH" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MACLASSIC Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Dornach</p>
-                <p><strong>Bedingung:</strong> max 2 Personen</p>
-                <p>o 19 m² <br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Wasserkocher und Kühlschrank<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MARV.PNG?csf=1&web=1&e=odsVb3" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MARVELOUS Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Dornach</p>
-                <p><strong>Bedingung:</strong> max 2 Personen</p>
-                <p>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAD.PNG?csf=1&web=1&e=F8pVYG" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MADREAM Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Dornach</p>
-                <p><strong>Bedingung:</strong> max 3 Personen</p>
-                <p>o 29 m² <br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAJ.PNG?csf=1&web=1&e=h01foa" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MAJESTIC Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Dornach</p>
-                <p><strong>Bedingung:</strong> max 4 Personen</p>
-                <p>o 39 m²<br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAC.PNG?csf=1&web=1&e=mLoQNH" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MACLASSIC Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Trudering</p>
-                <p><strong>Bedingung:</strong> max 2 Personen</p>
-                <p>o 19 m² <br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Wasserkocher und Kühlschrank<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MARV.PNG?csf=1&web=1&e=odsVb3" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MARVELOUS Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Trudering</p>
-                <p><strong>Bedingung:</strong> max 2 Personen</p>
-                <p>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAD.PNG?csf=1&web=1&e=F8pVYG" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MADREAM Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Trudering</p>
-                <p><strong>Bedingung:</strong> max 3 Personen</p>
-                <p>o 22 m² <br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-        <div class="card">
-            <img src="https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAJ.PNG?csf=1&web=1&e=h01foa" alt="Zimmerbild">
-            <div class="card-content">
-                <h2>MAJESTIC Apartment</h2>
-                <p><strong>Hotel:</strong> MASEVEN - Trudering</p>
-                <p><strong>Bedingung:</strong> max 4 Personen</p>
-                <p>o 37 m²<br><br>o Großes Doppelbett (auf Wunsch trennbar)<br>o Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik<br>o Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr<br>o 43'' LED TV<br>o WLAN kostenfrei<br>Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-            </div>
-            <button>Diese Kategorie wählen</button>
-        </div>
-        
-    </div>
+  <h2>Schritt 1: Buchungsformular</h2>
+  <label for="hotel">Hotel *</label>
+  <select id="hotel">
+    <option value="">Bitte wählen</option>
+    <option value="MASEVEN - Dornach">MASEVEN - Dornach</option>
+    <option value="MASEVEN - Trudering">MASEVEN - Trudering</option>
+    <option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option>
+    <option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option>
+    <option value="Tante Alma - Sonnen">Tante Alma - Sonnen</option>
+    <option value="Fidelity - Robenstein">Fidelity - Robenstein</option>
+    <option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option>
+    <option value="Fidelity - Struck">Fidelity - Struck</option>
+  </select>
+
+  <label for="checkin">Anreise *</label>
+  <input type="date" id="checkin">
+
+  <label for="checkout">Abreise *</label>
+  <input type="date" id="checkout">
+
+  <label for="firstName">Vorname</label>
+  <input type="text" id="firstName">
+
+  <label for="lastName">Nachname *</label>
+  <input type="text" id="lastName">
+
+  <label for="email">E-Mail *</label>
+  <input type="email" id="email">
+
+  <label for="phone">Telefon</label>
+  <input type="text" id="phone">
+
+  <label for="notes">Kommentar</label>
+  <textarea id="notes" rows="3"></textarea>
+
+  <button onclick="weiter()">Weiter zu Schritt 2</button>
+
+  <script>
+    function weiter() {
+      const data = {
+        hotel: document.getElementById("hotel").value,
+        checkin: document.getElementById("checkin").value,
+        checkout: document.getElementById("checkout").value,
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        notes: document.getElementById("notes").value,
+      };
+      if (!data.hotel || !data.checkin || !data.checkout || !data.lastName || !data.email) {
+        alert("Bitte fülle alle Pflichtfelder aus.");
+        return;
+      }
+      sessionStorage.setItem("buchung", JSON.stringify(data));
+      window.location.href = "seite2.html?hotel=" + encodeURIComponent(data.hotel);
+    }
+
+    window.onload = () => {
+      const today = new Date().toISOString().split("T")[0];
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+      document.getElementById("checkin").value = today;
+      document.getElementById("checkout").value = tomorrow;
+    };
+  </script>
 </body>
 </html>
