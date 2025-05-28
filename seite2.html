@@ -2,118 +2,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Zimmerauswahl</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .zimmer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .zimmer-karte {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            width: 30%;
-            margin-bottom: 20px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .zimmer-karte img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        .zimmer-details {
-            padding: 15px;
-            flex-grow: 1;
-        }
-        .zimmer-beschreibung {
-            color: #777;
-            font-size: 14px;
-            margin: 10px 0;
-            display: none;
-        }
-        .mehr-button {
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 13px;
-            margin-bottom: 10px;
-            text-align: left;
-        }
-        .waehlen-button {
-            background-color: #007BFF;
-            border: none;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 14px;
-        }
-        @media (max-width: 1000px) {
-            .zimmer-karte { width: 48%; }
-        }
-        @media (max-width: 600px) {
-            .zimmer-karte { width: 100%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Zimmerübersicht</title>
+  <style>
+    body {{
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }}
+    iframe {{
+      width: 100%;
+      height: 100vh;
+      border: none;
+    }}
+  </style>
 </head>
 <body>
-    <h1>Zimmerauswahl</h1>
-    <div class="zimmer-container" id="zimmerContainer">
-        <!-- Dynamische Inhalte -->
-    </div>
+  <h1>Zimmerübersicht</h1>
+  <iframe id="hotelFrame" title="Zimmeranzeige"></iframe>
 
-    <script>
-        const zimmerDaten = [
-            {"hotel":"MASEVEN - Dornach","kategorie":"MACLASSIC Apartment","beschreibung":"19 m², Großes Doppelbett ...","bedingung":"max 2 Personen","bild":"mac.PNG"},
-            {"hotel":"MASEVEN - Dornach","kategorie":"MARVELOUS Apartment","beschreibung":"Großes Doppelbett ...","bedingung":"max 2 Personen","bild":"marv.PNG"},
-            {"hotel":"MASEVEN - Dornach","kategorie":"MADREAM Apartment","beschreibung":"29 m², Großes Doppelbett ...","bedingung":"max 3 Personen","bild":"mad.PNG"},
-            {"hotel":"MASEVEN - Dornach","kategorie":"MAJESTIC Apartment","beschreibung":"39 m², Großes Doppelbett ...","bedingung":"max 4 Personen","bild":"maj.PNG"},
-            {"hotel":"Tante Alma - Sonnen","kategorie":"Einzelzimmer","beschreibung":"Gemütliches Einzelzimmer ...","bedingung":"max 1 Person","bild":"download1.PNG"}
-        ];
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const hotel = urlParams.get("hotel");
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const gewaehltesHotel = urlParams.get("hotel");
-
-        const container = document.getElementById("zimmerContainer");
-
-        zimmerDaten.filter(z => z.hotel === gewaehltesHotel).forEach(zimmer => {
-            const karte = document.createElement("div");
-            karte.className = "zimmer-karte";
-            karte.innerHTML = `
-                <img src="img/${zimmer.bild}" alt="${zimmer.kategorie}">
-                <div class="zimmer-details">
-                    <h3>${zimmer.kategorie}</h3>
-                    <p><strong>${zimmer.bedingung}</strong></p>
-                    <p class="zimmer-beschreibung">${zimmer.beschreibung}</p>
-                    <button class="mehr-button" onclick="zeigeMehr(this)">mehr anzeigen</button>
-                    <button class="waehlen-button" onclick="waehlen('${zimmer.kategorie}')">Diese Kategorie wählen</button>
-                </div>
-            `;
-            container.appendChild(karte);
-        });
-
-        function zeigeMehr(button) {
-            const beschreibung = button.parentElement.querySelector(".zimmer-beschreibung");
-            beschreibung.style.display = beschreibung.style.display === "block" ? "none" : "block";
-            button.textContent = beschreibung.style.display === "block" ? "weniger anzeigen" : "mehr anzeigen";
-        }
-
-        function waehlen(kategorie) {
-            alert("Gewählt: " + kategorie);
-            // Hier: Supabase-Integration
-        }
-    </script>
+    if (hotel) {{
+      const filename = hotel.toLowerCase().replaceAll(" ", "_").replaceAll("-", "").replaceAll("–", "") + ".html";
+      document.getElementById("hotelFrame").src = filename;
+    }} else {{
+      document.body.innerHTML += "<p style='color:red;'>Kein Hotel ausgewählt. Bitte übergeben Sie ?hotel=HOTELNAME in der URL.</p>";
+    }}
+  </script>
 </body>
 </html>
