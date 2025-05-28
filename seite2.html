@@ -846,5 +846,42 @@ Flauschigen Bademänteln</p>
     </div>
     
     </div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabaseUrl = "https://tqivbegnjwschwgrkqfm.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  document.querySelectorAll(".select-category").forEach(button => {
+    button.addEventListener("click", async () => {
+      const category = button.getAttribute("data-category");
+      const params = new URLSearchParams(window.location.search);
+
+      const booking = {
+        hotel: params.get("hotel") || "",
+        check_in: params.get("check_in") || "",
+        check_out: params.get("check_out") || "",
+        guest_first_name: params.get("guest_first_name") || "",
+        guest_last_name: params.get("guest_last_name") || "",
+        email: params.get("email") || "",
+        phone: params.get("phone") || "",
+        notes: params.get("notes") || "",
+        category: category
+      };
+
+      const { data, error } = await supabase.from("bookings").insert([booking]);
+      if (error) {
+        alert("❌ Fehler beim Speichern: " + error.message);
+        console.error(error);
+      } else {
+        alert("✅ Buchung erfolgreich gespeichert!");
+        window.location.href = "/danke.html"; // oder beliebige Weiterleitungsseite
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
