@@ -87,85 +87,88 @@
   <h1>Zimmerauswahl – Schritt 2</h1>
   <div class="grid" id="zimmer-grid"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.3/dist/umd/supabase.min.js"></script>
 <script>
-  const zimmerDaten = [];
-  const hotelName = new URLSearchParams(window.location.search).get("hotel");
+const zimmerDaten = [{"Hotel": "MASEVEN - Dornach", "Kategorie": "MACLASSIC Apartment", "Beschreibung": "* 19 m² \n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAC.PNG?csf=1&web=1&e=mLoQNH"}, {"Hotel": "MASEVEN - Dornach", "Kategorie": "MARVELOUS Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MARV.PNG?csf=1&web=1&e=odsVb3"}, {"Hotel": "MASEVEN - Dornach", "Kategorie": "MADREAM Apartment", "Beschreibung": "* 29 m² \n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 3 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAD.PNG?csf=1&web=1&e=F8pVYG"}, {"Hotel": "MASEVEN - Dornach", "Kategorie": "MAJESTIC Apartment", "Beschreibung": "* 39 m²\n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 4 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAJ.PNG?csf=1&web=1&e=h01foa"}, {"Hotel": "MASEVEN - Trudering", "Kategorie": "MACLASSIC Apartment", "Beschreibung": "* 19 m² \n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAC.PNG?csf=1&web=1&e=mLoQNH"}, {"Hotel": "MASEVEN - Trudering", "Kategorie": "MARVELOUS Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MARV.PNG?csf=1&web=1&e=odsVb3"}, {"Hotel": "MASEVEN - Trudering", "Kategorie": "MADREAM Apartment", "Beschreibung": "* 22 m² \n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 3 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAD.PNG?csf=1&web=1&e=F8pVYG"}, {"Hotel": "MASEVEN - Trudering", "Kategorie": "MAJESTIC Apartment", "Beschreibung": "* 37 m²\n\n* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 4 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/MAJ.PNG?csf=1&web=1&e=h01foa"}, {"Hotel": "MASEVEN - Frankfurt", "Kategorie": "MACLASSIC Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "MACFM.PNG"}, {"Hotel": "MASEVEN - Frankfurt", "Kategorie": "MAESSENTIAL Apatment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "MAEFM.PNG"}, {"Hotel": "MASEVEN - Frankfurt", "Kategorie": "MARVELOUS Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 2 Personen", "Bild link": "MARVFM.PNG"}, {"Hotel": "MASEVEN - Frankfurt", "Kategorie": "MADREAM Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 3 Personen", "Bild link": "MADFM.PNG"}, {"Hotel": "MASEVEN - Frankfurt", "Kategorie": "MAJESTIC Apartment", "Beschreibung": "* Großes Doppelbett (auf Wunsch trennbar)\n* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik\n* Wasserkocher und Kühlschrank\n* 43'' LED TV\n* WLAN kostenfrei\nDie Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer", "Bedingung": "max 4 Personen", "Bild link": "MAJFM.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Economy", "Beschreibung": "* Großes und bequemes Doppelbett\n* Einfach, aber komfortabel ausgestattet\n* Praktische Lage in den Nebengebäuden für schnelle Erreichbarkeit\n* Walk-In-Shower mit Regenwalddusche\n* Gemütliche Atmosphäre zum entspannen\n* WLAN kostenfrei\n* Ideal für Geschäftsreisende und Urlauber", "Bedingung": "Max 2 Personen", "Bild link": "eco.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Standard Apartment", "Beschreibung": "* Großzügige 40 m² Wohnfläche\n* Direkt im Hauptgebäude gelegen\n* Hochwertiges Interieur für maximalen Komfort\n* Großes, luxuriöses Bett für erholsamen Schlaf\n* Helles Bad mit Walk-In-Shower und Regenwalddusche\n* Großzügiger Balkon zum Entspannen", "Bedingung": "Max 2 Personen", "Bild link": "STA.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Superior Apartment", "Beschreibung": "* Großzügige 53 m² Wohnfläche\n* Separates Schlafzimmer für mehr Privatsphäre\n* Großer Balkon oder Terrasse mit Blick ins Grüne\n* Kitchenette für flexible Verpflegung\n3 Fernseher, darunter ein Spiegel-TV im Bad\n* Individuell anpassbare o Zimmerbeleuchtung\n", "Bedingung": "Bis zu 3 Personen", "Bild link": "STA.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Junior Suite", "Beschreibung": "* Großzügige 63 m² Wohnfläche\n* Barrierefreier Zugang, rollstuhlgerecht gestaltet\n* Separates Schlafzimmer für mehr Privatsphäre\n* Abgetrennte Kitchenette für flexible Verpflegung\n* Integriertes Bluetooth-Audiosystem für individuelle Musiksteuerung\n* 3 Fernseher:\nIm Schlafzimmer\nIm Wohn- und Essbereich\n* Spiegel-TV im Badezimmer\n* Individuell anpassbare Zimmerbeleuchtung für perfektes Ambiente", "Bedingung": "Bis zu 4 Personen", "Bild link": "sup.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Suite", "Beschreibung": "* Großzügige 63 m² Wohnfläche\n* Separates Schlafzimmer für mehr Privatsphäre\n* Abgetrennte Kitchenette für flexible Verpflegung\n* Integriertes Bluetooth-Audiosystem für individuelle Musikwiedergabe\n* 3 Fernseher:\nIm Schlafzimmer\nIm Wohn- und Essbereich\n* Spiegel-TV im Badezimmer\n* Individuell anpassbare Zimmerbeleuchtung\n", "Bedingung": "Bis zu 4 Personen", "Bild link": "sui.PNG"}, {"Hotel": "MASEVEN - Stuttgart", "Kategorie": "MA Familien Apartment", "Beschreibung": "* Separates Kinderzimmer mit Hochbett, Spielsofa & Kreidetafel\n* Großzügiger Wohn- und Schlafbereich\n* Abgetrennte Kitchenette für flexible Verpflegung\n* Badezimmer mit Badewanne, Regenwalddusche & Kinderwaschbecken\n", "Bedingung": "bis zu 2 Erwachsene und 3 Kinder", "Bild link": "fam.PNG"}, {"Hotel": "Tante Alma - Sonnen", "Kategorie": "Einzelzimmer", "Beschreibung": "gemütliches kleines Einzelzimmer, perfekt für Pilger!", "Bedingung": "Max 1 Person", "Bild link": "Download.png"}, {"Hotel": "Tante Alma - Sonnen", "Kategorie": "Doppelzimmer", "Beschreibung": "geräumiges Doppelzimmer mit großem Bett und Terrasse / Balkon", "Bedingung": "Max 2 Personen", "Bild link": "Download.png"}, {"Hotel": "Tante Alma - Sonnen", "Kategorie": "Doppelzimmer Studio", "Beschreibung": "Deluxe Zimmer", "Bedingung": "Max 3 Personen", "Bild link": "Download.png"}, {"Hotel": "Tante Alma - Sonnen", "Kategorie": "Appartment", "Beschreibung": "Bis zu 4 Personen können hier schlafen!", "Bedingung": "Max 4 Personen", "Bild link": "Download.png"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "Doppelzimmer", "Beschreibung": "* Geräumige Doppelzimmer mit großen Doppelbetten (180x200 cm, getrennte Matratzen)\n* Minibar, Sitzecke und große Schränke mit viel Stauraum\n* Viele Zimmer mit Balkon, Terrasse oder Sitzecke\n* Ausblick auf das Zwieseler Tal oder den hoteleigenen Forst\n* Großzügige Badezimmer mit:\n* Großem Waschtisch und viel Stauraum\n* Dusche oder Badewanne\n* Haartrockner\n* Beleuchtetem Schmink- und Rasierspiegel\n* Flauschigen Bademänteln\n* Hochwertigen Pflegeprodukten", "Bedingung": "Max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/RO_DZ.PNG?csf=1&web=1&e=Cvr3cO"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "Junior Doppelzimmer", "Beschreibung": "* Ideal für eine kurze Auszeit im Bayerischen Wald\n* Junior-Doppelzimmer mit komfortabler Ausstattung für Kurztrips\n* Bequemes Queensize-Doppelbett (160x200 cm)\n* Minibar und moderne TV-Schreibtisch-Kombination\n* Neues Badezimmer mit:\n\n  * Dusche\n  * Großem Waschtisch mit viel Stauraum\n  * Beleuchtetem Schmink- und Rasierspiegel\n* Flauschige Bademäntel und persönliche Saunatasche für den Wellnessbereich", "Bedingung": "Max 2 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/RO_JDZ.PNG?csf=1&web=1&e=JpokPT"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "2 Schlafzimmer Suite", "Beschreibung": "* Zwei Schlafzimmer und ein Wohnbereich auf 60–70 m² – ideal für 2 bis 4 Personen\n* Großzügiges Bett (200x200 cm) und gemütliche Lounge\n* Einmaliger Ausblick auf den Bayerischen Wald und die Berge\n* Große Schränke mit viel Stauraum für längere Urlaube\n* Neues Badezimmer mit:\n\n  * Extra großem Waschtisch\n  * Hochwertigen Pflegeprodukten\n  * Beleuchtetem Schmink- und Rasierspiegel\n  * Flauschigen Bademänteln\n* Perfekt für einen erholsamen und komfortablen Aufenthalt im Robenstein Hotel & SPA", "Bedingung": "Max 3 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/2-Suite_RO.PNG?csf=1&web=1&e=HwmrHR"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "Junior Suite", "Beschreibung": "Großzügige Juniorsuiten – ideal für einen längeren Urlaub im Bayerischen Wald\n\nPerfekt für Aktivitäten wie Sport, Wellness oder Genuss\n\nBequeme Doppelbetten (180x200 cm) für erholsamen Schlaf\n\nModerne Leseecke mit Platz zum Verweilen\n\nGrandioser Ausblick auf das Zwieseler Tal und die umliegende Berglandschaft\n\nGroße, neue Badezimmer mit:\n\nBadewanne\n\nExtra breitem Waschtisch\n\nBeleuchtetem Schmink- und Rasierspiegel\n\nHaartrockner\n\nFlauschigen Bademänteln", "Bedingung": "Max 3 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/RO_JS.PNG?csf=1&web=1&e=qglXlZ"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "Familien Zimmer", "Beschreibung": "* Perfekt für den Familienurlaub im Robenstein Hotel & SPA\n* Abgetrenntes Elternschlafzimmer für Ruhe und Erholung\n* Doppelstockbett als Abenteuerspielplatz für Kinder\n* Zusätzliches Einzelbett als weiterer Schlafplatz\n* Badezimmer mit:\n\n  * Extra breitem Waschtisch und viel Stauraum\n  * Dusche\n  * Beleuchtetem Schmink- und Rasierspiegel\n* Ideal für Wander- oder Radabenteuer im Bayerischen Wald\n* Kombination aus Aktivurlaub und gemeinsamer Entspannung für die ganze Familie", "Bedingung": "Max 4 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/RO_FZ.PNG?csf=1&web=1&e=7HFsUz"}, {"Hotel": "Fidelity - Robenstein", "Kategorie": "Behindertengerechtes Zimmer", "Beschreibung": "* Behindertengerechte Junior Suite mit Rollstuhlzugang\n* Großzügige Raumaufteilung (56 m²)\n* Bequemes Doppelbett (180x200 cm)\n* Behindertengerechtes Badezimmer\n* Grandioser Ausblick über das Zwieseler Tal\n* Kurzer Weg zum Aufzug für barrierefreien Zugang\n* Großzügige Schrankflächen mit viel Stauraum\n* Inklusive Bademänteln, Pflegeprodukten und weiteren Annehmlichkeiten für hohen Komfort", "Bedingung": "Max 3 Personen", "Bild link": "https://solutionsholding-my.sharepoint.com/:i:/r/personal/johannes_kaempf_blueredwater-hospitality_com/Documents/Desktop/Hasco/bilder/Fi/RO_BHD.PNG?csf=1&web=1&e=0agBrm"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Tirol Doppelzimmer", "Beschreibung": "*Zimmergröße 20 m²\n*Designer Boxspringbetten\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*W-Lan\n*Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner", "Bedingung": "Max 2 Personen", "Bild link": "GB_DZ.PNG"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Tirol Doppelzimmer Deluxe", "Beschreibung": "*Zimmergröße 20 m²\n*Designer Boxspringbetten\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*teilweise Balkon mit Bergblick\n*W-Lan\n*Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner", "Bedingung": "Max 2 Personen", "Bild link": "Deluxe_GB.PNG"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Tirol Doppelzimmer Premium", "Beschreibung": "*Zimmergröße 27 m²\n*Designer Boxspringbetten King Size\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*Teilweise Balkon mit Bergblick\n*Modernes Bad miit Regenbrause, WC und Haartrockner\n*Bademantel für den Aufenthalt\n*Obere Stockwerke nur über Treppe erreichbar", "Bedingung": "Max 2 Personen", "Bild link": "premium_GB.PNG"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Tirol Studio", "Beschreibung": "*Zimmergröße 30 m²\n*Designer Boxspringbetten King Size\n*Sofa (aufbettbar)\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*W-Lan\n*Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner\n*Bademantel für den Aufenthalt\n*Obere Stockwerke nur über Treppe erreichbar", "Bedingung": "Max 3 Personen", "Bild link": "Studio_GB.PNG"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Suite Tirol", "Beschreibung": "*Zimmergröße 45 m²\n*Designer Boxspringbetten King Size\n*Wohnraum mit Sofa (aufbettbar)\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*teilweise Balkon mit Bergblick\n*W-Lan\n*Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner\n*Bademantel für den Aufenthalt\n*Obere Stockwerke nur über Treppe erreichbar", "Bedingung": "Max 3 Personen", "Bild link": "Suite_GB.PNG"}, {"Hotel": "Fidelity - Grüner Baum", "Kategorie": "Suite Tirol Deluxe", "Beschreibung": "*Zimmergröße 45 m²\n*Designer Boxspringbetten King Size\n*Wohnraum mit Sofa (aufbettbar)\n*Eichenholzboden\n*Schrank, Safe, Flachbild TV, Schreibtisch\n*teilweise Balkon mit Bergblick\n*W-Lan\n*Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner\n*Bademantel für den Aufenthalt\n*Obere Stockwerke nur über Treppe erreichbar", "Bedingung": "Max 3 Personen", "Bild link": "Suite_GB.PNG"}, {"Hotel": "Fidelity - Struck", "Kategorie": "Junior Doppelzimmer", "Beschreibung": "* Helle und freundliche Junior-Doppelzimmer im Landhausstil\n* Französisches Bett (140x200 cm)\n* Ausgestattet mit TV, Schreibtisch und Sitzgelegenheit\n* Holzfußboden – besonders allergikerfreundlich\n* Badezimmer mit:\n\n  * Waschtisch mit Waschbecken\n  * Dusche\n  * Haartrockner\n  * Schminkspiegel", "Bedingung": "Max 2 Personen", "Bild link": "ST_JDZ.PNG"}, {"Hotel": "Fidelity - Struck", "Kategorie": "Doppelzimmer", "Beschreibung": "* Doppelzimmer im gemütlichen Landhausstil\n* Ausgestattet mit Twin-Betten oder Doppelbetten (200x200 cm)\n* TV, Schreibtisch und Sitzgelegenheit\n* Teilweise mit Balkon oder Gartenausblick auf der Rückseite des Hauses\n* Badezimmer mit:\n\n  * Großem Waschtisch mit zwei Waschbecken\n  * Dusche oder Badewanne\n  * Haartrockner\n  * Schminkspiegel\n* Landhausstil in unterschiedlichen Varianten erlebbar", "Bedingung": "Max 2 Personen", "Bild link": "ST_DZ.PNG"}, {"Hotel": "Fidelity - Struck", "Kategorie": "Komfort Doppelzimmer", "Beschreibung": "* Neue Komfort-Doppelzimmer mit moderner Einrichtung und hellen Farben\n* Ausgestattet mit Boxspring-Twin-Betten (200x200 cm)\n* TV, Schreibtisch und Sitzgelegenheit\n* Neues Badezimmer mit:\n\n  * Waschtisch und großem Waschbecken\n  * Dusche\n  * Schminkspiegel\n  * Haartrockner", "Bedingung": "Max 2 Personen", "Bild link": "ST_KDZ.PNG"}, {"Hotel": "Fidelity - Struck", "Kategorie": "Superior Doppelzimmer", "Beschreibung": "* Neue Superior-Doppelzimmer mit moderner Einrichtung und hellen Farben\n* Ausgestattet mit Boxspring-Twin-Betten (200x200 cm)\n* TV, Schreibtisch und Sitzgelegenheit\n* Neues Badezimmer mit:\n\n  * Waschtisch und großem Waschbecken\n  * Dusche\n  * Schminkspiegel\n  * Haartrockner\n* Zusätzlich mit eigener kleiner Dachterrasse inklusive Sitzgelegenheiten und Tisch", "Bedingung": "Max 3 Personen", "Bild link": "ST_SUP.PNG"}, {"Hotel": "Fidelity - Struck", "Kategorie": "2 Betten Suite", "Beschreibung": "* Großzügige Zwei-Schlafzimmer-Suite mit zwei Schlafzimmern und zwei Badezimmern\n* Beide Schlafzimmer mit Boxspring-Twin-Betten, Teppichboden und TV\n* Große runde Sitzecke im Erker für gemütliches Beisammensein\n* Großer Balkon mit zusätzlichem Freiraum\n* Beide Badezimmer mit:\n\n  * WC\n  * Dusche\n  * Waschtisch mit zwei Waschbecken\n  * Haartrockner\n  * Kosmetikspiegel\n* Eingangsbereich mit Garderobe und zwei großen Kleiderschränken – ideal für längere Aufenthalte", "Bedingung": "Max 4 Personen", "Bild link": "ST_SUP.PNG"}];
+const urlParams = new URLSearchParams(window.location.search);
+const hotelName = urlParams.get("hotel");
 
-  const { createClient } = supabase;
-  const supabaseClient = createClient(
-    'https://tqivbegnjwschwgrkqfm.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
-  );
+function renderCards() {
+  const grid = document.getElementById("zimmer-grid");
+  const daten = zimmerDaten.filter(z => z.Hotel === hotelName);
 
-  function renderCards() {
-    const grid = document.getElementById("zimmer-grid");
-    const daten = zimmerDaten.filter(z => z.Hotel === hotelName);
+  daten.forEach((zimmer, i) => {
+    const imgPath = zimmer["Bild link"] || "img/fallback.jpg";
+    const moreId = "more-" + i;
+    const btnId = "btn-" + i;
 
-    daten.forEach((zimmer, i) => {
-      const imgPath = "img/" + (zimmer["Bild link"] || "fallback.jpg");
-      const moreId = "more-" + i;
-      const btnId = "btn-" + i;
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${imgPath}" alt="${zimmer.Kategorie}" onerror="this.src='img/fallback.jpg'">
+      <div class="card-content">
+        <h2>${zimmer.Kategorie}</h2>
+        <p><strong>Hotel:</strong> ${zimmer.Hotel}</p>
+        <p><strong>Belegung:</strong> ${zimmer.Bedingung || "-"}</p>
+        <p>
+          ${zimmer.Beschreibung.split("\n")[0]}
+          <span class="more-text" id="${moreId}"><br>${zimmer.Beschreibung.replaceAll("\n", "<br>")}</span>
+          <button class="toggle-btn" id="${btnId}" onclick="toggleText('${moreId}', '${btnId}')">Mehr anzeigen</button>
+        </p>
+      </div>
+      <button onclick="saveBooking('${zimmer.Kategorie}')">Diese Kategorie wählen</button>
+    `;
+    grid.appendChild(card);
+  });
+}
 
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <img src="${imgPath}" alt="${zimmer.Kategorie}" onerror="this.src='img/fallback.jpg'">
-        <div class="card-content">
-          <h2>${zimmer.Kategorie}</h2>
-          <p><strong>Hotel:</strong> ${zimmer.Hotel}</p>
-          <p><strong>Belegung:</strong> ${zimmer.Bedingung || "-"}</p>
-          <p>
-            ${zimmer.Beschreibung.split("\n")[0]}
-            <span class="more-text" id="${moreId}"><br>${zimmer.Beschreibung.replaceAll("\n", "<br>")}</span>
-            <button class="toggle-btn" id="${btnId}" onclick="toggleText('${moreId}', '${btnId}')">Mehr anzeigen</button>
-          </p>
-        </div>
-        <button onclick="saveBooking('${zimmer.Kategorie}')">Diese Kategorie wählen</button>
-      `;
-      grid.appendChild(card);
-    });
+function toggleText(id, btnId) {
+  const el = document.getElementById(id);
+  const btn = document.getElementById(btnId);
+  const isHidden = el.style.display === "none" || el.style.display === "";
+  el.style.display = isHidden ? "inline" : "none";
+  btn.textContent = isHidden ? "Weniger anzeigen" : "Mehr anzeigen";
+}
+
+function saveBooking(kategorie) {
+  const data = JSON.parse(sessionStorage.getItem("buchung") || "{}");
+  if (!data || !data.hotel || !data.email || !data.lastName) {
+    alert("❌ Fehler: Buchungsdaten unvollständig.");
+    return;
   }
 
-  function toggleText(id, btnId) {
-    const el = document.getElementById(id);
-    const btn = document.getElementById(btnId);
-    const isHidden = el.style.display === "none" || el.style.display === "";
-    el.style.display = isHidden ? "inline" : "none";
-    btn.textContent = isHidden ? "Weniger anzeigen" : "Mehr anzeigen";
-  }
+  const booking = {
+    hotel: data.hotel,
+    check_in: data.checkin,
+    check_out: data.checkout,
+    guest_first_name: data.firstName,
+    guest_last_name: data.lastName,
+    email: data.email,
+    phone: data.phone,
+    notes: data.notes,
+    category: kategorie
+  };
 
-  async function saveBooking(kategorie) {
-    const data = JSON.parse(sessionStorage.getItem("buchung") || "{}");
-    if (!data || !data.hotel || !data.email || !data.lastName) {
-      alert("❌ Fehler: Buchungsdaten unvollständig.");
-      return;
-    }
-
-    const booking = {
-      hotel: data.hotel,
-      check_in: data.checkin,
-      check_out: data.checkout,
-      guest_first_name: data.firstName,
-      guest_last_name: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      notes: data.notes,
-      category: kategorie
-    };
-
-    const { error } = await supabaseClient.from("bookings").insert([booking]);
-    if (error) {
-      console.error(error);
+  fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
+    method: "POST",
+    headers: {
+      "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw",
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    },
+    body: JSON.stringify([booking])
+  }).then(response => {
+    if (!response.ok) {
       alert("❌ Fehler beim Speichern.");
     } else {
       alert("✅ Buchung gespeichert!");
       sessionStorage.clear();
       window.location.href = "danke.html";
     }
-  }
+  });
+}
 
-  renderCards();
+renderCards();
 </script>
 </body>
 </html>
