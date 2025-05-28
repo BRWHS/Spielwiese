@@ -59,12 +59,27 @@
             });
         }
     </script>
+    
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedHotel = urlParams.get("hotel");
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".room-card").forEach(card => {
+            const hotelName = card.getAttribute("data-hotel");
+            if (hotelName !== selectedHotel) {
+                card.style.display = "none";
+            }
+        });
+    });
+</script>
+
 </head>
 <body>
     <h1>Zimmerauswahl</h1>
     <div class="room-grid">
         
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Dornach">
         <img src="/img/mac.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MACLASSIC Apartment</h3>
         <p><strong>MASEVEN - Dornach</strong></p>
@@ -85,7 +100,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Dornach', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Dornach">
         <img src="/img/marv.png" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MARVELOUS Apartment</h3>
         <p><strong>MASEVEN - Dornach</strong></p>
@@ -102,7 +117,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Dornach', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Dornach">
         <img src="/img/mad.png" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MADREAM Apartment</h3>
         <p><strong>MASEVEN - Dornach</strong></p>
@@ -123,7 +138,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Dornach', 'MADREAM Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Dornach">
         <img src="/img/maj.png" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MAJESTIC Apartment</h3>
         <p><strong>MASEVEN - Dornach</strong></p>
@@ -144,17 +159,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Dornach', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
         <img src="/img/mac.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MACLASSIC Apartment</h3>
         <p><strong>MASEVEN - Trudering</strong></p>
@@ -175,7 +180,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Trudering', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
         <img src="/img/marv.PNG" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MARVELOUS Apartment</h3>
         <p><strong>MASEVEN - Trudering</strong></p>
@@ -192,7 +197,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Trudering', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
         <img src="/img/mad.PNG" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MADREAM Apartment</h3>
         <p><strong>MASEVEN - Trudering</strong></p>
@@ -213,7 +218,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Trudering', 'MADREAM Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
         <img src="/img/maj.PNG" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MAJESTIC Apartment</h3>
         <p><strong>MASEVEN - Trudering</strong></p>
@@ -234,17 +239,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Trudering', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Frankfurt">
         <img src="/img/macfm.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MACLASSIC Apartment</h3>
         <p><strong>MASEVEN - Frankfurt</strong></p>
@@ -261,7 +256,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Frankfurt', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Frankfurt">
         <img src="/img/maefm.PNG" alt="MAESSENTIAL Apatment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MAESSENTIAL Apatment</h3>
         <p><strong>MASEVEN - Frankfurt</strong></p>
@@ -278,7 +273,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Frankfurt', 'MAESSENTIAL Apatment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Frankfurt">
         <img src="/img/marvfm.PNG" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MARVELOUS Apartment</h3>
         <p><strong>MASEVEN - Frankfurt</strong></p>
@@ -295,7 +290,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Frankfurt', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Frankfurt">
         <img src="/img/madfm.PNG" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MADREAM Apartment</h3>
         <p><strong>MASEVEN - Frankfurt</strong></p>
@@ -312,7 +307,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Frankfurt', 'MADREAM Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Frankfurt">
         <img src="/img/majfm.PNG" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MAJESTIC Apartment</h3>
         <p><strong>MASEVEN - Frankfurt</strong></p>
@@ -329,17 +324,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Frankfurt', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/eco.PNG" alt="MA Economy" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Economy</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -357,7 +342,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Economy')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/sta.PNG" alt="MA Standard Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Standard Apartment</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -375,7 +360,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Standard Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/sta.PNG" alt="MA Superior Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Superior Apartment</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -393,7 +378,7 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Superior Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/sup.PNG" alt="MA Junior Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Junior Suite</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -414,7 +399,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Junior Suite')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/sui.PNG" alt="MA Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Suite</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -435,7 +420,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Suite')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="MASEVEN - Stuttgart">
         <img src="/img/fam.PNG" alt="MA Familien Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>MA Familien Apartment</h3>
         <p><strong>MASEVEN - Stuttgart</strong></p>
@@ -451,17 +436,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Familien Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="Tante Alma - Sonnen">
         <img src="/img/download.PNG" alt="Einzelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Einzelzimmer</h3>
         <p><strong>Tante Alma - Sonnen</strong></p>
@@ -471,7 +446,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Tante Alma - Sonnen', 'Einzelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Tante Alma - Sonnen">
         <img src="/img/download.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Doppelzimmer</h3>
         <p><strong>Tante Alma - Sonnen</strong></p>
@@ -481,7 +456,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Tante Alma - Sonnen', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Tante Alma - Sonnen">
         <img src="/img/download.PNG" alt="Doppelzimmer Studio" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Doppelzimmer Studio</h3>
         <p><strong>Tante Alma - Sonnen</strong></p>
@@ -491,7 +466,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Tante Alma - Sonnen', 'Doppelzimmer Studio')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Tante Alma - Sonnen">
         <img src="/img/download.PNG" alt="Appartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Appartment</h3>
         <p><strong>Tante Alma - Sonnen</strong></p>
@@ -501,17 +476,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Tante Alma - Sonnen', 'Appartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/ro_dz.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Doppelzimmer</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -532,7 +497,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Fidelity - Robenstein', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/ro_jdz.PNG" alt="Junior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Junior Doppelzimmer</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -553,7 +518,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Fidelity - Robenstein', 'Junior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/2-suite_ro.PNG" alt="2 Schlafzimmer Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>2 Schlafzimmer Suite</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -574,7 +539,7 @@ Im Wohn- und Essbereich
         <button onclick="selectRoom('Fidelity - Robenstein', '2 Schlafzimmer Suite')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/ro_js.PNG" alt="Junior Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Junior Suite</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -606,7 +571,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Robenstein', 'Junior Suite')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/ro_fz.PNG" alt="Familien Zimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Familien Zimmer</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -628,7 +593,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Robenstein', 'Familien Zimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Robenstein">
         <img src="/img/ro_bhd.PNG" alt="Behindertengerechtes Zimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Behindertengerechtes Zimmer</h3>
         <p><strong>Fidelity - Robenstein</strong></p>
@@ -647,17 +612,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Robenstein', 'Behindertengerechtes Zimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/gb_dz.PNG" alt="Tirol Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Tirol Doppelzimmer</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -677,7 +632,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/deluxe_gb.PNG" alt="Tirol Doppelzimmer Deluxe" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Tirol Doppelzimmer Deluxe</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -697,7 +652,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer Deluxe')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/premium_gb.PNG" alt="Tirol Doppelzimmer Premium" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Tirol Doppelzimmer Premium</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -718,7 +673,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer Premium')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/studio_gb.PNG" alt="Tirol Studio" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Tirol Studio</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -740,7 +695,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Studio')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/suite_gb.PNG" alt="Suite Tirol" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Suite Tirol</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -763,7 +718,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Suite Tirol')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Grüner Baum">
         <img src="/img/suite_gb.PNG" alt="Suite Tirol Deluxe" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Suite Tirol Deluxe</h3>
         <p><strong>Fidelity - Grüner Baum</strong></p>
@@ -786,17 +741,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Grüner Baum', 'Suite Tirol Deluxe')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
-        <img src="/img/nan" alt="nan" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
-        <h3>nan</h3>
-        <p><strong>nan</strong></p>
-        <p class="short-description">... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
-        <p class="full-description hidden"></p>
-        <p><em></em></p>
-        <button onclick="selectRoom('nan', 'nan')">Diese Kategorie wählen</button>
-    </div>
-    
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Struck">
         <img src="/img/st_jdz.PNG" alt="Junior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Junior Doppelzimmer</h3>
         <p><strong>Fidelity - Struck</strong></p>
@@ -817,7 +762,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Struck', 'Junior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Struck">
         <img src="/img/st_dz.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Doppelzimmer</h3>
         <p><strong>Fidelity - Struck</strong></p>
@@ -839,7 +784,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Struck', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Struck">
         <img src="/img/st_kdz.PNG" alt="Komfort Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Komfort Doppelzimmer</h3>
         <p><strong>Fidelity - Struck</strong></p>
@@ -858,7 +803,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Struck', 'Komfort Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Struck">
         <img src="/img/st_sup.PNG" alt="Superior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>Superior Doppelzimmer</h3>
         <p><strong>Fidelity - Struck</strong></p>
@@ -878,7 +823,7 @@ Flauschigen Bademänteln</p>
         <button onclick="selectRoom('Fidelity - Struck', 'Superior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card">
+    <div class="room-card" data-hotel="Fidelity - Struck">
         <img src="/img/st_sup.PNG" alt="2 Betten Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
         <h3>2 Betten Suite</h3>
         <p><strong>Fidelity - Struck</strong></p>
