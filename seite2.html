@@ -2,60 +2,93 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Zimmerauswahl</title>
-  <style>
-    body {{
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }}
-    h1 {{
-      text-align: center;
-      color: #333;
-    }}
-    .room-card {{
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }}
-    .room-card img {{
-      width: 100%;
-      max-height: 300px;
-      object-fit: cover;
-      border-radius: 4px;
-    }}
-    .description {{
-      display: none;
-      margin-top: 10px;
-      color: #666;
-      font-size: 0.95em;
-      white-space: pre-wrap;
-    }}
-    .show-more {{
-      display: inline-block;
-      margin-top: 10px;
-      color: #888;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9em;
-      text-decoration: underline;
-    }}
-  </style>
+    <meta charset="UTF-8">
+    <title>hasco – Seite 2</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; }
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .room-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        .room-image { width: 100%; height: 200px; object-fit: cover; border-radius: 5px; }
+        .hidden { display: none; }
+        .show-more { color: #777; cursor: pointer; font-size: 0.9em; }
+        .short-description { color: #333; font-size: 0.95em; }
+        .full-description { color: #888; font-size: 0.95em; margin-top: 5px; }
+        button { background-color: #2d2d2d; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #444; }
+    </style>
+    <script>
+        function toggleDescription(element) {
+            const card = element.closest('.room-card');
+            const fullDesc = card.querySelector('.full-description');
+            fullDesc.classList.toggle('hidden');
+            element.textContent = fullDesc.classList.contains('hidden') ? 'mehr anzeigen' : 'weniger anzeigen';
+        }
+
+        function selectRoom(hotel, category) {
+            const params = new URLSearchParams(window.location.search);
+            const arrival = params.get("anreise") || "";
+            const departure = params.get("abreise") || "";
+            const email = params.get("email") || "";
+            const lastName = params.get("nachname") || "";
+            const notes = params.get("notizen") || "";
+
+            const booking = {
+                hotel_name: hotel,
+                category: category,
+                arrival,
+                departure,
+                email,
+                guest_last_name: lastName,
+                notes
+            };
+
+            fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                body: JSON.stringify(booking)
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = "/seite3.html";
+                } else {
+                    alert("Fehler beim Speichern.");
+                }
+            });
+        }
+    </script>
+    
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedHotel = urlParams.get("hotel");
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".room-card").forEach(card => {
+            const hotelName = card.getAttribute("data-hotel");
+            if (hotelName !== selectedHotel) {
+                card.style.display = "none";
+            }
+        });
+    });
+</script>
+
 </head>
 <body>
-<h1>Zimmerkategorien</h1>
-<div id="rooms-container">
-
+    <h1>Zimmerauswahl</h1>
+    <div class="room-grid">
+        
     <div class="room-card" data-hotel="MASEVEN - Dornach">
-      <h2>MACLASSIC Apartment</h2>
-      <img src="img/mac.PNG" alt="MACLASSIC Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* 19 m² 
+        <img src="/img/mac.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MACLASSIC Apartment</h3>
+        <p><strong>MASEVEN - Dornach</strong></p>
+        <p class="short-description">* 19 m² 
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 19 m² 
 
 * Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
@@ -63,42 +96,37 @@
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
-    </div>
-    
-    <div class="room-card" data-hotel="MASEVEN - Dornach">
-      <h2>MARVELOUS Apartment</h2>
-      <img src="img/marv.png" alt="MARVELOUS Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
-* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
-* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr
-* 43'' LED TV
-* WLAN kostenfrei
-Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Dornach', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Dornach">
-      <h2>MADREAM Apartment</h2>
-      <img src="img/mad.png" alt="MADREAM Apartment">
-      <p><strong>Bedingung:</strong> max 3 Personen</p>
-      <p class="description">* 29 m² 
-
-* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/marv.png" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MARVELOUS Apartment</h3>
+        <p><strong>MASEVEN - Dornach</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Hochwert... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Dornach', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Dornach">
-      <h2>MAJESTIC Apartment</h2>
-      <img src="img/maj.png" alt="MAJESTIC Apartment">
-      <p><strong>Bedingung:</strong> max 4 Personen</p>
-      <p class="description">* 39 m²
+        <img src="/img/mad.png" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MADREAM Apartment</h3>
+        <p><strong>MASEVEN - Dornach</strong></p>
+        <p class="short-description">* 29 m² 
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 29 m² 
 
 * Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
@@ -106,42 +134,20 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 3 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Dornach', 'MADREAM Apartment')">Diese Kategorie wählen</button>
     </div>
     
-    <div class="room-card" data-hotel="MASEVEN - Trudering">
-      <h2>MACLASSIC Apartment</h2>
-      <img src="img/mact.PNG" alt="MACLASSIC Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* 19 m² 
+    <div class="room-card" data-hotel="MASEVEN - Dornach">
+        <img src="/img/maj.png" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MAJESTIC Apartment</h3>
+        <p><strong>MASEVEN - Dornach</strong></p>
+        <p class="short-description">* 39 m²
 
 * Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
-* Wasserkocher und Kühlschrank
-* 43'' LED TV
-* WLAN kostenfrei
-Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
-    </div>
-    
-    <div class="room-card" data-hotel="MASEVEN - Trudering">
-      <h2>MARVELOUS Apartment</h2>
-      <img src="img/marvt.PNG" alt="MARVELOUS Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
-* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
-* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr
-* 43'' LED TV
-* WLAN kostenfrei
-Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
-    </div>
-    
-    <div class="room-card" data-hotel="MASEVEN - Trudering">
-      <h2>MADREAM Apartment</h2>
-      <img src="img/madt.PNG" alt="MADREAM Apartment">
-      <p><strong>Bedingung:</strong> max 3 Personen</p>
-      <p class="description">* 22 m² 
+*... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 39 m²
 
 * Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
@@ -149,14 +155,58 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 4 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Dornach', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Trudering">
-      <h2>MAJESTIC Apartment</h2>
-      <img src="img/majt.PNG" alt="MAJESTIC Apartment">
-      <p><strong>Bedingung:</strong> max 4 Personen</p>
-      <p class="description">* 37 m²
+        <img src="/img/mac.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MACLASSIC Apartment</h3>
+        <p><strong>MASEVEN - Trudering</strong></p>
+        <p class="short-description">* 19 m² 
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 19 m² 
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserkocher und Kühlschrank
+* 43'' LED TV
+* WLAN kostenfrei
+Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Trudering', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
+    </div>
+    
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
+        <img src="/img/marv.PNG" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MARVELOUS Apartment</h3>
+        <p><strong>MASEVEN - Trudering</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Hochwert... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr
+* 43'' LED TV
+* WLAN kostenfrei
+Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Trudering', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
+    </div>
+    
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
+        <img src="/img/mad.PNG" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MADREAM Apartment</h3>
+        <p><strong>MASEVEN - Trudering</strong></p>
+        <p class="short-description">* 22 m² 
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 22 m² 
 
 * Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
@@ -164,120 +214,178 @@ Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 3 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Trudering', 'MADREAM Apartment')">Diese Kategorie wählen</button>
+    </div>
+    
+    <div class="room-card" data-hotel="MASEVEN - Trudering">
+        <img src="/img/maj.PNG" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MAJESTIC Apartment</h3>
+        <p><strong>MASEVEN - Trudering</strong></p>
+        <p class="short-description">* 37 m²
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+*... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* 37 m²
+
+* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Hochwertige, vollausgestattete Kitchenette mit Induktionskochfeld, Wasserkocher, Kühlschrank, Mikrowelle und Markengeschirr
+* 43'' LED TV
+* WLAN kostenfrei
+Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
+        <p><em>max 4 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Trudering', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Frankfurt">
-      <h2>MACLASSIC Apartment</h2>
-      <img src="img/macfm.PNG" alt="MACLASSIC Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/macfm.PNG" alt="MACLASSIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MACLASSIC Apartment</h3>
+        <p><strong>MASEVEN - Frankfurt</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserko... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Wasserkocher und Kühlschrank
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Frankfurt', 'MACLASSIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Frankfurt">
-      <h2>MAESSENTIAL Apatment</h2>
-      <img src="img/maefm.PNG" alt="MAESSENTIAL Apatment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/maefm.PNG" alt="MAESSENTIAL Apatment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MAESSENTIAL Apatment</h3>
+        <p><strong>MASEVEN - Frankfurt</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserko... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Wasserkocher und Kühlschrank
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Frankfurt', 'MAESSENTIAL Apatment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Frankfurt">
-      <h2>MARVELOUS Apartment</h2>
-      <img src="img/marvfm.PNG" alt="MARVELOUS Apartment">
-      <p><strong>Bedingung:</strong> max 2 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/marvfm.PNG" alt="MARVELOUS Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MARVELOUS Apartment</h3>
+        <p><strong>MASEVEN - Frankfurt</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserko... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Wasserkocher und Kühlschrank
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Frankfurt', 'MARVELOUS Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Frankfurt">
-      <h2>MADREAM Apartment</h2>
-      <img src="img/madfm.PNG" alt="MADREAM Apartment">
-      <p><strong>Bedingung:</strong> max 3 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/madfm.PNG" alt="MADREAM Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MADREAM Apartment</h3>
+        <p><strong>MASEVEN - Frankfurt</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserko... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Wasserkocher und Kühlschrank
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 3 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Frankfurt', 'MADREAM Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Frankfurt">
-      <h2>MAJESTIC Apartment</h2>
-      <img src="img/majfm.PNG" alt="MAJESTIC Apartment">
-      <p><strong>Bedingung:</strong> max 4 Personen</p>
-      <p class="description">* Großes Doppelbett (auf Wunsch trennbar)
+        <img src="/img/majfm.PNG" alt="MAJESTIC Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MAJESTIC Apartment</h3>
+        <p><strong>MASEVEN - Frankfurt</strong></p>
+        <p class="short-description">* Großes Doppelbett (auf Wunsch trennbar)
+* Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
+* Wasserko... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes Doppelbett (auf Wunsch trennbar)
 * Bad in Marmoroptik mit Tropendusche und hochwertiger BIO-Kosmetik
 * Wasserkocher und Kühlschrank
 * 43'' LED TV
 * WLAN kostenfrei
 Die Reinigung des Apartments erfolgt ab dem 4. Tag der Aufenthaltsdauer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>max 4 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Frankfurt', 'MAJESTIC Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Economy</h2>
-      <img src="img/eco.PNG" alt="MA Economy">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Großes und bequemes Doppelbett
+        <img src="/img/eco.PNG" alt="MA Economy" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Economy</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Großes und bequemes Doppelbett
+* Einfach, aber komfortabel ausgestattet
+* Praktische Lage in den Nebengebäuden für sch... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großes und bequemes Doppelbett
 * Einfach, aber komfortabel ausgestattet
 * Praktische Lage in den Nebengebäuden für schnelle Erreichbarkeit
 * Walk-In-Shower mit Regenwalddusche
 * Gemütliche Atmosphäre zum entspannen
 * WLAN kostenfrei
 * Ideal für Geschäftsreisende und Urlauber</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Economy')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Standard Apartment</h2>
-      <img src="img/sta.PNG" alt="MA Standard Apartment">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Großzügige 40 m² Wohnfläche
+        <img src="/img/sta.PNG" alt="MA Standard Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Standard Apartment</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Großzügige 40 m² Wohnfläche
+* Direkt im Hauptgebäude gelegen
+* Hochwertiges Interieur für maximalen Komfort
+* Großes, ... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großzügige 40 m² Wohnfläche
 * Direkt im Hauptgebäude gelegen
 * Hochwertiges Interieur für maximalen Komfort
 * Großes, luxuriöses Bett für erholsamen Schlaf
 * Helles Bad mit Walk-In-Shower und Regenwalddusche
 * Großzügiger Balkon zum Entspannen</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Standard Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Superior Apartment</h2>
-      <img src="img/sta.PNG" alt="MA Superior Apartment">
-      <p><strong>Bedingung:</strong> Bis zu 3 Personen</p>
-      <p class="description">* Großzügige 53 m² Wohnfläche
+        <img src="/img/sta.PNG" alt="MA Superior Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Superior Apartment</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Großzügige 53 m² Wohnfläche
+* Separates Schlafzimmer für mehr Privatsphäre
+* Großer Balkon oder Terrasse mit Blick ins... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großzügige 53 m² Wohnfläche
 * Separates Schlafzimmer für mehr Privatsphäre
 * Großer Balkon oder Terrasse mit Blick ins Grüne
 * Kitchenette für flexible Verpflegung
 3 Fernseher, darunter ein Spiegel-TV im Bad
 * Individuell anpassbare o Zimmerbeleuchtung
 </p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Bis zu 3 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Superior Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Junior Suite</h2>
-      <img src="img/sup.PNG" alt="MA Junior Suite">
-      <p><strong>Bedingung:</strong> Bis zu 4 Personen</p>
-      <p class="description">* Großzügige 63 m² Wohnfläche
+        <img src="/img/sup.PNG" alt="MA Junior Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Junior Suite</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Großzügige 63 m² Wohnfläche
+* Barrierefreier Zugang, rollstuhlgerecht gestaltet
+* Separates Schlafzimmer für mehr Priv... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großzügige 63 m² Wohnfläche
 * Barrierefreier Zugang, rollstuhlgerecht gestaltet
 * Separates Schlafzimmer für mehr Privatsphäre
 * Abgetrennte Kitchenette für flexible Verpflegung
@@ -287,14 +395,18 @@ Im Schlafzimmer
 Im Wohn- und Essbereich
 * Spiegel-TV im Badezimmer
 * Individuell anpassbare Zimmerbeleuchtung für perfektes Ambiente</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Bis zu 4 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Junior Suite')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Suite</h2>
-      <img src="img/sui.PNG" alt="MA Suite">
-      <p><strong>Bedingung:</strong> Bis zu 4 Personen</p>
-      <p class="description">* Großzügige 63 m² Wohnfläche
+        <img src="/img/sui.PNG" alt="MA Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Suite</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Großzügige 63 m² Wohnfläche
+* Separates Schlafzimmer für mehr Privatsphäre
+* Abgetrennte Kitchenette für flexible Verp... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großzügige 63 m² Wohnfläche
 * Separates Schlafzimmer für mehr Privatsphäre
 * Abgetrennte Kitchenette für flexible Verpflegung
 * Integriertes Bluetooth-Audiosystem für individuelle Musikwiedergabe
@@ -304,58 +416,73 @@ Im Wohn- und Essbereich
 * Spiegel-TV im Badezimmer
 * Individuell anpassbare Zimmerbeleuchtung
 </p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Bis zu 4 Personen</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Suite')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="MASEVEN - Stuttgart">
-      <h2>MA Familien Apartment</h2>
-      <img src="img/fam.PNG" alt="MA Familien Apartment">
-      <p><strong>Bedingung:</strong> bis zu 2 Erwachsene und 3 Kinder</p>
-      <p class="description">* Separates Kinderzimmer mit Hochbett, Spielsofa & Kreidetafel
+        <img src="/img/fam.PNG" alt="MA Familien Apartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>MA Familien Apartment</h3>
+        <p><strong>MASEVEN - Stuttgart</strong></p>
+        <p class="short-description">* Separates Kinderzimmer mit Hochbett, Spielsofa & Kreidetafel
+* Großzügiger Wohn- und Schlafbereich
+* Abgetrennte Kitch... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Separates Kinderzimmer mit Hochbett, Spielsofa & Kreidetafel
 * Großzügiger Wohn- und Schlafbereich
 * Abgetrennte Kitchenette für flexible Verpflegung
 * Badezimmer mit Badewanne, Regenwalddusche & Kinderwaschbecken
 </p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>bis zu 2 Erwachsene und 3 Kinder</em></p>
+        <button onclick="selectRoom('MASEVEN - Stuttgart', 'MA Familien Apartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Tante Alma - Sonnen">
-      <h2>Einzelzimmer</h2>
-      <img src="img/download1.PNG" alt="Einzelzimmer">
-      <p><strong>Bedingung:</strong> Max 1 Person</p>
-      <p class="description">gemütliches kleines Einzelzimmer, perfekt für Pilger!</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <img src="/img/download.PNG" alt="Einzelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Einzelzimmer</h3>
+        <p><strong>Tante Alma - Sonnen</strong></p>
+        <p class="short-description">gemütliches kleines Einzelzimmer, perfekt für Pilger!... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">gemütliches kleines Einzelzimmer, perfekt für Pilger!</p>
+        <p><em>Max 1 Person</em></p>
+        <button onclick="selectRoom('Tante Alma - Sonnen', 'Einzelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Tante Alma - Sonnen">
-      <h2>Doppelzimmer</h2>
-      <img src="img/download2.PNG" alt="Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">geräumiges Doppelzimmer mit großem Bett und Terrasse / Balkon</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <img src="/img/download.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Doppelzimmer</h3>
+        <p><strong>Tante Alma - Sonnen</strong></p>
+        <p class="short-description">geräumiges Doppelzimmer mit großem Bett und Terrasse / Balkon... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">geräumiges Doppelzimmer mit großem Bett und Terrasse / Balkon</p>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Tante Alma - Sonnen', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Tante Alma - Sonnen">
-      <h2>Doppelzimmer Studio</h2>
-      <img src="img/download3.PNG" alt="Doppelzimmer Studio">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">Deluxe Zimmer</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <img src="/img/download.PNG" alt="Doppelzimmer Studio" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Doppelzimmer Studio</h3>
+        <p><strong>Tante Alma - Sonnen</strong></p>
+        <p class="short-description">Deluxe Zimmer... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">Deluxe Zimmer</p>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Tante Alma - Sonnen', 'Doppelzimmer Studio')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Tante Alma - Sonnen">
-      <h2>Appartment</h2>
-      <img src="img/download4.PNG" alt="Appartment">
-      <p><strong>Bedingung:</strong> Max 4 Personen</p>
-      <p class="description">Bis zu 4 Personen können hier schlafen!</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <img src="/img/download.PNG" alt="Appartment" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Appartment</h3>
+        <p><strong>Tante Alma - Sonnen</strong></p>
+        <p class="short-description">Bis zu 4 Personen können hier schlafen!... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">Bis zu 4 Personen können hier schlafen!</p>
+        <p><em>Max 4 Personen</em></p>
+        <button onclick="selectRoom('Tante Alma - Sonnen', 'Appartment')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>Doppelzimmer</h2>
-      <img src="img/ro_dz.PNG" alt="Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Geräumige Doppelzimmer mit großen Doppelbetten (180x200 cm, getrennte Matratzen)
+        <img src="/img/ro_dz.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Doppelzimmer</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">* Geräumige Doppelzimmer mit großen Doppelbetten (180x200 cm, getrennte Matratzen)
+* Minibar, Sitzecke und große Schränk... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Geräumige Doppelzimmer mit großen Doppelbetten (180x200 cm, getrennte Matratzen)
 * Minibar, Sitzecke und große Schränke mit viel Stauraum
 * Viele Zimmer mit Balkon, Terrasse oder Sitzecke
 * Ausblick auf das Zwieseler Tal oder den hoteleigenen Forst
@@ -366,14 +493,18 @@ Im Wohn- und Essbereich
 * Beleuchtetem Schmink- und Rasierspiegel
 * Flauschigen Bademänteln
 * Hochwertigen Pflegeprodukten</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>Junior Doppelzimmer</h2>
-      <img src="img/ro_jdz.PNG" alt="Junior Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Ideal für eine kurze Auszeit im Bayerischen Wald
+        <img src="/img/ro_jdz.PNG" alt="Junior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Junior Doppelzimmer</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">* Ideal für eine kurze Auszeit im Bayerischen Wald
+* Junior-Doppelzimmer mit komfortabler Ausstattung für Kurztrips
+* Be... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Ideal für eine kurze Auszeit im Bayerischen Wald
 * Junior-Doppelzimmer mit komfortabler Ausstattung für Kurztrips
 * Bequemes Queensize-Doppelbett (160x200 cm)
 * Minibar und moderne TV-Schreibtisch-Kombination
@@ -383,14 +514,17 @@ Im Wohn- und Essbereich
   * Großem Waschtisch mit viel Stauraum
   * Beleuchtetem Schmink- und Rasierspiegel
 * Flauschige Bademäntel und persönliche Saunatasche für den Wellnessbereich</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', 'Junior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>2 Schlafzimmer Suite</h2>
-      <img src="img/2-suite_ro.PNG" alt="2 Schlafzimmer Suite">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">* Zwei Schlafzimmer und ein Wohnbereich auf 60–70 m² – ideal für 2 bis 4 Personen
+        <img src="/img/2-suite_ro.PNG" alt="2 Schlafzimmer Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>2 Schlafzimmer Suite</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">* Zwei Schlafzimmer und ein Wohnbereich auf 60–70 m² – ideal für 2 bis 4 Personen
+* Großzügiges Bett (200x200 cm) und ge... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Zwei Schlafzimmer und ein Wohnbereich auf 60–70 m² – ideal für 2 bis 4 Personen
 * Großzügiges Bett (200x200 cm) und gemütliche Lounge
 * Einmaliger Ausblick auf den Bayerischen Wald und die Berge
 * Große Schränke mit viel Stauraum für längere Urlaube
@@ -401,14 +535,18 @@ Im Wohn- und Essbereich
   * Beleuchtetem Schmink- und Rasierspiegel
   * Flauschigen Bademänteln
 * Perfekt für einen erholsamen und komfortablen Aufenthalt im Robenstein Hotel & SPA</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', '2 Schlafzimmer Suite')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>Junior Suite</h2>
-      <img src="img/ro_js.PNG" alt="Junior Suite">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">Großzügige Juniorsuiten – ideal für einen längeren Urlaub im Bayerischen Wald
+        <img src="/img/ro_js.PNG" alt="Junior Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Junior Suite</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">Großzügige Juniorsuiten – ideal für einen längeren Urlaub im Bayerischen Wald
+
+Perfekt für Aktivitäten wie Sport, Wellne... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">Großzügige Juniorsuiten – ideal für einen längeren Urlaub im Bayerischen Wald
 
 Perfekt für Aktivitäten wie Sport, Wellness oder Genuss
 
@@ -429,14 +567,18 @@ Beleuchtetem Schmink- und Rasierspiegel
 Haartrockner
 
 Flauschigen Bademänteln</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', 'Junior Suite')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>Familien Zimmer</h2>
-      <img src="img/ro_fz.PNG" alt="Familien Zimmer">
-      <p><strong>Bedingung:</strong> Max 4 Personen</p>
-      <p class="description">* Perfekt für den Familienurlaub im Robenstein Hotel & SPA
+        <img src="/img/ro_fz.PNG" alt="Familien Zimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Familien Zimmer</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">* Perfekt für den Familienurlaub im Robenstein Hotel & SPA
+* Abgetrenntes Elternschlafzimmer für Ruhe und Erholung
+* Dop... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Perfekt für den Familienurlaub im Robenstein Hotel & SPA
 * Abgetrenntes Elternschlafzimmer für Ruhe und Erholung
 * Doppelstockbett als Abenteuerspielplatz für Kinder
 * Zusätzliches Einzelbett als weiterer Schlafplatz
@@ -447,14 +589,18 @@ Flauschigen Bademänteln</p>
   * Beleuchtetem Schmink- und Rasierspiegel
 * Ideal für Wander- oder Radabenteuer im Bayerischen Wald
 * Kombination aus Aktivurlaub und gemeinsamer Entspannung für die ganze Familie</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 4 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', 'Familien Zimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Robenstein">
-      <h2>Behindertengerechtes Zimmer</h2>
-      <img src="img/ro_bhd.PNG" alt="Behindertengerechtes Zimmer">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">* Behindertengerechte Junior Suite mit Rollstuhlzugang
+        <img src="/img/ro_bhd.PNG" alt="Behindertengerechtes Zimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Behindertengerechtes Zimmer</h3>
+        <p><strong>Fidelity - Robenstein</strong></p>
+        <p class="short-description">* Behindertengerechte Junior Suite mit Rollstuhlzugang
+* Großzügige Raumaufteilung (56 m²)
+* Bequemes Doppelbett (180x20... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Behindertengerechte Junior Suite mit Rollstuhlzugang
 * Großzügige Raumaufteilung (56 m²)
 * Bequemes Doppelbett (180x200 cm)
 * Behindertengerechtes Badezimmer
@@ -462,41 +608,60 @@ Flauschigen Bademänteln</p>
 * Kurzer Weg zum Aufzug für barrierefreien Zugang
 * Großzügige Schrankflächen mit viel Stauraum
 * Inklusive Bademänteln, Pflegeprodukten und weiteren Annehmlichkeiten für hohen Komfort</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Robenstein', 'Behindertengerechtes Zimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Tirol Doppelzimmer</h2>
-      <img src="img/gb_dz.PNG" alt="Tirol Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">*Zimmergröße 20 m²
+        <img src="/img/gb_dz.PNG" alt="Tirol Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Tirol Doppelzimmer</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 20 m²
+*Designer Boxspringbetten
+*Eichenholzboden
+*Schrank, Safe, Flachbild TV, Schreibtisch
+*W-Lan
+*Moderne... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 20 m²
 *Designer Boxspringbetten
 *Eichenholzboden
 *Schrank, Safe, Flachbild TV, Schreibtisch
 *W-Lan
 *Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Tirol Doppelzimmer Deluxe</h2>
-      <img src="img/deluxe_gb.PNG" alt="Tirol Doppelzimmer Deluxe">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">*Zimmergröße 20 m²
+        <img src="/img/deluxe_gb.PNG" alt="Tirol Doppelzimmer Deluxe" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Tirol Doppelzimmer Deluxe</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 20 m²
+*Designer Boxspringbetten
+*Eichenholzboden
+*Schrank, Safe, Flachbild TV, Schreibtisch
+*teilweise Balk... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 20 m²
 *Designer Boxspringbetten
 *Eichenholzboden
 *Schrank, Safe, Flachbild TV, Schreibtisch
 *teilweise Balkon mit Bergblick
 *W-Lan
 *Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer Deluxe')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Tirol Doppelzimmer Premium</h2>
-      <img src="img/premium_gb.PNG" alt="Tirol Doppelzimmer Premium">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">*Zimmergröße 27 m²
+        <img src="/img/premium_gb.PNG" alt="Tirol Doppelzimmer Premium" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Tirol Doppelzimmer Premium</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 27 m²
+*Designer Boxspringbetten King Size
+*Eichenholzboden
+*Schrank, Safe, Flachbild TV, Schreibtisch
+*Teil... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 27 m²
 *Designer Boxspringbetten King Size
 *Eichenholzboden
 *Schrank, Safe, Flachbild TV, Schreibtisch
@@ -504,14 +669,20 @@ Flauschigen Bademänteln</p>
 *Modernes Bad miit Regenbrause, WC und Haartrockner
 *Bademantel für den Aufenthalt
 *Obere Stockwerke nur über Treppe erreichbar</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Doppelzimmer Premium')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Tirol Studio</h2>
-      <img src="img/studio_gb.PNG" alt="Tirol Studio">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">*Zimmergröße 30 m²
+        <img src="/img/studio_gb.PNG" alt="Tirol Studio" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Tirol Studio</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 30 m²
+*Designer Boxspringbetten King Size
+*Sofa (aufbettbar)
+*Eichenholzboden
+*Schrank, Safe, Flachbild TV,... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 30 m²
 *Designer Boxspringbetten King Size
 *Sofa (aufbettbar)
 *Eichenholzboden
@@ -520,14 +691,20 @@ Flauschigen Bademänteln</p>
 *Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner
 *Bademantel für den Aufenthalt
 *Obere Stockwerke nur über Treppe erreichbar</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Tirol Studio')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Suite Tirol</h2>
-      <img src="img/suite_gb.PNG" alt="Suite Tirol">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">*Zimmergröße 45 m²
+        <img src="/img/suite_gb.PNG" alt="Suite Tirol" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Suite Tirol</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 45 m²
+*Designer Boxspringbetten King Size
+*Wohnraum mit Sofa (aufbettbar)
+*Eichenholzboden
+*Schrank, Safe, ... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 45 m²
 *Designer Boxspringbetten King Size
 *Wohnraum mit Sofa (aufbettbar)
 *Eichenholzboden
@@ -537,14 +714,20 @@ Flauschigen Bademänteln</p>
 *Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner
 *Bademantel für den Aufenthalt
 *Obere Stockwerke nur über Treppe erreichbar</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Suite Tirol')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Grüner Baum">
-      <h2>Suite Tirol Deluxe</h2>
-      <img src="img/suite_gb.PNG" alt="Suite Tirol Deluxe">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">*Zimmergröße 45 m²
+        <img src="/img/suite_gb.PNG" alt="Suite Tirol Deluxe" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Suite Tirol Deluxe</h3>
+        <p><strong>Fidelity - Grüner Baum</strong></p>
+        <p class="short-description">*Zimmergröße 45 m²
+*Designer Boxspringbetten King Size
+*Wohnraum mit Sofa (aufbettbar)
+*Eichenholzboden
+*Schrank, Safe, ... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">*Zimmergröße 45 m²
 *Designer Boxspringbetten King Size
 *Wohnraum mit Sofa (aufbettbar)
 *Eichenholzboden
@@ -554,14 +737,18 @@ Flauschigen Bademänteln</p>
 *Modernes Bad mit Regenbrause, WC, Kosmetikspiegel und Haartrockner
 *Bademantel für den Aufenthalt
 *Obere Stockwerke nur über Treppe erreichbar</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Grüner Baum', 'Suite Tirol Deluxe')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Struck">
-      <h2>Junior Doppelzimmer</h2>
-      <img src="img/st_jdz.PNG" alt="Junior Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Helle und freundliche Junior-Doppelzimmer im Landhausstil
+        <img src="/img/st_jdz.PNG" alt="Junior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Junior Doppelzimmer</h3>
+        <p><strong>Fidelity - Struck</strong></p>
+        <p class="short-description">* Helle und freundliche Junior-Doppelzimmer im Landhausstil
+* Französisches Bett (140x200 cm)
+* Ausgestattet mit TV, Sch... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Helle und freundliche Junior-Doppelzimmer im Landhausstil
 * Französisches Bett (140x200 cm)
 * Ausgestattet mit TV, Schreibtisch und Sitzgelegenheit
 * Holzfußboden – besonders allergikerfreundlich
@@ -571,14 +758,18 @@ Flauschigen Bademänteln</p>
   * Dusche
   * Haartrockner
   * Schminkspiegel</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Struck', 'Junior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Struck">
-      <h2>Doppelzimmer</h2>
-      <img src="img/st_dz.PNG" alt="Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Doppelzimmer im gemütlichen Landhausstil
+        <img src="/img/st_dz.PNG" alt="Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Doppelzimmer</h3>
+        <p><strong>Fidelity - Struck</strong></p>
+        <p class="short-description">* Doppelzimmer im gemütlichen Landhausstil
+* Ausgestattet mit Twin-Betten oder Doppelbetten (200x200 cm)
+* TV, Schreibti... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Doppelzimmer im gemütlichen Landhausstil
 * Ausgestattet mit Twin-Betten oder Doppelbetten (200x200 cm)
 * TV, Schreibtisch und Sitzgelegenheit
 * Teilweise mit Balkon oder Gartenausblick auf der Rückseite des Hauses
@@ -589,14 +780,17 @@ Flauschigen Bademänteln</p>
   * Haartrockner
   * Schminkspiegel
 * Landhausstil in unterschiedlichen Varianten erlebbar</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Struck', 'Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Struck">
-      <h2>Komfort Doppelzimmer</h2>
-      <img src="img/st_kdz.PNG" alt="Komfort Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 2 Personen</p>
-      <p class="description">* Neue Komfort-Doppelzimmer mit moderner Einrichtung und hellen Farben
+        <img src="/img/st_kdz.PNG" alt="Komfort Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Komfort Doppelzimmer</h3>
+        <p><strong>Fidelity - Struck</strong></p>
+        <p class="short-description">* Neue Komfort-Doppelzimmer mit moderner Einrichtung und hellen Farben
+* Ausgestattet mit Boxspring-Twin-Betten (200x200... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Neue Komfort-Doppelzimmer mit moderner Einrichtung und hellen Farben
 * Ausgestattet mit Boxspring-Twin-Betten (200x200 cm)
 * TV, Schreibtisch und Sitzgelegenheit
 * Neues Badezimmer mit:
@@ -605,14 +799,17 @@ Flauschigen Bademänteln</p>
   * Dusche
   * Schminkspiegel
   * Haartrockner</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 2 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Struck', 'Komfort Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Struck">
-      <h2>Superior Doppelzimmer</h2>
-      <img src="img/st_sup.PNG" alt="Superior Doppelzimmer">
-      <p><strong>Bedingung:</strong> Max 3 Personen</p>
-      <p class="description">* Neue Superior-Doppelzimmer mit moderner Einrichtung und hellen Farben
+        <img src="/img/st_sup.PNG" alt="Superior Doppelzimmer" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>Superior Doppelzimmer</h3>
+        <p><strong>Fidelity - Struck</strong></p>
+        <p class="short-description">* Neue Superior-Doppelzimmer mit moderner Einrichtung und hellen Farben
+* Ausgestattet mit Boxspring-Twin-Betten (200x20... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Neue Superior-Doppelzimmer mit moderner Einrichtung und hellen Farben
 * Ausgestattet mit Boxspring-Twin-Betten (200x200 cm)
 * TV, Schreibtisch und Sitzgelegenheit
 * Neues Badezimmer mit:
@@ -622,14 +819,17 @@ Flauschigen Bademänteln</p>
   * Schminkspiegel
   * Haartrockner
 * Zusätzlich mit eigener kleiner Dachterrasse inklusive Sitzgelegenheiten und Tisch</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 3 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Struck', 'Superior Doppelzimmer')">Diese Kategorie wählen</button>
     </div>
     
     <div class="room-card" data-hotel="Fidelity - Struck">
-      <h2>2 Betten Suite</h2>
-      <img src="img/st_sup.PNG" alt="2 Betten Suite">
-      <p><strong>Bedingung:</strong> Max 4 Personen</p>
-      <p class="description">* Großzügige Zwei-Schlafzimmer-Suite mit zwei Schlafzimmern und zwei Badezimmern
+        <img src="/img/st_sup.PNG" alt="2 Betten Suite" class="room-image" onerror="this.onerror=null;this.src='/img/placeholder.png';">
+        <h3>2 Betten Suite</h3>
+        <p><strong>Fidelity - Struck</strong></p>
+        <p class="short-description">* Großzügige Zwei-Schlafzimmer-Suite mit zwei Schlafzimmern und zwei Badezimmern
+* Beide Schlafzimmer mit Boxspring-Twin... <span class="show-more" onclick="toggleDescription(this)">mehr anzeigen</span></p>
+        <p class="full-description hidden">* Großzügige Zwei-Schlafzimmer-Suite mit zwei Schlafzimmern und zwei Badezimmern
 * Beide Schlafzimmer mit Boxspring-Twin-Betten, Teppichboden und TV
 * Große runde Sitzecke im Erker für gemütliches Beisammensein
 * Großer Balkon mit zusätzlichem Freiraum
@@ -641,31 +841,10 @@ Flauschigen Bademänteln</p>
   * Haartrockner
   * Kosmetikspiegel
 * Eingangsbereich mit Garderobe und zwei großen Kleiderschränken – ideal für längere Aufenthalte</p>
-      <button class="show-more">Mehr anzeigen</button>
+        <p><em>Max 4 Personen</em></p>
+        <button onclick="selectRoom('Fidelity - Struck', '2 Betten Suite')">Diese Kategorie wählen</button>
     </div>
     
-</div>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const params = new URLSearchParams(window.location.search);
-    const hotel = params.get('hotel');
-    const cards = document.querySelectorAll('.room-card');
-    cards.forEach(card => {
-      const roomHotel = card.getAttribute('data-hotel');
-      if (roomHotel !== hotel) {{
-        card.style.display = 'none';
-      }}
-    });
-
-    document.querySelectorAll('.show-more').forEach(btn => {{
-      btn.addEventListener('click', function () {{
-        const desc = this.previousElementSibling;
-        const visible = desc.style.display === 'block';
-        desc.style.display = visible ? 'none' : 'block';
-        this.textContent = visible ? 'Mehr anzeigen' : 'Weniger anzeigen';
-      }});
-    }});
-  });
-</script>
+    </div>
 </body>
 </html>
