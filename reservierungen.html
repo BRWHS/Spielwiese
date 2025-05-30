@@ -143,8 +143,8 @@
       const seiteEintraege = gefiltert.slice(start, ende);
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
-        <div class="entry" onclick="toggleExpand(this)">
-          <div class="entry-overview">
+        <div class="entry">
+          <div class="entry-overview" onclick="toggleExpand(this)">
             <span style="font-weight: bold;">🏨 ${e.hotel_name}</span>
             <span>${e.guest_last_name}</span>
             <span>${e.arrival}</span>
@@ -175,13 +175,7 @@
       `).join('');
     }
 
-    function toggleExpand(el) {
-  const details = el.querySelector('.details');
-  if (!details) return;
-  const isVisible = details.style.display === 'block';
-  document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
-  if (!isVisible) details.style.display = 'block';
-}
+    
 
     function toggleBearbeiten(button) {
       const container = button.closest(".details");
@@ -233,15 +227,13 @@
     document.getElementById("searchInput").addEventListener("input", filterList);
 
     ladeReservierungen();
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.entry-overview')) {
-    const entry = e.target.closest('.entry');
-    const details = entry.querySelector('.details');
-    const isVisible = details.style.display === 'block';
-    document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
-    if (!isVisible) details.style.display = 'block';
-  }
-});
+function toggleExpand(el) {
+  const entry = el.closest('.entry');
+  const details = entry.querySelector('.details');
+  const isVisible = details.style.display === 'block';
+  document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
+  if (!isVisible) details.style.display = 'block';
+}
 </script>
 </body>
 </html>
