@@ -158,7 +158,9 @@
             <div class="details-grid">
               <div><strong>E-Mail:</strong> <input value="${e.email || ''}" disabled /></div>
               <div><strong>Telefon:</strong> <input value="${e.phone || ''}" disabled /></div>
-              <div><strong>Kategorie:</strong> <input value="${e.category || ''}" disabled /></div>
+              <div><strong>Anreise:</strong> <input type="date" value="${e.arrival}" disabled /></div>
+<div><strong>Abreise:</strong> <input type="date" value="${e.departure}" disabled /></div>
+<div><strong>Kategorie:</strong> <input value="${e.category || ''}" disabled /></div>
               <div><strong>Rate:</strong> <input value="${e.rate_name || ''}" disabled /></div>
               <div><strong>Preis:</strong> <input value="${e.rate_price || ''}" disabled /></div>
               <div><strong>Notes:</strong> <input value="${e.notes || ''}" disabled /></div>
@@ -190,13 +192,15 @@
         container.querySelector(".stornieren").style.display = "none";
       } else {
         const updated = {
-          email: inputs[0].value,
-          phone: inputs[1].value,
-          category: inputs[2].value,
-          rate_name: inputs[3].value,
-          rate_price: inputs[4].value,
-          notes: inputs[5].value,
-          confirmation_email: inputs[6].value
+          arrival: inputs[0].value,
+          departure: inputs[1].value,
+          email: inputs[2].value,
+          phone: inputs[3].value,
+          category: inputs[4].value,
+          rate_name: inputs[5].value,
+          rate_price: inputs[6].value,
+          notes: inputs[7].value,
+          confirmation_email: inputs[8].value
         };
         const id = container.getAttribute("data-id");
         fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
