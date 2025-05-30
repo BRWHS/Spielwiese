@@ -9,18 +9,15 @@
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
     .container {
       max-width: 1000px;
-      margin: 40px auto;
+      margin: auto;
       background: white;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    h1, h2 {
-      color: #2d2d2d;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .flex {
       display: flex;
@@ -32,8 +29,8 @@
     }
     .summary-box {
       background-color: #f9f9f9;
-      border: 1px solid #ddd;
       padding: 20px;
+      border: 1px solid #ddd;
       border-radius: 8px;
     }
     .summary-box p {
@@ -41,17 +38,16 @@
     }
     label {
       font-weight: bold;
-      margin-top: 20px;
       display: block;
+      margin-top: 20px;
     }
     input {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin-top: 5px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      font-size: 1em;
     }
     .card-box {
       background: linear-gradient(135deg, #323232, #444);
@@ -62,7 +58,6 @@
     }
     .card-box label {
       color: #ccc;
-      font-size: 0.9em;
     }
     .card-box input {
       background: none;
@@ -103,7 +98,7 @@
       <div class="form-section">
         <h2>Zahlungsdaten & Bestätigung</h2>
         <label for="confirmationEmail">Bestätigungs-E-Mail (optional)</label>
-        <input type="email" id="confirmationEmail" placeholder="z. B. empfang@firma.de" />
+        <input type="email" id="confirmationEmail" placeholder="z. B. buchhaltung@firma.de" />
 
         <div class="card-box">
           <label for="ccNumber">Kreditkartennummer</label>
@@ -125,11 +120,13 @@
       return `
         <p><strong>Hotel:</strong> ${data.hotel}</p>
         <p><strong>Zeitraum:</strong> ${data.checkin} – ${data.checkout}</p>
-        <p><strong>Gast:</strong> ${data.firstName || ""} ${data.lastName}</p>
-        <p><strong>Telefon:</strong> ${data.phone || "-"}</p>
+        <p><strong>Gast:</strong> ${data.firstName || ''} ${data.lastName}</p>
+        <p><strong>Telefon:</strong> ${data.phone || '-'}</p>
         <p><strong>E-Mail:</strong> ${data.email}</p>
-        <p><strong>Kategorie:</strong> ${data.category || "Nicht gewählt"}</p>
-        <p><strong>Wünsche:</strong> ${data.notes || "-"}</p>
+        <p><strong>Kategorie:</strong> ${data.category || '-'}</p>
+        <p><strong>Wünsche:</strong> ${data.notes || '-'}</p>
+        <p><strong>Rate:</strong> ${data.rate_name || '-'}</p>
+        <p><strong>Preis:</strong> ${data.rate_price || '-'}</p>
       `;
     }
 
@@ -157,7 +154,9 @@
         notes: booking.notes,
         confirmation_email: confirmationEmail,
         cc_number: ccNumber,
-        cc_expiry: ccExpiry
+        cc_expiry: ccExpiry,
+        rate_name: booking.rate_name,
+        rate_price: booking.rate_price
       };
 
       console.log("📤 Sende an Supabase:", bookingPayload);
@@ -166,23 +165,19 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw"
+          "apikey": "DEIN_API_KEY_HIER",
+          "Authorization": "Bearer DEIN_API_KEY_HIER"
         },
         body: JSON.stringify(bookingPayload)
-      })
-      .then(response => {
+      }).then(response => {
         if (response.ok) {
           alert("✅ Ihre Reservierung wurde erfolgreich gespeichert!");
           sessionStorage.clear();
           window.location.href = "/index.html";
         } else {
-          response.text().then(text => {
-            alert("❌ Fehler bei der Reservierung:\n" + text);
-          });
+          response.text().then(text => alert("❌ Fehler bei der Reservierung:\n" + text));
         }
-      })
-      .catch(error => {
+      }).catch(error => {
         alert("⚠️ Netzwerkfehler:\n" + error.message);
       });
     }
