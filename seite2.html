@@ -25,12 +25,12 @@
         }
 
         function selectRoom(hotel, category) {
-            const bookingData = JSON.parse (sessionStorage.getItem("buchung") || "{}";
-            const arrival = bookingData.checkin || "";
-            const departure = bookingData.checkout || "";
-            const email = bookingData.email || "";
-            const lastName = bookingData.lastname || "";
-            const notes = bookingData.notes "";
+            const params = new URLSearchParams(window.location.search);
+            const arrival = params.get("anreise") || "";
+            const departure = params.get("abreise") || "";
+            const email = params.get("email") || "";
+            const lastName = params.get("nachname") || "";
+            const notes = params.get("notizen") || "";
 
             const booking = {
                 hotel_name: hotel,
@@ -846,5 +846,61 @@ Flauschigen Bademänteln</p>
     </div>
     
     </div>
+<script>
+
+window.toggleDescription = function(element) {
+  const card = element.closest('.room-card');
+  const fullDesc = card.querySelector('.full-description');
+  fullDesc.classList.toggle('hidden');
+  element.textContent = fullDesc.classList.contains('hidden') ? 'mehr anzeigen' : 'weniger anzeigen';
+};
+
+
+
+window.selectRoom = function(hotel, category) {
+  const bookingData = JSON.parse(sessionStorage.getItem("buchung") || "{}");
+  const arrival = bookingData.checkin || "";
+  const departure = bookingData.checkout || "";
+  const email = bookingData.email || "";
+  const lastName = bookingData.lastName || "";
+  const notes = bookingData.notes || "";
+
+  if (!email || !arrival || !departure || !hotel || !category) {
+    alert("Fehlende Buchungsdaten. Bitte Schritt 1 erneut ausfüllen.");
+    return;
+  }
+
+  const booking = {
+    hotel_name: hotel,
+    category: category,
+    arrival,
+    departure,
+    email,
+    guest_last_name: lastName,
+    notes
+  };
+
+  fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": "DEIN_API_KEY_HIER",
+      "Authorization": "Bearer DEIN_API_KEY_HIER"
+    },
+    body: JSON.stringify(booking)
+  }).then(response => {
+    if (response.ok) {
+      window.location.href = "/seite3.html";
+    } else {
+      response.text().then(text => {
+        alert("❌ Fehler beim Speichern:\n" + text);
+      });
+    }
+  }).catch(error => {
+    alert("⚠️ Netzwerkfehler:\n" + error.message);
+  });
+};
+
+</script>
 </body>
 </html>
