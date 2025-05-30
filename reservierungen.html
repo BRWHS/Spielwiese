@@ -143,7 +143,7 @@
       const seiteEintraege = gefiltert.slice(start, ende);
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
-        <div class="entry">
+        <div class="entry" onclick="toggleExpand(this)">
           <div class="entry-overview" onclick="toggleExpand(this.parentElement)">
             <span>${e.hotel_name}</span>
             <span>${e.guest_last_name}</span>
@@ -154,7 +154,7 @@
             <span>${e.rate_price}</span>
             <span>${e.notes || ''}</span>
           </div>
-          <div class="details" data-id="${e.id}" data-editing="false">
+          <div class="details" style="display: none;" data-id="${e.id}" data-editing="false">
             <div class="details-grid">
               <div><strong>E-Mail:</strong> <input value="${e.email || ''}" disabled /></div>
               <div><strong>Telefon:</strong> <input value="${e.phone || ''}" disabled /></div>
@@ -176,8 +176,12 @@
     }
 
     function toggleExpand(el) {
-      el.classList.toggle("expanded");
-    }
+  const details = el.querySelector('.details');
+  if (!details) return;
+  const isVisible = details.style.display === 'block';
+  document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
+  if (!isVisible) details.style.display = 'block';
+}
 
     function toggleBearbeiten(button) {
       const container = button.closest(".details");
