@@ -184,7 +184,7 @@
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map((e, i) => {
         return `
-        <div class="entry expanded"><div class="details">
+        <div class=\"entry\" onclick=\"toggleExpand(this)\"><div class="details">
             <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
             <div class="hotel-sub">🏨 ${e.hotel_name}</div>
             <div class="details-header">
