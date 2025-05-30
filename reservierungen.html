@@ -177,6 +177,8 @@ function zeigeSeite() {
       </div>
       <div class="details" style="display: none;" data-id="${e.id}" data-editing="false">
         <div class="details-grid">
+          <div><label>Erwachsene*</label><input type="number" min="1" value="${e.adults || ''}" required disabled /></div>
+          <div><label>Kinder</label><input type="number" min="0" value="${e.children || ''}" disabled /></div>
           <div><label>Anreise</label><input type="date" value="${e.arrival}" disabled /></div>
           <div><label>Abreise</label><input type="date" value="${e.departure}" disabled /></div>
           <div><label>Nachname</label><input value="${e.guest_last_name || ''}" disabled /></div>
@@ -229,7 +231,9 @@ function toggleBearbeiten(button) {
       rate_name: inputs[7].value,
       rate_price: inputs[8].value,
       notes: inputs[9].value,
-      confirmation_email: inputs[10].value
+      confirmation_email: inputs[10].value,
+      adults: inputs[11].value,
+      children: inputs[12].value
     };;
     const id = container.getAttribute("data-id");
     fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
