@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reservierungen | Hasco</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .search {
+      max-width: 400px;
+      margin: 20px auto 40px;
+      display: flex;
+    }
+    .search input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .entry {
+      background: white;
+      margin-bottom: 12px;
+      padding: 15px 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .hotel {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: white;
+    }
+    .property-Tante\ Alma\ -\ Sonnen { background-color: #EF476F; }
+    .property-MASEVEN\ -\ Frankfurt { background-color: #06D6A0; }
+    .property-MASEVEN\ -\ Trudering { background-color: #118AB2; }
+    .property-MASEVEN\ -\ Stuttgart { background-color: #FFD166; color: black; }
+    .property-MASEVEN\ -\ Dornach { background-color: #073B4C; }
+    .property-Fidelity\ -\ Struck { background-color: #F78C6B; }
+    .property-Fidelity\ -\ Grüner\ Baum { background-color: #8ECAE6; color: black; }
+    .property-Fidelity\ -\ Robenstein { background-color: #B56576; }
+    .pagination {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .pagination button {
+      background-color: #2d2d2d;
+      color: white;
+      padding: 10px 15px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      background-color: #999;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reservierungen</h1>
+  <div class="search">
+    <input type="text" id="searchInput" placeholder="🔍 Nach Gastname suchen..." oninput="filterList()" />
+  </div>
+  <div id="reservierungsliste"></div>
+  <div class="pagination">
+    <button id="prevPage" onclick="changePage(-1)">&laquo; Zurück</button>
+    <button id="nextPage" onclick="changePage(1)">Weiter &raquo;</button>
+  </div>
+
+  <script>
+    let eintraege = [];
+    let seite = 1;
+    const proSeite = 50;
+
+    async function ladeReservierungen() {
+      const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
+        headers: {
+          apikey: 'your-supabase-key',
+          Authorization: 'Bearer your-supabase-key'
+        }
+      });
+      eintraege = await res.json();
+      filterList();
+    }
+
+    function filterList() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
+      zeigeSeite(gefiltert);
+    }
+
+    function zeigeSeite(liste) {
+      const start = (seite - 1) * proSeite;
+      const ende = start + proSeite;
+      const seiteEintraege = liste.slice(start, ende);
+
+      document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
+        <div class="entry">
+          <span class="hotel property-${e.hotel_name?.replaceAll(' ', '\\ ')}">${e.hotel_name}</span>
+          <span>${e.guest_last_name}</span>
+          <span>${e.arrival}</span>
+          <span>${e.departure}</span>
+          <span>${e.rate_name}</span>
+          <span>${e.rate_price}</span>
+          <span>${e.notes || ''}</span>
+        </div>
+      `).join('');
+
+      document.getElementById("prevPage").disabled = seite === 1;
+      document.getElementById("nextPage").disabled = ende >= liste.length;
+    }
+
+    function changePage(delta) {
+      seite += delta;
+      filterList();
+    }
+
+    ladeReservierungen();
+  </script>
+</body>
+</html>
