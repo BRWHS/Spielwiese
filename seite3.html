@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>hasco – Buchungsabschluss</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #2d2d2d;
+      margin-top: 0;
+    }
+    .flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+    }
+    .summary, .form-section {
+      flex: 1 1 400px;
+    }
+    .summary-box {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .summary-box p {
+      margin: 10px 0;
+      line-height: 1.4;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    .card-box {
+      background: linear-gradient(135deg, #323232, #444);
+      color: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .card-box label {
+      color: #ddd;
+      font-size: 0.9em;
+    }
+    .card-box input {
+      background: none;
+      border: none;
+      border-bottom: 1px solid white;
+      color: white;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+    .card-box input:focus {
+      outline: none;
+      border-color: #aaa;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      margin-top: 30px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Reservierung abschließen</h1>
+    <div class="flex">
+      <div class="summary">
+        <h2>Reservierungsübersicht</h2>
+        <div class="summary-box" id="reservation-summary">
+          <p>Lade Daten...</p>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2>Zahlungsdaten & Bestätigung</h2>
+        <label for="confirmationEmail">Bestätigungs-E-Mail (optional)</label>
+        <input type="email" id="confirmationEmail" placeholder="z. B. buchhaltung@firma.de">
+
+        <div class="card-box">
+          <label for="ccNumber">Kreditkartennummer</label>
+          <input type="text" id="ccNumber" maxlength="19" placeholder="1234 5678 9012 3456">
+
+          <label for="ccExpiry">Gültig bis (MM/YY)</label>
+          <input type="text" id="ccExpiry" maxlength="5" placeholder="MM/YY">
+        </div>
+
+        <button onclick="submitBooking()">Reservierung abschicken</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const booking = JSON.parse(sessionStorage.getItem("buchung") || "{}");
+
+    function formatSummary(data) {
+      return `
+        <p><strong>Hotel:</strong> ${data.hotel}</p>
+        <p><strong>Zeitraum:</strong> ${data.checkin} – ${data.checkout}</p>
+        <p><strong>Gast:</strong> ${data.firstName || ''} ${data.lastName}</p>
+        <p><strong>E-Mail:</strong> ${data.email}</p>
+        <p><strong>Kategorie:</strong> ${data.category || 'Nicht gewählt'}</p>
+        <p><strong>Telefon:</strong> ${data.phone || '-'}</p>
+        <p><strong>Wünsche:</strong> ${data.notes || '-'}</p>
+      `;
+    }
+
+    document.getElementById("reservation-summary").innerHTML = formatSummary(booking);
+
+    function submitBooking() {
+      const ccNumber = document.getElementById("ccNumber").value.trim();
+      const ccExpiry = document.getElementById("ccExpiry").value.trim();
+      const confirmationEmail = document.getElementById("confirmationEmail").value.trim();
+
+      if (!ccNumber || !ccExpiry) {
+        alert("Bitte Kreditkartendaten eingeben.");
+        return;
+      }
+
+      booking.cc_number = ccNumber;
+      booking.cc_expiry = ccExpiry;
+      booking.confirmation_email = confirmationEmail;
+
+      fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "DEIN_API_KEY_HIER",
+          "Authorization": "Bearer DEIN_API_KEY_HIER"
+        },
+        body: JSON.stringify(booking)
+      }).then(response => {
+        if (response.ok) {
+          alert("Reservierung erfolgreich gesendet.");
+          sessionStorage.clear();
+          window.location.href = "/index.html";
+        } else {
+          response.text().then(text => alert("Fehler bei der Reservierung:
+" + text));
+        }
+      }).catch(error => {
+        alert("Netzwerkfehler:
+" + error.message);
+      });
+    }
+  </script>
+</body>
+</html>
