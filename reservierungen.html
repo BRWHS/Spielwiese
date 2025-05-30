@@ -5,23 +5,27 @@
   <title>Reservierungen | Hasco</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 40px;
+      color: #333;
     }
     h1 {
       text-align: center;
+      font-size: 2em;
+      margin-bottom: 20px;
     }
     .search {
       max-width: 400px;
-      margin: 20px auto 40px;
+      margin: 0 auto 40px;
       display: flex;
+      justify-content: center;
     }
     .search input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 5px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 1em;
     }
@@ -30,15 +34,18 @@
       grid-template-columns: repeat(8, 1fr);
       font-weight: bold;
       margin-bottom: 10px;
-      padding: 5px 20px;
-      color: #333;
+      padding: 10px 20px;
+      color: #555;
+      background-color: #e0e0e0;
+      border-radius: 8px;
     }
     .entry {
       margin-bottom: 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       background: #fff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       transition: all 0.3s;
+      overflow: hidden;
     }
     .entry-overview {
       display: grid;
@@ -46,30 +53,42 @@
       gap: 10px;
       padding: 15px 20px;
       cursor: pointer;
+      align-items: center;
     }
     .entry:hover {
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+    .entry-overview span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .details {
-      border-top: 1px solid #eee;
-      background: #f9f9f9;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
       padding: 20px;
     }
     .details-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 15px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
     .details-grid div {
       background: #fff;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+    }
+    .details-grid label {
+      font-size: 0.85em;
+      color: #777;
+      margin-bottom: 4px;
     }
     .details-grid input {
-      width: 100%;
-      padding: 6px;
+      padding: 8px;
       font-size: 1em;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -79,11 +98,12 @@
     }
     .buttons button {
       margin-left: 10px;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border: none;
       color: white;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
     }
     .anpassen { background: #666; }
     .speichern { background: #28a745; }
@@ -91,142 +111,90 @@
   </style>
 </head>
 <body>
-  <h1>Reservierungen</h1>
-  <div class="search">
-    <input type="text" id="searchInput" placeholder="🔍 Nach Gastname suchen..." />
-  </div>
-  <div class="table-header">
-    <span>Hotel</span>
-    <span>Gastname</span>
-    <span>Anreise</span>
-    <span>Abreise</span>
-    <span>Kategorie</span>
-    <span>Rate</span>
-    <span>Preis</span>
-    <span>Notes</span>
-  </div>
-  <div id="reservierungsliste"></div>
-  <script>
-    let eintraege = [];
-    let gefiltert = [];
-    let seite = 1;
-    const proSeite = 50;
+<h1>Reservierungen</h1>
+<div class="search">
+  <input type="text" id="searchInput" placeholder="🔍 Nach Gastname suchen..." />
+</div>
+<div class="table-header">
+  <span>Hotel</span>
+  <span>Gastname</span>
+  <span>Anreise</span>
+  <span>Abreise</span>
+  <span>Kategorie</span>
+  <span>Rate</span>
+  <span>Preis</span>
+  <span>Notes</span>
+</div>
+<div id="reservierungsliste"></div>
+<script>
+let eintraege = [];
+let gefiltert = [];
+let seite = 1;
+const proSeite = 50;
 
-    async function ladeReservierungen() {
-      try {
-        const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
-          headers: {
-            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          }
-        });
-        if (!res.ok) {
-          const fehlertext = await res.text();
-          console.error('Antworttext Fehler:', fehlertext);
-          return;
-        }
-        eintraege = await res.json();
-        console.log('Lade erfolgreich:', eintraege);
-        gefiltert = eintraege;
-        zeigeSeite();
-      } catch (err) {
-        console.error("Unerwarteter Fehler:", err);
+async function ladeReservierungen() {
+  try {
+    const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
+      headers: {
+        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
       }
+    });
+    if (!res.ok) {
+      const fehlertext = await res.text();
+      console.error('Antworttext Fehler:', fehlertext);
+      return;
     }
+    eintraege = await res.json();
+    console.log('Lade erfolgreich:', eintraege);
+    gefiltert = eintraege;
+    zeigeSeite();
+  } catch (err) {
+    console.error("Unerwarteter Fehler:", err);
+  }
+}
 
-    function zeigeSeite() {
-      const start = (seite - 1) * proSeite;
-      const ende = start + proSeite;
-      if (!Array.isArray(gefiltert)) return;
-      const seiteEintraege = gefiltert.slice(start, ende);
+function zeigeSeite() {
+  const start = (seite - 1) * proSeite;
+  const ende = start + proSeite;
+  if (!Array.isArray(gefiltert)) return;
+  const seiteEintraege = gefiltert.slice(start, ende);
 
-      document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
-        <div class="entry">
-          <div class="entry-overview" onclick="toggleExpand(this)">
-            <span style="font-weight: bold;">🏨 ${e.hotel_name}</span>
-            <span>${e.guest_last_name}, ${e.guest_first_name}</span>
-            <span>${new Date(e.arrival).toLocaleDateString('de-DE')}</span>
-            <span>${new Date(e.departure).toLocaleDateString('de-DE')}</span>
-            <span>${e.category || ''}</span>
-            <span>${e.rate_name}</span>
-            <span>${e.rate_price}</span>
-            <span>${e.notes || ''}</span>
-          </div>
-          <div class="details" style="display: none;" data-id="${e.id}" data-editing="false">
-            <div class="details-grid">
-              <div><strong>E-Mail:</strong> <input value="${e.email || ''}" disabled /></div>
-              <div><strong>Telefon:</strong> <input value="${e.phone || ''}" disabled /></div>
-              <div><strong>Anreise:</strong> <input type="date" value="${e.arrival}" disabled /></div>
-<div><strong>Abreise:</strong> <input type="date" value="${e.departure}" disabled /></div>
-<div><strong>Kategorie:</strong> <input value="${e.category || ''}" disabled /></div>
-              <div><strong>Rate:</strong> <input value="${e.rate_name || ''}" disabled /></div>
-              <div><strong>Preis:</strong> <input value="${e.rate_price || ''}" disabled /></div>
-              <div><strong>Notes:</strong> <input value="${e.notes || ''}" disabled /></div>
-              <div><strong>Bestätigungsmail:</strong> <input value="${e.confirmation_email || ''}" disabled /></div>
-            </div>
-            <div class="buttons">
-              <button class="anpassen" onclick="event.stopPropagation(); toggleBearbeiten(this)">Reservierung anpassen</button>
-              <button class="stornieren" onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
-            </div>
-          </div>
+  document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
+    <div class="entry">
+      <div class="entry-overview" onclick="toggleExpand(this)">
+        <span style="font-weight: bold;">🏨 ${e.hotel_name}</span>
+        <span>${e.guest_last_name}, ${e.guest_first_name}</span>
+        <span>${new Date(e.arrival).toLocaleDateString('de-DE')}</span>
+        <span>${new Date(e.departure).toLocaleDateString('de-DE')}</span>
+        <span>${e.category || ''}</span>
+        <span>${e.rate_name}</span>
+        <span>${e.rate_price}</span>
+        <span>${e.notes || ''}</span>
+      </div>
+      <div class="details" style="display: none;" data-id="${e.id}" data-editing="false">
+        <div class="details-grid">
+          <div><label>Anreise</label><input type="date" value="${e.arrival}" disabled /></div>
+          <div><label>Abreise</label><input type="date" value="${e.departure}" disabled /></div>
+          <div><label>E-Mail</label><input value="${e.email || ''}" disabled /></div>
+          <div><label>Telefon</label><input value="${e.phone || ''}" disabled /></div>
+          <div><label>Kategorie</label><input value="${e.category || ''}" disabled /></div>
+          <div><label>Rate</label><input value="${e.rate_name || ''}" disabled /></div>
+          <div><label>Preis</label><input value="${e.rate_price || ''}" disabled /></div>
+          <div><label>Notes</label><input value="${e.notes || ''}" disabled /></div>
+          <div><label>Bestätigungsmail</label><input value="${e.confirmation_email || ''}" disabled /></div>
         </div>
-      `).join('');
-    }
+        <div class="buttons">
+          <button class="anpassen" onclick="event.stopPropagation(); toggleBearbeiten(this)">Reservierung anpassen</button>
+          <button class="stornieren" onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
-    
-
-    function toggleBearbeiten(button) {
-      const container = button.closest(".details");
-      const editing = container.getAttribute("data-editing") === "true";
-      const inputs = container.querySelectorAll("input");
-      if (!editing) {
-        inputs.forEach(i => i.disabled = false);
-        container.setAttribute("data-editing", "true");
-        button.textContent = "Änderung speichern";
-        button.classList.remove("anpassen");
-        button.classList.add("speichern");
-        container.querySelector(".stornieren").style.display = "none";
-      } else {
-        const updated = {
-          arrival: inputs[0].value,
-          departure: inputs[1].value,
-          email: inputs[2].value,
-          phone: inputs[3].value,
-          category: inputs[4].value,
-          rate_name: inputs[5].value,
-          rate_price: inputs[6].value,
-          notes: inputs[7].value,
-          confirmation_email: inputs[8].value
-        };
-        const id = container.getAttribute("data-id");
-        fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(updated)
-        }).then(() => ladeReservierungen());
-      }
-    }
-
-    function stornieren(id) {
-      alert("Reservierung stornieren (Logik folgt später für ID " + id + ")");
-    }
-
-    function filterList() {
-      const q = document.getElementById("searchInput").value.toLowerCase();
-      gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
-      seite = 1;
-      zeigeSeite();
-    }
-
-    document.getElementById("searchInput").addEventListener("input", filterList);
-
-    ladeReservierungen();
 function toggleExpand(el) {
   const entry = el.closest('.entry');
   const details = entry.querySelector('.details');
@@ -234,6 +202,57 @@ function toggleExpand(el) {
   document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
   if (!isVisible) details.style.display = 'block';
 }
+
+function toggleBearbeiten(button) {
+  const container = button.closest(".details");
+  const editing = container.getAttribute("data-editing") === "true";
+  const inputs = container.querySelectorAll("input");
+  if (!editing) {
+    inputs.forEach(i => i.disabled = false);
+    container.setAttribute("data-editing", "true");
+    button.textContent = "Änderung speichern";
+    button.classList.remove("anpassen");
+    button.classList.add("speichern");
+    container.querySelector(".stornieren").style.display = "none";
+  } else {
+    const updated = {
+      arrival: inputs[0].value,
+      departure: inputs[1].value,
+      email: inputs[2].value,
+      phone: inputs[3].value,
+      category: inputs[4].value,
+      rate_name: inputs[5].value,
+      rate_price: inputs[6].value,
+      notes: inputs[7].value,
+      confirmation_email: inputs[8].value
+    };
+    const id = container.getAttribute("data-id");
+    fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updated)
+    }).then(() => ladeReservierungen());
+  }
+}
+
+function stornieren(id) {
+  alert("Reservierung stornieren (Logik folgt später für ID " + id + ")");
+}
+
+function filterList() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  gefiltert = eintraege.filter(e => `${e.guest_last_name} ${e.guest_first_name}`.toLowerCase().includes(q));
+  seite = 1;
+  zeigeSeite();
+}
+
+document.getElementById("searchInput").addEventListener("input", filterList);
+
+ladeReservierungen();
 </script>
 </body>
 </html>
