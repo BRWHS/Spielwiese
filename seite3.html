@@ -151,6 +151,8 @@
       booking.cc_expiry = ccExpiry;
       booking.confirmation_email = confirmationEmail;
 
+      console.log("📤 Sende an Supabase:", booking);
+
       fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
         method: "POST",
         headers: {
@@ -161,16 +163,14 @@
         body: JSON.stringify(booking)
       }).then(response => {
         if (response.ok) {
-          alert("Reservierung erfolgreich gesendet.");
+          alert("✅ Ihre Reservierung wurde erfolgreich gespeichert!");
           sessionStorage.clear();
           window.location.href = "/index.html";
         } else {
-          response.text().then(text => alert("Fehler bei der Reservierung:
-" + text));
+          response.text().then(text => alert("❌ Fehler bei der Reservierung:\n" + text));
         }
       }).catch(error => {
-        alert("Netzwerkfehler:
-" + error.message);
+        alert("⚠️ Netzwerkfehler:\n" + error.message);
       });
     }
   </script>
