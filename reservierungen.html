@@ -38,20 +38,10 @@
       gap: 8px;
     }
     .hotel {
+      font-size: 1.1em;
       font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 4px;
-      color: white;
       display: inline-block;
     }
-    .property-Tante-Alma-Sonnen { background-color: #EF476F; }
-    .property-MASEVEN-Frankfurt { background-color: #06D6A0; }
-    .property-MASEVEN-Trudering { background-color: #118AB2; }
-    .property-MASEVEN-Stuttgart { background-color: #FFD166; color: black; }
-    .property-MASEVEN-Dornach { background-color: #073B4C; }
-    .property-Fidelity-Struck { background-color: #F78C6B; }
-    .property-Fidelity-Grüner-Baum { background-color: #8ECAE6; color: black; }
-    .property-Fidelity-Robenstein { background-color: #B56576; }
     .pagination {
       text-align: center;
       margin: 60px auto 0;
@@ -105,20 +95,15 @@
       }
     }
 
-    function formatHotelClass(name) {
-      return name.replace(/\s+/g, '-');
-    }
-
     function zeigeSeite() {
       const start = (seite - 1) * proSeite;
       const ende = start + proSeite;
       const seiteEintraege = gefiltert.slice(start, ende);
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => {
-        const hotelClass = formatHotelClass(e.hotel_name || "");
         return `
         <div class="entry">
-          <span class="hotel property-${hotelClass}">🏨 ${e.hotel_name}</span>
+          <span class="hotel">🏨 ${e.hotel_name}</span>
           <span>${e.guest_last_name}</span>
           <span>${e.arrival}</span>
           <span>${e.departure}</span>
