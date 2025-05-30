@@ -244,7 +244,19 @@ function toggleBearbeiten(button) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(updated)
-    }).then(() => ladeReservierungen());
+    }).then(res => {
+      if (!res.ok) throw new Error("Fehler beim Speichern");
+      // Rücksetzen UI
+      inputs.forEach(i => i.disabled = true);
+      container.setAttribute("data-editing", "false");
+      button.textContent = "Reservierung anpassen";
+      button.classList.remove("speichern");
+      button.classList.add("anpassen");
+      container.querySelector(".stornieren").style.display = "inline-block";
+    }).catch(err => {
+      console.error("Fehler beim Speichern:", err);
+      alert("Speichern fehlgeschlagen. Bitte erneut versuchen.");
+    });
   }
 }
 
