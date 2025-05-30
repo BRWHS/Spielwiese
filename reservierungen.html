@@ -31,11 +31,10 @@
       padding: 15px 20px;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
     .hotel {
       font-size: 1.1em;
@@ -82,8 +81,8 @@
       try {
         const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
           headers: {
-            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
+            apikey: 'your-supabase-key',
+            Authorization: 'Bearer your-supabase-key'
           }
         });
         eintraege = await res.json();
