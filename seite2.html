@@ -25,12 +25,12 @@
         }
 
         function selectRoom(hotel, category) {
-            const params = new URLSearchParams(window.location.search);
-            const arrival = params.get("anreise") || "";
-            const departure = params.get("abreise") || "";
-            const email = params.get("email") || "";
-            const lastName = params.get("nachname") || "";
-            const notes = params.get("notizen") || "";
+            const bookingData = JSON.parse (sessionStorage.getItem("buchung") || "{}";
+            const arrival = bookingData.checkin || "";
+            const departure = bookingData.checkout || "";
+            const email = bookingData.email || "";
+            const lastName = bookingData.lastname || "";
+            const notes = bookingData.notes "";
 
             const booking = {
                 hotel_name: hotel,
