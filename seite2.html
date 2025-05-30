@@ -42,21 +42,12 @@
                 notes
             };
 
-            fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                },
-                body: JSON.stringify(booking)
-            }).then(response => {
-                if (response.ok) {
-                    window.location.href = "/seite3.html";
-                } else {
-                    alert("Fehler beim Speichern.");
-                }
-            });
+            
+        const bookingData = JSON.parse(sessionStorage.getItem("buchung") || "{}");
+        bookingData.category = category;
+        sessionStorage.setItem("buchung", JSON.stringify(bookingData));
+        window.location.href = "seite3.html";
+        
         }
     </script>
     
