@@ -60,41 +60,24 @@
     .entry.expanded .details {
       display: block;
     }
-    .details-header {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .details-header div {
-      background: #fff;
-      padding: 10px 14px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .gast-name {
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    .hotel-sub {
-      font-size: 0.9em;
-      color: #555;
-    }
-    .details-grid {
+    .details-header, .details-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px 20px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 15px;
     }
-    .details-grid div {
+    .details-header div, .details-grid div {
       background: #fff;
-      padding: 8px 12px;
+      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
-    .hotel {
-      font-size: 1.1em;
-      font-weight: bold;
+    .details-grid input {
+      width: 100%;
+      padding: 6px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
     .buttons {
       margin-top: 10px;
@@ -111,25 +94,11 @@
     .buttons .anpassen {
       background: #666;
     }
+    .buttons .speichern {
+      background: #28a745;
+    }
     .buttons .stornieren {
       background: #d9534f;
-    }
-    .pagination {
-      text-align: center;
-      margin: 60px auto 0;
-    }
-    .pagination button {
-      background-color: #2d2d2d;
-      color: white;
-      padding: 10px 15px;
-      margin: 0 5px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .pagination button:disabled {
-      background-color: #999;
-      cursor: default;
     }
   </style>
 </head>
@@ -149,11 +118,6 @@
     <span>Notes</span>
   </div>
   <div id="reservierungsliste"></div>
-  <div class="pagination">
-    <button id="prevPage">&laquo; Zurück</button>
-    <button id="nextPage">Weiter &raquo;</button>
-  </div>
-
   <script>
     let eintraege = [];
     let gefiltert = [];
@@ -161,31 +125,25 @@
     const proSeite = 50;
 
     async function ladeReservierungen() {
-      try {
-        const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
-          headers: {
-            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
-          }
-        });
-        eintraege = await res.json();
-        gefiltert = eintraege;
-        zeigeSeite();
-      } catch (error) {
-        document.getElementById("reservierungsliste").innerHTML = '<p>Fehler beim Laden der Daten.</p>';
-        console.error("Ladefehler:", error);
-      }
+      const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
+        headers: {
+          apikey: 'your-supabase-key',
+          Authorization: 'Bearer your-supabase-key'
+        }
+      });
+      eintraege = await res.json();
+      gefiltert = eintraege;
+      zeigeSeite();
     }
 
     function zeigeSeite() {
       const start = (seite - 1) * proSeite;
       const ende = start + proSeite;
       const seiteEintraege = gefiltert.slice(start, ende);
-
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map((e, i) => {
         return `
         <div class="entry" onclick="toggleExpand(this)">
-          <span class="hotel">🏨 ${e.hotel_name}</span>
+          <span>${e.hotel_name}</span>
           <span>${e.guest_last_name}</span>
           <span>${e.arrival}</span>
           <span>${e.departure}</span>
@@ -193,49 +151,59 @@
           <span>${e.rate_name}</span>
           <span>${e.rate_price}</span>
           <span>${e.notes || ''}</span>
-          <div class="details">
-            <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
-            <div class="hotel-sub">🏨 ${e.hotel_name}</div>
-            <div class="details-header">
-              <div><strong>Anreise:</strong> ${e.arrival}</div>
-              <div><strong>Abreise:</strong> ${e.departure}</div>
-              <div><strong>Kategorie:</strong> ${e.category || ''}</div>
-              <div><strong>Rate:</strong> ${e.rate_name} – ${e.rate_price}</div>
-              <div><strong>Notes:</strong> ${e.notes || ''}</div>
-            </div>
+          <div class="details" data-id="${e.id}" data-editing="false">
             <div class="details-grid">
-              <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
-              <div><strong>E-Mail:</strong> ${e.email || ''}</div>
-              <div><strong>Telefon:</strong> ${e.phone || ''}</div>
-              <div><strong>Bestätigungsmail:</strong> ${e.confirmation_email || ''}</div>
-              <div><strong>Kreditkarte:</strong> ${e.cc_number || ''}</div>
-              <div><strong>Ablaufdatum:</strong> ${e.cc_expiry || ''}</div>
+              <div><strong>E-Mail:</strong> <input value="${e.email || ''}" disabled /></div>
+              <div><strong>Telefon:</strong> <input value="${e.phone || ''}" disabled /></div>
+              <div><strong>Kategorie:</strong> <input value="${e.category || ''}" disabled /></div>
+              <div><strong>Rate:</strong> <input value="${e.rate_name || ''}" disabled /></div>
+              <div><strong>Preis:</strong> <input value="${e.rate_price || ''}" disabled /></div>
+              <div><strong>Notes:</strong> <input value="${e.notes || ''}" disabled /></div>
+              <div><strong>Bestätigungsmail:</strong> <input value="${e.confirmation_email || ''}" disabled /></div>
             </div>
             <div class="buttons">
-              <button class="anpassen" onclick="event.stopPropagation(); anpassen(${e.id})">Reservierung anpassen</button>
+              <button class="anpassen" onclick="event.stopPropagation(); toggleBearbeiten(this)">Reservierung anpassen</button>
               <button class="stornieren" onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
             </div>
           </div>
         </div>
-      `;
+        `;
       }).join('');
-
-      document.getElementById("prevPage").disabled = seite === 1;
-      document.getElementById("nextPage").disabled = ende >= gefiltert.length;
     }
 
     function toggleExpand(el) {
       el.classList.toggle("expanded");
     }
 
-    function anpassen(id) {
-      console.log("Anpassen von Reservierung:", id);
-      alert("Reservierung anpassen für ID " + id + " (folgt bald)");
+    function toggleBearbeiten(button) {
+      const container = button.closest(".details");
+      const editing = container.getAttribute("data-editing") === "true";
+      const inputs = container.querySelectorAll("input");
+      if (!editing) {
+        inputs.forEach(i => i.disabled = false);
+        container.setAttribute("data-editing", "true");
+        button.textContent = "Änderung speichern";
+        button.classList.remove("anpassen");
+        button.classList.add("speichern");
+        container.querySelector(".stornieren").style.display = "none";
+      } else {
+        const updated = {};
+        inputs.forEach(i => updated[i.previousSibling.textContent.trim().toLowerCase().replace(':', '').replace(/ /g, '_')] = i.value);
+        const id = container.getAttribute("data-id");
+        fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updated)
+        }).then(() => ladeReservierungen());
+      }
     }
 
     function stornieren(id) {
-      console.log("Stornieren von Reservierung:", id);
-      alert("Reservierung stornieren für ID " + id + " (folgt mit Richtlinie)");
+      alert("Reservierung stornieren (Logik folgt später für ID " + id + ")");
     }
 
     function changePage(delta) {
@@ -251,8 +219,6 @@
     }
 
     document.getElementById("searchInput").addEventListener("input", filterList);
-    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
-    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
 
     ladeReservierungen();
   </script>
