@@ -221,20 +221,20 @@ function toggleBearbeiten(button) {
     container.querySelector(".stornieren").style.display = "none";
   } else {
     const updated = {
-      arrival: inputs[0].value,
-      departure: inputs[1].value,
-      guest_last_name: inputs[2].value,
-      guest_first_name: inputs[3].value,
-      email: inputs[4].value,
-      phone: inputs[5].value,
-      category: inputs[6].value,
-      rate_name: inputs[7].value,
-      rate_price: inputs[8].value,
-      notes: inputs[9].value,
-      confirmation_email: inputs[10].value,
-      adults: parseInt(inputs[11].value, 10) || 1,
-      children: parseInt(inputs[12].value, 10) || 0
-    };;
+    arrival: container.querySelector('[type="date"]')?.value,
+    departure: container.querySelectorAll('[type="date"]')[1]?.value,
+    guest_last_name: container.querySelector('[label="Nachname"] input')?.value,
+    guest_first_name: container.querySelector('[label="Vorname"] input')?.value,
+    email: container.querySelector('[label="E-Mail"] input')?.value,
+    phone: container.querySelector('[label="Telefon"] input')?.value,
+    category: container.querySelector('[label="Kategorie"] input')?.value,
+    rate_name: container.querySelector('[label="Rate"] input')?.value,
+    rate_price: container.querySelector('[label="Preis"] input')?.value,
+    notes: container.querySelector('[label="Notes"] input')?.value,
+    confirmation_email: container.querySelector('[label="Bestätigungsmail"] input')?.value,
+    adults: parseInt(container.querySelector('[label="Erwachsene*"] input')?.value, 10) || 1,
+    children: parseInt(container.querySelector('[label="Kinder"] input')?.value, 10) || 0
+  };;
     const id = container.getAttribute("data-id");
     fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
       method: 'PATCH',
