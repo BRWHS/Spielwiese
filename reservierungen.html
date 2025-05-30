@@ -240,7 +240,21 @@ function toggleBearbeiten(button) {
 }
 
 function stornieren(id) {
-  alert("Reservierung stornieren (Logik folgt später für ID " + id + ")");
+  if (!confirm("Reservierung wirklich stornieren?")) return;
+  fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+      'Content-Type': 'application/json'
+    }
+  }).then(() => {
+    alert("Reservierung wurde storniert.");
+    ladeReservierungen();
+  }).catch(err => {
+    console.error("Fehler beim Stornieren:", err);
+    alert("Stornierung fehlgeschlagen.");
+  });
 }
 
 function filterList() {
