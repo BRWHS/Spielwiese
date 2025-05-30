@@ -184,16 +184,7 @@
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map((e, i) => {
         return `
-        <div class="entry" onclick="toggleExpand(this)">
-          <span class="hotel">🏨 ${e.hotel_name}</span>
-          <span>${e.guest_last_name}</span>
-          <span>${e.arrival}</span>
-          <span>${e.departure}</span>
-          <span>${e.category || ''}</span>
-          <span>${e.rate_name}</span>
-          <span>${e.rate_price}</span>
-          <span>${e.notes || ''}</span>
-          <div class="details">
+        <div class="entry expanded"><div class="details">
             <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
             <div class="hotel-sub">🏨 ${e.hotel_name}</div>
             <div class="details-header">
