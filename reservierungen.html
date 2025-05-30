@@ -179,7 +179,9 @@ function zeigeSeite() {
         <div class="details-grid">
           <div><label>Anreise</label><input type="date" value="${e.arrival}" disabled /></div>
           <div><label>Abreise</label><input type="date" value="${e.departure}" disabled /></div>
-          <div><label>E-Mail</label><input value="${e.email || ''}" disabled /></div>
+          <div><label>Nachname</label><input value="${e.guest_last_name || ''}" disabled /></div>
+<div><label>Vorname</label><input value="${e.guest_first_name || ''}" disabled /></div>
+<div><label>E-Mail</label><input value="${e.email || ''}" disabled /></div>
           <div><label>Telefon</label><input value="${e.phone || ''}" disabled /></div>
           <div><label>Kategorie</label><input value="${e.category || ''}" disabled /></div>
           <div><label>Rate</label><input value="${e.rate_name || ''}" disabled /></div>
@@ -219,14 +221,16 @@ function toggleBearbeiten(button) {
     const updated = {
       arrival: inputs[0].value,
       departure: inputs[1].value,
-      email: inputs[2].value,
-      phone: inputs[3].value,
-      category: inputs[4].value,
-      rate_name: inputs[5].value,
-      rate_price: inputs[6].value,
-      notes: inputs[7].value,
-      confirmation_email: inputs[8].value
-    };
+      guest_last_name: inputs[2].value,
+      guest_first_name: inputs[3].value,
+      email: inputs[4].value,
+      phone: inputs[5].value,
+      category: inputs[6].value,
+      rate_name: inputs[7].value,
+      rate_price: inputs[8].value,
+      notes: inputs[9].value,
+      confirmation_email: inputs[10].value
+    };;
     const id = container.getAttribute("data-id");
     fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
       method: 'PATCH',
