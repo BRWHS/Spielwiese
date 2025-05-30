@@ -72,6 +72,14 @@
       border: 1px solid #ddd;
       border-radius: 4px;
     }
+    .gast-name {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .hotel-sub {
+      font-size: 0.9em;
+      color: #555;
+    }
     .details-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -186,8 +194,9 @@
           <span>${e.rate_price}</span>
           <span>${e.notes || ''}</span>
           <div class="details">
+            <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
+            <div class="hotel-sub">🏨 ${e.hotel_name}</div>
             <div class="details-header">
-              <div><strong>Gast:</strong> ${e.guest_first_name || ''} ${e.guest_last_name}</div>
               <div><strong>Zeitraum:</strong> ${e.arrival} – ${e.departure}</div>
               <div><strong>Kategorie:</strong> ${e.category || ''}</div>
               <div><strong>Rate:</strong> ${e.rate_name} – ${e.rate_price}</div>
