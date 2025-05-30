@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -54,7 +53,7 @@
     .property-Fidelity\ -\ Robenstein { background-color: #B56576; }
     .pagination {
       text-align: center;
-      margin-top: 30px;
+      margin: 60px auto 0;
     }
     .pagination button {
       background-color: #2d2d2d;
@@ -74,40 +73,41 @@
 <body>
   <h1>Reservierungen</h1>
   <div class="search">
-    <input type="text" id="searchInput" placeholder="🔍 Nach Gastname suchen..." oninput="filterList()" />
+    <input type="text" id="searchInput" placeholder="🔍 Nach Gastname suchen..." />
   </div>
   <div id="reservierungsliste"></div>
   <div class="pagination">
-    <button id="prevPage" onclick="changePage(-1)">&laquo; Zurück</button>
-    <button id="nextPage" onclick="changePage(1)">Weiter &raquo;</button>
+    <button id="prevPage">&laquo; Zurück</button>
+    <button id="nextPage">Weiter &raquo;</button>
   </div>
 
   <script>
     let eintraege = [];
+    let gefiltert = [];
     let seite = 1;
     const proSeite = 50;
 
     async function ladeReservierungen() {
-      const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
-        headers: {
-          apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
-        }
-      });
-      eintraege = await res.json();
-      filterList();
+      try {
+        const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
+          headers: {
+            apikey: 'your-supabase-key',
+            Authorization: 'Bearer your-supabase-key'
+          }
+        });
+        eintraege = await res.json();
+        gefiltert = eintraege;
+        zeigeSeite();
+      } catch (error) {
+        document.getElementById("reservierungsliste").innerHTML = '<p>Fehler beim Laden der Daten.</p>';
+        console.error("Ladefehler:", error);
+      }
     }
 
-    function filterList() {
-      const q = document.getElementById("searchInput").value.toLowerCase();
-      const gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
-      zeigeSeite(gefiltert);
-    }
-
-    function zeigeSeite(liste) {
+    function zeigeSeite() {
       const start = (seite - 1) * proSeite;
       const ende = start + proSeite;
-      const seiteEintraege = liste.slice(start, ende);
+      const seiteEintraege = gefiltert.slice(start, ende);
 
       document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map(e => `
         <div class="entry">
@@ -122,13 +122,24 @@
       `).join('');
 
       document.getElementById("prevPage").disabled = seite === 1;
-      document.getElementById("nextPage").disabled = ende >= liste.length;
+      document.getElementById("nextPage").disabled = ende >= gefiltert.length;
     }
 
     function changePage(delta) {
       seite += delta;
-      filterList();
+      zeigeSeite();
     }
+
+    function filterList() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
+      seite = 1;
+      zeigeSeite();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", filterList);
+    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
+    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
 
     ladeReservierungen();
   </script>
