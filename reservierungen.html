@@ -232,8 +232,8 @@ function toggleBearbeiten(button) {
       rate_price: inputs[8].value,
       notes: inputs[9].value,
       confirmation_email: inputs[10].value,
-      adults: inputs[11].value,
-      children: inputs[12].value
+      adults: parseInt(inputs[11].value, 10) || 1,
+      children: parseInt(inputs[12].value, 10) || 0
     };;
     const id = container.getAttribute("data-id");
     fetch(`https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?id=eq.${id}`, {
