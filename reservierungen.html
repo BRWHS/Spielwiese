@@ -90,8 +90,8 @@
     async function ladeReservierungen() {
       const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
         headers: {
-          apikey: 'your-supabase-key',
-          Authorization: 'Bearer your-supabase-key'
+          apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
         }
       });
       eintraege = await res.json();
