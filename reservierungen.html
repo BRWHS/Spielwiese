@@ -146,9 +146,9 @@
         <div class="entry">
           <div class="entry-overview" onclick="toggleExpand(this)">
             <span style="font-weight: bold;">🏨 ${e.hotel_name}</span>
-            <span>${e.guest_last_name}</span>
-            <span>${e.arrival}</span>
-            <span>${e.departure}</span>
+            <span>${e.guest_last_name}, ${e.guest_first_name}</span>
+            <span>${new Date(e.arrival).toLocaleDateString('de-DE')}</span>
+            <span>${new Date(e.departure).toLocaleDateString('de-DE')}</span>
             <span>${e.category || ''}</span>
             <span>${e.rate_name}</span>
             <span>${e.rate_price}</span>
