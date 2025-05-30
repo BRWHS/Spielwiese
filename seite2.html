@@ -18,15 +18,19 @@
         button:hover { background-color: #444; }
     </style>
 
+
 <script>
-          function selectRate(rateName, ratePrice) {
-            const booking = JSON.parse(sessionStorage.getItem("buchung") || "{}");
-            booking.rate_name = rateName;
-            booking.rate_price = ratePrice;
-            sessionStorage.setItem("buchung", JSON.stringify(booking));
-            window.location.href = "seite3.html";
-          }
-        </script>
+  function selectRate(rateName, ratePrice) {
+    const booking = JSON.parse(sessionStorage.getItem("buchung") || "{}");
+    const card = event.target.closest(".room-card");
+    const category = card.querySelector("h3")?.innerText || "";
+    booking.category = category;
+    booking.rate_name = rateName;
+    booking.rate_price = ratePrice;
+    sessionStorage.setItem("buchung", JSON.stringify(booking));
+    window.location.href = "seite3.html";
+  }
+</script>
 <script>
           function toggleRates(button) {
             const cards = document.querySelectorAll('.room-card');
