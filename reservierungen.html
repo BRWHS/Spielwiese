@@ -47,15 +47,30 @@
     }
     .entry.expanded {
       grid-template-columns: 1fr;
-      flex-direction: column;
     }
     .entry .details {
       grid-column: 1 / -1;
       margin-top: 15px;
       display: none;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
     }
     .entry.expanded .details {
       display: block;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 20px;
+      margin-bottom: 10px;
+    }
+    .details-grid div {
+      background: #fff;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
     .hotel {
       font-size: 1.1em;
@@ -63,9 +78,10 @@
     }
     .buttons {
       margin-top: 10px;
+      text-align: right;
     }
     .buttons button {
-      margin-right: 10px;
+      margin-left: 10px;
       padding: 8px 12px;
       border: none;
       background: #2d2d2d;
@@ -153,9 +169,14 @@
           <span>${e.rate_price}</span>
           <span>${e.notes || ''}</span>
           <div class="details">
-            <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
-            <div><strong>E-Mail:</strong> ${e.email || ''}</div>
-            <div><strong>Telefon:</strong> ${e.phone || ''}</div>
+            <div class="details-grid">
+              <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
+              <div><strong>E-Mail:</strong> ${e.email || ''}</div>
+              <div><strong>Telefon:</strong> ${e.phone || ''}</div>
+              <div><strong>Bestätigungsmail:</strong> ${e.confirmation_email || ''}</div>
+              <div><strong>Kreditkarte:</strong> ${e.cc_number || ''}</div>
+              <div><strong>Ablaufdatum:</strong> ${e.cc_expiry || ''}</div>
+            </div>
             <div class="buttons">
               <button onclick="event.stopPropagation(); anpassen(${e.id})">Reservierung anpassen</button>
               <button onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
@@ -174,11 +195,13 @@
     }
 
     function anpassen(id) {
-      alert("Reservierung " + id + " bearbeiten (noch nicht implementiert)");
+      console.log("Anpassen von Reservierung:", id);
+      alert("Reservierung anpassen für ID " + id + " (folgt bald)");
     }
 
     function stornieren(id) {
-      alert("Reservierung " + id + " stornieren (noch nicht implementiert)");
+      console.log("Stornieren von Reservierung:", id);
+      alert("Reservierung stornieren für ID " + id + " (folgt mit Richtlinie)");
     }
 
     function changePage(delta) {
