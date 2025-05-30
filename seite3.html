@@ -147,33 +147,34 @@
         return;
       }
 
-      // Erweiterte Felder einfügen
       booking.cc_number = ccNumber;
       booking.cc_expiry = ccExpiry;
+booking.confirmation_email = confirmationEmail;
+booking.guest_first_name = booking.firstName;
+booking.guest_last_name = booking.lastName;
+booking.phone = booking.phone;
       booking.confirmation_email = confirmationEmail;
-      booking.guest_first_name = booking.firstName;
-      booking.phone = booking.phone;
-
-      console.log("📤 Buchungsdaten, die an Supabase gesendet werden:", booking);
 
       fetch("https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw"
+          "apikey": "DEIN_API_KEY_HIER",
+          "Authorization": "Bearer DEIN_API_KEY_HIER"
         },
         body: JSON.stringify(booking)
       }).then(response => {
         if (response.ok) {
-          alert("✅ Ihre Reservierung wurde erfolgreich gespeichert!");
+          alert("Reservierung erfolgreich gesendet.");
           sessionStorage.clear();
           window.location.href = "/index.html";
         } else {
-          response.text().then(text => alert("❌ Fehler bei der Reservierung:\n" + text));
+          response.text().then(text => alert("Fehler bei der Reservierung:
+" + text));
         }
       }).catch(error => {
-        alert("⚠️ Netzwerkfehler:\n" + error.message);
+        alert("Netzwerkfehler:
+" + error.message);
       });
     }
   </script>
