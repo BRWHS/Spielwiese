@@ -9,25 +9,29 @@
       margin: 0;
       background: #f4f4f4;
     }
+
     header {
       background: linear-gradient(to bottom, #1f1f1f 0%, #2a2a2a 40%, #3c3c3c 65%, #eaeaea 90%, #f4f4f4 100%);
-      text-align: center;
-      padding: 40px 20px 100px 20px;
+      padding-bottom: 80px;
     }
-    header img {
-      width: 900px;
-      max-width: 90%;
-      display: block;
-      margin: 0 auto;
+
+    .logo-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
     }
+
+    .logo-bar img {
+      height: 60px;
+      max-width: 100%;
+    }
+
     .datetime-bar {
-      background-color: transparent;
-      color: #333;
-      text-align: right;
+      color: #fff;
       font-size: 1.2em;
-      padding: 10px 30px;
-      margin-top: -70px;
     }
+
     main {
       padding: 60px 20px;
       max-width: 400px;
@@ -36,6 +40,7 @@
       flex-direction: column;
       gap: 25px;
     }
+
     .card {
       background-color: white;
       padding: 20px 30px;
@@ -45,10 +50,12 @@
       transition: transform 0.2s, background 0.2s;
       cursor: pointer;
     }
+
     .card:hover {
       transform: translateY(-5px);
       background-color: #fafafa;
     }
+
     .card a {
       text-decoration: none;
       color: #1f1f1f;
@@ -56,6 +63,7 @@
       font-size: 1.3em;
       display: block;
     }
+
     .card a:visited {
       color: inherit;
     }
@@ -63,13 +71,12 @@
 </head>
 <body>
   <header>
-    <!-- ✅ Dein ursprüngliches eingebettetes Logo (Base64) -->
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAEFCAYAAAB96JWXAABjdklEQVR4nO3dd5wkdZ3/8dfM7GxeNgC7ILvknLOiGFARDBjqzHfqeYazzNkz1OnZKur91BM928BhREWkTYAiKCgoIDnDkhaWuOwubI4z8/vj/S26urq6p2emJ+77+XjMA3amu7q6wjd8vp/vt8DMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMy2bR2jvQNmZmZWK4qTGcApwO6jvCuDsQX4e6Vcun..." alt="Logo" />
+    <div class="logo-bar">
+      <!-- ✅ Hier dein echtes Logo -->
+      <img src="324d6104-6b98-4484-9223-42437d5d2b60.png" alt="Logo" />
+      <div class="datetime-bar" id="datetime">📅 --.--.---- – ⏰ --:-- Uhr</div>
+    </div>
   </header>
-
-  <div class="datetime-bar" id="datetime">
-    📅 --.--.---- – ⏰ --:-- Uhr
-  </div>
 
   <main>
     <div class="card"><a href="seite1.html">➕ Neue Buchung</a></div>
@@ -91,8 +98,8 @@
       document.getElementById('datetime').textContent = formatted;
     }
 
-    updateDateTime();              // Direkt beim Laden
-    setInterval(updateDateTime, 60000); // Aktualisierung alle 60 Sekunden
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
   </script>
 </body>
 </html>
