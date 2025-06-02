@@ -63,7 +63,8 @@
 </head>
 <body>
   <header>
-    <img src="DEIN_LOGO.png" alt="Logo" />
+    <!-- ✅ Dein ursprüngliches eingebettetes Logo (Base64) -->
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAEFCAYAAAB96JWXAABjdklEQVR4nO3dd5wkdZ3/8dfM7GxeNgC7ILvknLOiGFARDBjqzHfqeYazzNkz1OnZKur91BM928BhREWkTYAiKCgoIDnDkhaWuOwubI4z8/vj/S26urq6p2emJ+77+XjMA3amu7q6wjd8vp/vt8DMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMy2bR2jvQNmZmZWK4qTGcApwO6jvCuDsQX4e6Vcun..." alt="Logo" />
   </header>
 
   <div class="datetime-bar" id="datetime">
@@ -86,13 +87,12 @@
       const year = now.getFullYear();
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
-
       const formatted = `📅 ${day}.${month}.${year} – ⏰ ${hours}:${minutes} Uhr`;
       document.getElementById('datetime').textContent = formatted;
     }
 
-    updateDateTime();
-    setInterval(updateDateTime, 60000);
+    updateDateTime();              // Direkt beim Laden
+    setInterval(updateDateTime, 60000); // Aktualisierung alle 60 Sekunden
   </script>
 </body>
 </html>
