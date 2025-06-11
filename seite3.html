@@ -87,7 +87,17 @@
   </style>
 </head>
 <body>
-<div class="container"><a href="seite2.html" style="display: inline-block; margin-bottom: 20px;">← Zurück</a>
+<div class="container"><a href="seite2.html" style="
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #ddd;
+        color: black;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-bottom: 20px;
+        font-weight: normal;
+    ">← Zurück</a>
 <h1>Reservierung abschließen</h1>
 <div class="flex">
 <div class="summary">
@@ -122,6 +132,7 @@
         <p><strong>E-Mail:</strong> ${data.email}</p>
         <p><strong>Kategorie:</strong> ${data.category || '-'}</p>
         <p><strong>Wünsche:</strong> ${data.notes || '-'}</p>
+        <p><strong>Personen:</strong> ${data.adults || '0'} Erwachsene, ${data.children || '0'} Kinder</p>
         <p><strong>Rate:</strong> ${data.rate_name || '-'}</p>
         <p><strong>Preis:</strong> ${data.rate_price || '-'}</p>
       `;
@@ -153,7 +164,9 @@
         cc_number: ccNumber,
         cc_expiry: ccExpiry,
         rate_name: booking.rate_name,
-        rate_price: booking.rate_price
+        rate_price: booking.rate_price,
+        adults: booking.adults,
+        children: booking.children
       };
 
       console.log("📤 Sende an Supabase:", bookingPayload);
