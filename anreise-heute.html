@@ -134,12 +134,34 @@
     }
   </style>
 </head>
-<body>
+<body><a href="index.html" style="
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #ddd;
+    color: black;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    font-weight: normal;
+">← Zurück</a>
 <h1>Anreisen heute</h1>
-<div class="search" style="gap: 10px;"><select id="hotelFilter" style="padding:10px;border-radius:5px;border:1px solid #ccc;"><option value="">🏨 Alle Hotels</option><option value="Tante Alma - Sonnen">Tante Alma - Sonnen</option><option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option><option value="MASEVEN - Trudering">MASEVEN - Trudering</option><option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option><option value="MASEVEN - Dornach">MASEVEN - Dornach</option><option value="Fidelity - Struck">Fidelity - Struck</option><option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option><option value="Fidelity - Robenstein">Fidelity - Robenstein</option></select></div><div class="search">
+<div class="search">
 <input id="searchInput" placeholder="🔍 Nach Gastname suchen..." type="text"/>
 </div>
-<div class="table-header">
+<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 40px;">
+<select id="hotelFilter" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; max-width: 250px;">
+<option value="">🏨 Alle Hotels</option>
+<option value="Tante Alma - Sonnen">Tante Alma - Sonnen</option>
+<option value="MASEVEN - Frankfurt">MASEVEN - Frankfurt</option>
+<option value="MASEVEN - Trudering">MASEVEN - Trudering</option>
+<option value="MASEVEN - Stuttgart">MASEVEN - Stuttgart</option>
+<option value="MASEVEN - Dornach">MASEVEN - Dornach</option>
+<option value="Fidelity - Struck">Fidelity - Struck</option>
+<option value="Fidelity - Grüner Baum">Fidelity - Grüner Baum</option>
+<option value="Fidelity - Robenstein">Fidelity - Robenstein</option>
+</select>
+<div class="search" style="gap: 10px;"></div></div><div class="table-header">
 <span>Hotel</span>
 <span>Gastname</span>
 <span>Anreise</span>
@@ -197,6 +219,7 @@
             <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
             <div class="hotel-sub">🏨 ${e.hotel_name}</div>
             <div class="details-header">
+              <div><strong>Personen:</strong> ${e.adults || 0} Erw., ${e.children || 0} Kind</div>
               <div><strong>Anreise:</strong> ${e.arrival}</div>
               <div><strong>Abreise:</strong> ${e.departure}</div>
               <div><strong>Kategorie:</strong> ${e.category || ''}</div>
