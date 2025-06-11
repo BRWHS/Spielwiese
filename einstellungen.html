@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<title>Einstellungen | Hasco</title>
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .search {
+      max-width: 400px;
+      margin: 20px auto 40px;
+      display: flex;
+    }
+    .search input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .table-header {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      font-weight: bold;
+      margin-bottom: 10px;
+      padding: 5px 20px;
+      color: #333;
+    }
+    .entry {
+      background: white;
+      margin-bottom: 12px;
+      padding: 15px 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .entry.expanded {
+      grid-template-columns: repeat(8, 1fr);
+    }
+    .entry .details {
+      grid-column: 1 / -1;
+      margin-top: 15px;
+      display: none;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    .entry.expanded .details {
+      display: block;
+    }
+    .details-header {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .details-header div {
+      background: #fff;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .gast-name {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .hotel-sub {
+      font-size: 0.9em;
+      color: #555;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 20px;
+      margin-bottom: 10px;
+    }
+    .details-grid div {
+      background: #fff;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .hotel {
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+    .buttons {
+      margin-top: 10px;
+      text-align: right;
+    }
+    .buttons button {
+      margin-left: 10px;
+      padding: 8px 12px;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .buttons .anpassen {
+      background: #666;
+    }
+    .buttons .stornieren {
+      background: #d9534f;
+    }
+    .pagination {
+      text-align: center;
+      margin: 60px auto 0;
+    }
+    .pagination button {
+      background-color: #2d2d2d;
+      color: white;
+      padding: 10px 15px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      background-color: #999;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+<h1>Einstellungen</h1>
+<div class="search">
+<input id="searchInput" placeholder="🔍 Nach Gastname suchen..." type="text"/>
+</div>
+<div class="table-header">
+<span>Hotel</span>
+<span>Gastname</span>
+<span>Anreise</span>
+<span>Abreise</span>
+<span>Kategorie</span>
+<span>Rate</span>
+<span>Preis</span>
+<span>Notes</span>
+</div>
+<div id="reservierungsliste"></div>
+<div class="pagination">
+<button id="prevPage">« Zurück</button>
+<button id="nextPage">Weiter »</button>
+</div>
+<script>
+    let eintraege = [];
+    let gefiltert = [];
+    let seite = 1;
+    const proSeite = 50;
+
+    async function ladeReservierungen() {
+      try {
+        const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
+          headers: {
+            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
+          }
+        });
+        eintraege = await res.json();
+        gefiltert = eintraege;
+        zeigeSeite();
+      } catch (error) {
+        document.getElementById("reservierungsliste").innerHTML = '<p>Fehler beim Laden der Daten.</p>';
+        console.error("Ladefehler:", error);
+      }
+    }
+
+    function zeigeSeite() {
+      const start = (seite - 1) * proSeite;
+      const ende = start + proSeite;
+      const seiteEintraege = gefiltert.slice(start, ende);
+
+      document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map((e, i) => {
+        return `
+        <div class="entry" onclick="toggleExpand(this)">
+          <span class="hotel">🏨 ${e.hotel_name}</span>
+          <span>${e.guest_last_name}</span>
+          <span>${e.arrival}</span>
+          <span>${e.departure}</span>
+          <span>${e.category || ''}</span>
+          <span>${e.rate_name}</span>
+          <span>${e.rate_price}</span>
+          <span>${e.notes || ''}</span>
+          <div class="details">
+            <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
+            <div class="hotel-sub">🏨 ${e.hotel_name}</div>
+            <div class="details-header">
+              <div><strong>Anreise:</strong> ${e.arrival}</div>
+              <div><strong>Abreise:</strong> ${e.departure}</div>
+              <div><strong>Kategorie:</strong> ${e.category || ''}</div>
+              <div><strong>Rate:</strong> ${e.rate_name} – ${e.rate_price}</div>
+              <div><strong>Notes:</strong> ${e.notes || ''}</div>
+            </div>
+            <div class="details-grid">
+              <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
+              <div><strong>E-Mail:</strong> ${e.email || ''}</div>
+              <div><strong>Telefon:</strong> ${e.phone || ''}</div>
+              <div><strong>Bestätigungsmail:</strong> ${e.confirmation_email || ''}</div>
+              <div><strong>Kreditkarte:</strong> ${e.cc_number || ''}</div>
+              <div><strong>Ablaufdatum:</strong> ${e.cc_expiry || ''}</div>
+            </div>
+            <div class="buttons">
+              <button class="anpassen" onclick="event.stopPropagation(); anpassen(${e.id})">Reservierung anpassen</button>
+              <button class="stornieren" onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+
+      document.getElementById("prevPage").disabled = seite === 1;
+      document.getElementById("nextPage").disabled = ende >= gefiltert.length;
+    }
+
+    function toggleExpand(el) {
+      el.classList.toggle("expanded");
+    }
+
+    function anpassen(id) {
+      console.log("Anpassen von Reservierung:", id);
+      alert("Reservierung anpassen für ID " + id + " (folgt bald)");
+    }
+
+    function stornieren(id) {
+      console.log("Stornieren von Reservierung:", id);
+      alert("Reservierung stornieren für ID " + id + " (folgt mit Richtlinie)");
+    }
+
+    function changePage(delta) {
+      seite += delta;
+      zeigeSeite();
+    }
+
+    function filterList() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
+      seite = 1;
+      zeigeSeite();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", filterList);
+    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
+    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
+
+    ladeReservierungen();
+  </script>
+
+<div style="max-width: 600px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+<p style="font-size: 1.2em;">⚙️ Hier kannst du bald Einstellungen vornehmen.<br/><br/>Beispiele: API-Schlüssel, Nutzerverwaltung, Rechte, Stammdaten</p>
+</div>
+</body>
+</html>
