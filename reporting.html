@@ -6,43 +6,33 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 40px; }
     h1 { text-align: center; }
-    .search, .filter-row {
+    .filter-row {
       max-width: 800px;
       margin: 20px auto;
       display: flex;
       gap: 10px;
     }
-    .search input, .filter-row select, .filter-row input {
+    select, input[type="date"] {
       padding: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1em;
     }
-    .table-header, .entry {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 10px;
-      max-width: 1200px;
-      margin: 10px auto;
-    }
-    .entry {
-      background: white;
-      padding: 15px 20px;
-      border-radius: 6px;
+    .summary-box {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      cursor: pointer;
+      text-align: center;
+      font-size: 1.2em;
     }
-    .details { grid-column: 1 / -1; display: none; margin-top: 10px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 6px; padding: 20px; }
-    .entry.expanded .details { display: block; }
   </style>
 </head>
 <body>
   <a href="index.html" style="display: inline-block; padding: 8px 16px; background-color: #ddd; color: black; text-decoration: none; border-radius: 6px; font-size: 14px; margin-bottom: 20px;">← Zurück</a>
   <h1>Reporting</h1>
-
-  <div class="search">
-    <input id="searchInput" placeholder="🔍 Nach Gastname suchen..." type="text"/>
-  </div>
 
   <div class="filter-row">
     <select id="hotelSelect">
@@ -58,13 +48,17 @@
     </select>
     <input type="date" id="startDate"/>
     <input type="date" id="endDate"/>
+    <select id="reportType">
+      <option value="revenue">💰 Umsatz</option>
+      <option value="bookings">📆 Buchungen</option>
+      <option value="roomnights">🛏️ Roomnights</option>
+    </select>
   </div>
 
-  <div id="reservierungsliste"></div>
+  <div id="summary" class="summary-box">Bitte Filter auswählen...</div>
 
   <script>
     let eintraege = [];
-    let gefiltert = [];
 
     async function ladeReservierungen() {
       try {
@@ -75,56 +69,49 @@
           }
         });
         eintraege = await res.json();
-        gefiltert = eintraege;
-        zeigeEintraege();
+        aktualisiereAuswertung();
       } catch (err) {
         console.error("Fehler beim Laden:", err);
+        document.getElementById("summary").innerText = "Fehler beim Laden der Daten.";
       }
     }
 
-    function zeigeEintraege() {
-      const liste = document.getElementById("reservierungsliste");
-      liste.innerHTML = gefiltert.map(e => `
-        <div class="entry" onclick="this.classList.toggle('expanded')">
-          <span>${e.hotel_name}</span>
-          <span>${e.guest_last_name}</span>
-          <span>${e.arrival}</span>
-          <span>${e.departure}</span>
-          <span>${e.category || ''}</span>
-          <span>${e.rate_name}</span>
-          <span>${e.rate_price}</span>
-          <span>${e.notes || ''}</span>
-          <div class="details">
-            <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
-            <div><strong>E-Mail:</strong> ${e.email || ''}</div>
-            <div><strong>Telefon:</strong> ${e.phone || ''}</div>
-            <div><strong>Kreditkarte:</strong> ${e.cc_number || ''}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function filterList() {
-      const name = document.getElementById("searchInput").value.toLowerCase();
+    function aktualisiereAuswertung() {
       const hotel = document.getElementById("hotelSelect").value;
       const start = document.getElementById("startDate").value;
       const end = document.getElementById("endDate").value;
+      const typ = document.getElementById("reportType").value;
 
-      gefiltert = eintraege.filter(e => {
-        const matchName = e.guest_last_name?.toLowerCase().includes(name);
+      let gefiltert = eintraege.filter(e => {
         const matchHotel = hotel === "Alle" || e.hotel_name === hotel;
         const matchStart = !start || e.arrival >= start;
         const matchEnd = !end || e.departure <= end;
-        return matchName && matchHotel && matchStart && matchEnd;
+        return matchHotel && matchStart && matchEnd;
       });
 
-      zeigeEintraege();
+      let ergebnis = "Keine Daten verfügbar.";
+      if (typ === "revenue") {
+        const summe = gefiltert.reduce((acc, e) => acc + (parseFloat(e.rate_price) || 0), 0);
+        ergebnis = `💰 Umsatz: ${summe.toFixed(2)} €`;
+      } else if (typ === "bookings") {
+        ergebnis = `📆 Buchungen: ${gefiltert.length}`;
+      } else if (typ === "roomnights") {
+        const sum = gefiltert.reduce((acc, e) => {
+          const anreise = new Date(e.arrival);
+          const abreise = new Date(e.departure);
+          const diff = (abreise - anreise) / (1000 * 60 * 60 * 24);
+          return acc + (isNaN(diff) ? 0 : diff);
+        }, 0);
+        ergebnis = `🛏️ Roomnights: ${sum}`;
+      }
+
+      document.getElementById("summary").innerText = ergebnis;
     }
 
-    document.getElementById("searchInput").addEventListener("input", filterList);
-    document.getElementById("hotelSelect").addEventListener("change", filterList);
-    document.getElementById("startDate").addEventListener("change", filterList);
-    document.getElementById("endDate").addEventListener("change", filterList);
+    document.getElementById("hotelSelect").addEventListener("change", aktualisiereAuswertung);
+    document.getElementById("startDate").addEventListener("change", aktualisiereAuswertung);
+    document.getElementById("endDate").addEventListener("change", aktualisiereAuswertung);
+    document.getElementById("reportType").addEventListener("change", aktualisiereAuswertung);
 
     ladeReservierungen();
   </script>
