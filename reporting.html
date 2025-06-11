@@ -52,6 +52,7 @@
       <option value="revenue">💰 Umsatz</option>
       <option value="bookings">📆 Buchungen</option>
       <option value="roomnights">🛏️ Roomnights</option>
+      <option value="avg-rate">📊 Ø Rate pro Nacht</option>
     </select>
   </div>
 
@@ -64,10 +65,13 @@
       try {
         const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
           headers: {
-            apikey: 'DEIN_ECHTER_SUPABASE_APIKEY_HIER',
-            Authorization: 'Bearer DEIN_ECHTER_SUPABASE_APIKEY_HIER'
+            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
           }
         });
+
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+
         eintraege = await res.json();
         console.log("Geladene Daten:", eintraege);
         aktualisiereAuswertung();
@@ -83,27 +87,22 @@
       const end = document.getElementById("endDate").value;
       const typ = document.getElementById("reportType").value;
 
-      // Parse Filterdaten
       const startDate = start ? new Date(start) : null;
       const endDate = end ? new Date(end) : null;
 
-      // Roomnight-Berechnung über einzelne Tage
       function berechneRoomnightsInZeitraum(anreise, abreise) {
         const tage = [];
         let aktuellerTag = new Date(anreise);
         const ende = new Date(abreise);
         while (aktuellerTag < ende) {
-          if (!startDate || aktuellerTag >= startDate) {
-            if (!endDate || aktuellerTag < endDate) {
-              tage.push(new Date(aktuellerTag));
-            }
+          if ((!startDate || aktuellerTag >= startDate) && (!endDate || aktuellerTag < endDate)) {
+            tage.push(new Date(aktuellerTag));
           }
           aktuellerTag.setDate(aktuellerTag.getDate() + 1);
         }
         return tage.length;
       }
 
-      // Filterlogik
       const gefiltert = eintraege.filter(e => {
         const anreise = new Date(e.arrival);
         const abreise = new Date(e.departure);
@@ -112,21 +111,36 @@
         return matchHotel && liegtImZeitraum;
       });
 
-      console.log("Gefiltert:", gefiltert);
-
       let ergebnis = "Keine Daten verfügbar.";
+
       if (typ === "revenue") {
         const summe = gefiltert.reduce((acc, e) => acc + (parseFloat(e.rate_price) || 0), 0);
         ergebnis = `💰 Umsatz: ${summe.toFixed(2)} €`;
+
       } else if (typ === "bookings") {
         ergebnis = `📆 Buchungen: ${gefiltert.length}`;
+
       } else if (typ === "roomnights") {
         const sum = gefiltert.reduce((acc, e) => {
-          const anreise = new Date(e.arrival);
-          const abreise = new Date(e.departure);
-          return acc + berechneRoomnightsInZeitraum(anreise, abreise);
+          return acc + berechneRoomnightsInZeitraum(e.arrival, e.departure);
         }, 0);
         ergebnis = `🛏️ Roomnights: ${sum}`;
+
+      } else if (typ === "avg-rate") {
+        let totalRoomnights = 0;
+        let totalRevenue = 0;
+        for (const e of gefiltert) {
+          const rn = berechneRoomnightsInZeitraum(e.arrival, e.departure);
+          const revenue = parseFloat(e.rate_price) || 0;
+          totalRoomnights += rn;
+          totalRevenue += revenue;
+        }
+        if (totalRoomnights > 0) {
+          const avgRate = totalRevenue / totalRoomnights;
+          ergebnis = `📊 Ø Rate pro Nacht: ${avgRate.toFixed(2)} €`;
+        } else {
+          ergebnis = "📊 Ø Rate pro Nacht: —";
+        }
       }
 
       document.getElementById("summary").innerText = ergebnis;
