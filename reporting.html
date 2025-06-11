@@ -135,21 +135,22 @@
   </style>
 </head>
 <body>
+<a href="index.html" style="
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #ddd;
+  color: black;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-weight: normal;
+">← Zurück</a>
 <h1>Reporting</h1>
 <div class="search">
 <input id="searchInput" placeholder="🔍 Nach Gastname suchen..." type="text"/>
 </div>
-<div class="table-header">
-<span>Hotel</span>
-<span>Gastname</span>
-<span>Anreise</span>
-<span>Abreise</span>
-<span>Kategorie</span>
-<span>Rate</span>
-<span>Preis</span>
-<span>Notes</span>
-</div>
-<div id="reservierungsliste"></div>
+
 <div class="pagination">
 <button id="prevPage">« Zurück</button>
 <button id="nextPage">Weiter »</button>
@@ -256,29 +257,22 @@
 
     ladeReservierungen();
   </script>
-
 <div style="max-width: 1000px; margin: 40px auto;">
 <label for="hotelSelect">Hotel wählen:</label>
 <select id="hotelSelect" style="margin: 0 20px 20px 10px;">
 <option>Alle</option>
 <option>MASEVEN Stuttgart</option>
 <option>MASEVEN Trudering</option>
+<option>MASEVEN Frankfurt</option>
+<option>MASEVEN Dornach</option>
 <option>Fidelity Struck</option>
+<option>Fidelity Grüner Baum</option>
+<option>Fidelity Robenstein</option>
 <option>Tante Alma Sonnen</option>
 </select>
 <label>Zeitraum:</label>
 <input type="date"/> bis <input type="date"/>
-<div style="margin-top: 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-<div style="background:#e7f3fe; padding: 20px; border-radius: 8px;">
-<strong>💰 Umsatz:</strong><br/>34.870 €
-    </div>
-<div style="background:#e2f0d9; padding: 20px; border-radius: 8px;">
-<strong>📆 Buchungen:</strong><br/>129
-    </div>
-<div style="background:#f9e2e2; padding: 20px; border-radius: 8px;">
-<strong>🛏️ Roomnights:</strong><br/>266
-    </div>
-</div>
+<div style="margin-top: 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;"><div style="background:#f0f0f0; padding: 20px; border-radius: 8px;">💰 Umsatz: —</div><div style="background:#f0f0f0; padding: 20px; border-radius: 8px;">📆 Buchungen: —</div><div style="background:#f0f0f0; padding: 20px; border-radius: 8px;">🛏️ Roomnights: —</div></div>
 </div>
 </body>
 </html>
