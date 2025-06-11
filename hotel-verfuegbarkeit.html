@@ -65,7 +65,7 @@
 </head>
 <body>
 <a href="index.html" class="zurueck">← Zurück</a>
-<img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAHzElEQVR4nO3Ye4xU1R0H8O/vnHNfM7" alt="hasco logo" />
+<img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFHUlEQVR4nO2bz0sTcRjHf+fMlJmRpJmJ1Jm1mZyckJmRmZkFjE5Jm2rJkZGVkkcTJVmZkgiYxgYCIKiKOvCIiIvR1dUYMEQkuRdi8M4e8H7fnPd47vMCA/Xeh2uO/vM/zvs553v+f5/zzhEjR46cQcG5ZJ/ALIBQkqmpjXAWZmL2B84GqnkLxkGyDuYvjYI0zR/FObAvuND5BxcvQa6CHueaQbAIoGHAvrPULnwnWwPRFAcPgZwPgZOUzBe+On3APXA3AVjvYkOHhOyDEbfu1O7wP+AZcHQeCSrPbDO6hsAxcArZqBLQ1RDwnl6ifgHUrgJvFxw7ULvSniCvGJeFM86rM3pEnzLt8XbwI77e1A4QJfubxDpwe9aOZ5BBx1HAcZB+ApLD5Xpfr4If83ONn0h+EnB5dk4jvD9yH+U/cAvwA+AOc5xRI1BgNnWcwOxlYwCZYydYH+FqqBIymMMSJtMcMOBAB1AU8kcxZPgqZ1MgpcoWkMQVYzZbEqjGY6xbl4wZbEQldJVvW6fB9q2we2M7SjbUWo1FbZMFhXbZGMhsk1vKVmHhs95IQYex3Y+9TR5xDGmCllZt0hGhDnRgxk2ycnPZax9b1QmKxiie4rPzzH92+AFz9RZHK86wQAAAABJRU5ErkJggg==" alt="hasco logo" />
 <h1>Hotel Verfügbarkeit</h1>
 <div class="navigation">
   <button onclick="prevWeek()">« Vorherige Woche</button>
@@ -96,9 +96,9 @@ function renderTable() {
       const zimmer = hotel.zimmer;
       const frei = Math.floor(Math.random() * zimmer);
       const percent = Math.round((frei / zimmer) * 100);
-      let klasse = "red"; // hohe Belegung = rot
-      if (percent > 50 && percent <= 80) klasse = "yellow"; // mittlere Belegung
-      if (percent > 80) klasse = "green"; // wenig Belegung // hohe Belegung = rot // wenig Belegung
+      let klasse = "green"; // wenig Belegung
+      if (percent <= 80 && percent > 50) klasse = "yellow"; // mittlere Belegung
+      if (percent <= 50) klasse = "red"; // hohe Belegung // wenig Belegung // hohe Belegung = rot // wenig Belegung
       html += `<td class="${klasse}">${percent}%<br/><small>${frei}/${zimmer}</small></td>`;
     }
     html += '</tr>';
