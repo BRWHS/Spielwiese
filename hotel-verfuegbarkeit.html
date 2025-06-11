@@ -1,278 +1,117 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8"/>
-<title>Hotel Verfügbarkeit | Hasco</title>
-<style>
+  <meta charset="UTF-8" />
+  <title>Hotel Verfügbarkeit | Hasco</title>
+  <style>
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
-      margin: 0;
       padding: 40px;
     }
     h1 {
       text-align: center;
     }
-    .search {
-      max-width: 400px;
-      margin: 20px auto 40px;
-      display: flex;
-    }
-    .search input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-    .table-header {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      font-weight: bold;
-      margin-bottom: 10px;
-      padding: 5px 20px;
-      color: #333;
-    }
-    .entry {
-      background: white;
-      margin-bottom: 12px;
-      padding: 15px 20px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    .entry.expanded {
-      grid-template-columns: repeat(8, 1fr);
-    }
-    .entry .details {
-      grid-column: 1 / -1;
-      margin-top: 15px;
-      display: none;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 20px;
-    }
-    .entry.expanded .details {
-      display: block;
-    }
-    .details-header {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+    .navigation {
+      text-align: center;
       margin-bottom: 20px;
     }
-    .details-header div {
-      background: #fff;
-      padding: 10px 14px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .gast-name {
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    .hotel-sub {
-      font-size: 0.9em;
-      color: #555;
-    }
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 20px;
-      margin-bottom: 10px;
-    }
-    .details-grid div {
-      background: #fff;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .hotel {
-      font-size: 1.1em;
-      font-weight: bold;
-    }
-    .buttons {
-      margin-top: 10px;
-      text-align: right;
-    }
-    .buttons button {
-      margin-left: 10px;
-      padding: 8px 12px;
-      border: none;
+    .navigation button {
+      padding: 8px 16px;
+      margin: 0 10px;
+      background-color: #007bff;
       color: white;
+      border: none;
       border-radius: 4px;
       cursor: pointer;
     }
-    .buttons .anpassen {
-      background: #666;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
-    .buttons .stornieren {
-      background: #d9534f;
-    }
-    .pagination {
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
       text-align: center;
-      margin: 60px auto 0;
     }
-    .pagination button {
-      background-color: #2d2d2d;
+    th {
+      background: #2d2d2d;
       color: white;
-      padding: 10px 15px;
-      margin: 0 5px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
     }
-    .pagination button:disabled {
-      background-color: #999;
-      cursor: default;
+    td.green { background-color: #d4edda; }
+    td.yellow { background-color: #fff3cd; }
+    td.red { background-color: #f8d7da; }
+    .zurueck {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #ddd;
+      color: black;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      font-weight: normal;
     }
+    small { color: #333; font-size: 0.9em; }
   </style>
 </head>
 <body>
-<a href="index.html" style="
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: #ddd;
-  color: black;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-bottom: 20px;
-  font-weight: normal;
-">← Zurück</a>
+<a href="index.html" class="zurueck">← Zurück</a>
 <h1>Hotel Verfügbarkeit</h1>
-<div class="search">
-<input id="searchInput" placeholder="🔍 Nach Gastname suchen..." type="text"/>
+<div class="navigation">
+  <button onclick="prevWeek()">« Vorherige Woche</button>
+  <button onclick="nextWeek()">Nächste Woche »</button>
 </div>
+<table id="kalender"></table>
+<pre id="hotels-data" style="display:none;">[{"name": "MASEVEN Stuttgart", "zimmer": 106}, {"name": "MASEVEN Trudering", "zimmer": 99}, {"name": "MASEVEN Frankfurt", "zimmer": 85}, {"name": "MASEVEN Dornach", "zimmer": 90}, {"name": "Fidelity Struck", "zimmer": 60}, {"name": "Fidelity Grüner Baum", "zimmer": 70}, {"name": "Fidelity Robenstein", "zimmer": 65}, {"name": "Tante Alma Sonnen", "zimmer": 97}]</pre>
 
-<div class="pagination">
-<button id="prevPage">« Zurück</button>
-<button id="nextPage">Weiter »</button>
-</div>
 <script>
-    let eintraege = [];
-    let gefiltert = [];
-    let seite = 1;
-    const proSeite = 50;
+let offset = 0;
 
-    async function ladeReservierungen() {
-      try {
-        const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
-          headers: {
-            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
-          }
-        });
-        eintraege = await res.json();
-        gefiltert = eintraege;
-        zeigeSeite();
-      } catch (error) {
-        document.getElementById("reservierungsliste").innerHTML = '<p>Fehler beim Laden der Daten.</p>';
-        console.error("Ladefehler:", error);
-      }
+function renderTable() {
+  const hotels = JSON.parse(document.getElementById("hotels-data").textContent);
+  const table = document.getElementById("kalender");
+  const start = new Date();
+  start.setDate(start.getDate() + offset);
+  const days = Array.from({length: 7}, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    return d.toLocaleDateString("de-DE");
+  });
+
+  let html = '<tr><th>Hotel</th>' + days.map(d => `<th>${d}</th>`).join('') + '</tr>';
+
+  for (const hotel of hotels) {
+    html += `<tr><td><strong>${hotel.name}</strong></td>`;
+    for (let i = 0; i < 7; i++) {
+      const zimmer = hotel.zimmer;
+      const frei = Math.floor(Math.random() * zimmer);
+      const percent = Math.round((frei / zimmer) * 100);
+      let klasse = "red";
+      if (percent > 80) klasse = "green";
+      else if (percent > 50) klasse = "yellow";
+      html += `<td class="${klasse}">${percent}%<br/><small>${frei}/${zimmer}</small></td>`;
     }
+    html += '</tr>';
+  }
 
-    function zeigeSeite() {
-      const start = (seite - 1) * proSeite;
-      const ende = start + proSeite;
-      const seiteEintraege = gefiltert.slice(start, ende);
+  table.innerHTML = html;
+}
 
-      document.getElementById("reservierungsliste").innerHTML = seiteEintraege.map((e, i) => {
-        return `
-        <div class="entry" onclick="toggleExpand(this)">
-          <span class="hotel">🏨 ${e.hotel_name}</span>
-          <span>${e.guest_last_name}</span>
-          <span>${e.arrival}</span>
-          <span>${e.departure}</span>
-          <span>${e.category || ''}</span>
-          <span>${e.rate_name}</span>
-          <span>${e.rate_price}</span>
-          <span>${e.notes || ''}</span>
-          <div class="details">
-            <div class="gast-name">👤 ${e.guest_first_name || ''} ${e.guest_last_name}</div>
-            <div class="hotel-sub">🏨 ${e.hotel_name}</div>
-            <div class="details-header">
-              <div><strong>Anreise:</strong> ${e.arrival}</div>
-              <div><strong>Abreise:</strong> ${e.departure}</div>
-              <div><strong>Kategorie:</strong> ${e.category || ''}</div>
-              <div><strong>Rate:</strong> ${e.rate_name} – ${e.rate_price}</div>
-              <div><strong>Notes:</strong> ${e.notes || ''}</div>
-            </div>
-            <div class="details-grid">
-              <div><strong>Vorname:</strong> ${e.guest_first_name || ''}</div>
-              <div><strong>E-Mail:</strong> ${e.email || ''}</div>
-              <div><strong>Telefon:</strong> ${e.phone || ''}</div>
-              <div><strong>Bestätigungsmail:</strong> ${e.confirmation_email || ''}</div>
-              <div><strong>Kreditkarte:</strong> ${e.cc_number || ''}</div>
-              <div><strong>Ablaufdatum:</strong> ${e.cc_expiry || ''}</div>
-            </div>
-            <div class="buttons">
-              <button class="anpassen" onclick="event.stopPropagation(); anpassen(${e.id})">Reservierung anpassen</button>
-              <button class="stornieren" onclick="event.stopPropagation(); stornieren(${e.id})">Reservierung stornieren</button>
-            </div>
-          </div>
-        </div>
-      `;
-      }).join('');
+function nextWeek() {
+  offset += 7;
+  renderTable();
+}
 
-      document.getElementById("prevPage").disabled = seite === 1;
-      document.getElementById("nextPage").disabled = ende >= gefiltert.length;
-    }
+function prevWeek() {
+  offset -= 7;
+  renderTable();
+}
 
-    function toggleExpand(el) {
-      el.classList.toggle("expanded");
-    }
+document.addEventListener("DOMContentLoaded", renderTable);
+</script>
 
-    function anpassen(id) {
-      console.log("Anpassen von Reservierung:", id);
-      alert("Reservierung anpassen für ID " + id + " (folgt bald)");
-    }
-
-    function stornieren(id) {
-      console.log("Stornieren von Reservierung:", id);
-      alert("Reservierung stornieren für ID " + id + " (folgt mit Richtlinie)");
-    }
-
-    function changePage(delta) {
-      seite += delta;
-      zeigeSeite();
-    }
-
-    function filterList() {
-      const q = document.getElementById("searchInput").value.toLowerCase();
-      gefiltert = eintraege.filter(e => e.guest_last_name?.toLowerCase().includes(q));
-      seite = 1;
-      zeigeSeite();
-    }
-
-    document.getElementById("searchInput").addEventListener("input", filterList);
-    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
-    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
-
-    ladeReservierungen();
-  </script>
-<div style="max-width: 800px; margin: 40px auto;">
-<p>Verfügbarkeiten (Beispieldaten):</p>
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-<div style="background:#d4edda; padding: 20px; border-radius: 8px;">
-<strong>MASEVEN Stuttgart</strong><br/>🔵 94% verfügbar<br/>🔢 118 Zimmer
-    </div>
-<div style="background:#fff3cd; padding: 20px; border-radius: 8px;">
-<strong>MASEVEN Trudering</strong><br/>🟡 63% verfügbar<br/>🔢 85 Zimmer
-    </div>
-<div style="background:#f8d7da; padding: 20px; border-radius: 8px;">
-<strong>Fidelity Struck</strong><br/>🔴 22% verfügbar<br/>🔢 61 Zimmer
-    </div>
-<div style="background:#d4edda; padding: 20px; border-radius: 8px;">
-<strong>Tante Alma Sonnen</strong><br/>🟢 88% verfügbar<br/>🔢 70 Zimmer
-    </div>
-</div>
-</div>
 </body>
 </html>
