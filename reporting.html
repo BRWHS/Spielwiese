@@ -60,6 +60,7 @@
 
   <script>
     let eintraege = [];
+let uniqueHotels = new Set();
 
     async function ladeReservierungen() {
       try {
@@ -73,6 +74,11 @@
         if (!res.ok) throw new Error(`Status: ${res.status}`);
 
         eintraege = await res.json();
+
+        // Dynamische Hotelnamen extrahieren
+        uniqueHotels = new Set(eintraege.map(e => e.hotel_name).filter(Boolean));
+        const select = document.getElementById("hotelSelect");
+        select.innerHTML = '<option>Alle</option>' + [...uniqueHotels].sort().map(h => `<option>${h}</option>`).join('');
         console.log("Geladene Daten:", eintraege);
         aktualisiereAuswertung();
       } catch (err) {
@@ -106,7 +112,7 @@
       const gefiltert = eintraege.filter(e => {
         const anreise = new Date(e.arrival);
         const abreise = new Date(e.departure);
-        const matchHotel = hotel === "Alle" || e.hotel_name === hotel;
+        const matchHotel = hotel === "Alle" || e.hotel_name?.trim().toLowerCase() === hotel.trim().toLowerCase();
         const liegtImZeitraum = (!startDate || abreise > startDate) && (!endDate || anreise < endDate);
         return matchHotel && liegtImZeitraum;
       });
