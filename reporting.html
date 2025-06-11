@@ -64,8 +64,8 @@
       try {
         const res = await fetch('https://tqivbegnjwschwgrkqfm.supabase.co/rest/v1/bookings?select=*', {
           headers: {
-            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxaXZiZWduandzY2h3Z3JrcWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDUxMTUsImV4cCI6MjA2MzkyMTExNX0.WidRDEm8ATqtXW8QcUs_biK_gYdZebpnPyw0PWQ1qKw'
+            apikey: 'DEIN_ECHTER_SUPABASE_APIKEY_HIER',
+            Authorization: 'Bearer DEIN_ECHTER_SUPABASE_APIKEY_HIER'
           }
         });
         eintraege = await res.json();
@@ -83,11 +83,33 @@
       const end = document.getElementById("endDate").value;
       const typ = document.getElementById("reportType").value;
 
-      let gefiltert = eintraege.filter(e => {
+      // Parse Filterdaten
+      const startDate = start ? new Date(start) : null;
+      const endDate = end ? new Date(end) : null;
+
+      // Roomnight-Berechnung über einzelne Tage
+      function berechneRoomnightsInZeitraum(anreise, abreise) {
+        const tage = [];
+        let aktuellerTag = new Date(anreise);
+        const ende = new Date(abreise);
+        while (aktuellerTag < ende) {
+          if (!startDate || aktuellerTag >= startDate) {
+            if (!endDate || aktuellerTag < endDate) {
+              tage.push(new Date(aktuellerTag));
+            }
+          }
+          aktuellerTag.setDate(aktuellerTag.getDate() + 1);
+        }
+        return tage.length;
+      }
+
+      // Filterlogik
+      const gefiltert = eintraege.filter(e => {
+        const anreise = new Date(e.arrival);
+        const abreise = new Date(e.departure);
         const matchHotel = hotel === "Alle" || e.hotel_name === hotel;
-        const matchStart = !start || (e.arrival && e.arrival.slice(0, 10) >= start);
-        const matchEnd = !end || (e.departure && e.departure.slice(0, 10) <= end);
-        return matchHotel && matchStart && matchEnd;
+        const liegtImZeitraum = (!startDate || abreise > startDate) && (!endDate || anreise < endDate);
+        return matchHotel && liegtImZeitraum;
       });
 
       console.log("Gefiltert:", gefiltert);
@@ -102,8 +124,7 @@
         const sum = gefiltert.reduce((acc, e) => {
           const anreise = new Date(e.arrival);
           const abreise = new Date(e.departure);
-          const diff = (abreise - anreise) / (1000 * 60 * 60 * 24);
-          return acc + (isNaN(diff) ? 0 : diff);
+          return acc + berechneRoomnightsInZeitraum(anreise, abreise);
         }, 0);
         ergebnis = `🛏️ Roomnights: ${sum}`;
       }
