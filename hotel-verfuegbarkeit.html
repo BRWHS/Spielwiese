@@ -96,9 +96,9 @@ function renderTable() {
       const zimmer = hotel.zimmer;
       const frei = Math.floor(Math.random() * zimmer);
       const percent = Math.round((frei / zimmer) * 100);
-      let klasse = "green"; // wenig Belegung = grün
-      if (percent <= 80 && percent > 50) klasse = "yellow"; // mittlere Belegung
-      if (percent <= 50) klasse = "red"; // hohe Belegung = rot // wenig Belegung
+      let klasse = "red"; // hohe Belegung = rot
+      if (percent > 50 && percent <= 80) klasse = "yellow"; // mittlere Belegung
+      if (percent > 80) klasse = "green"; // wenig Belegung // hohe Belegung = rot // wenig Belegung
       html += `<td class="${klasse}">${percent}%<br/><small>${frei}/${zimmer}</small></td>`;
     }
     html += '</tr>';
