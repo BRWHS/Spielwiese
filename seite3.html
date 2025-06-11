@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>hasco – Seite 3</title>
-  <style>
+<meta charset="utf-8"/>
+<title>hasco – Seite 3</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
@@ -86,34 +87,30 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Reservierung abschließen</h1>
-    <div class="flex">
-      <div class="summary">
-        <h2>Reservierungsübersicht</h2>
-        <div class="summary-box" id="reservation-summary">
-          <p>Lade Daten...</p>
-        </div>
-      </div>
-      <div class="form-section">
-        <h2>Zahlungsdaten & Bestätigung</h2>
-        <label for="confirmationEmail">Bestätigungs-E-Mail (optional)</label>
-        <input type="email" id="confirmationEmail" placeholder="z. B. buchhaltung@firma.de" />
-
-        <div class="card-box">
-          <label for="ccNumber">Kreditkartennummer</label>
-          <input type="text" id="ccNumber" maxlength="19" placeholder="1234 5678 9012 3456" />
-
-          <label for="ccExpiry">Gültig bis (MM/YY)</label>
-          <input type="text" id="ccExpiry" maxlength="5" placeholder="MM/YY" />
-        </div>
-
-        <button onclick="submitBooking()">Reservierung abschicken</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
+<div class="container"><a href="seite2.html" style="display: inline-block; margin-bottom: 20px;">← Zurück</a>
+<h1>Reservierung abschließen</h1>
+<div class="flex">
+<div class="summary">
+<h2>Reservierungsübersicht</h2>
+<div class="summary-box" id="reservation-summary">
+<p>Lade Daten...</p>
+</div>
+</div>
+<div class="form-section">
+<h2>Zahlungsdaten &amp; Bestätigung</h2>
+<label for="confirmationEmail">Bestätigungs-E-Mail (optional)</label>
+<input id="confirmationEmail" placeholder="z. B. buchhaltung@firma.de" type="email"/>
+<div class="card-box">
+<label for="ccNumber">Kreditkartennummer</label>
+<input id="ccNumber" maxlength="19" placeholder="1234 5678 9012 3456" type="text"/>
+<label for="ccExpiry">Gültig bis (MM/YY)</label>
+<input id="ccExpiry" maxlength="5" placeholder="MM/YY" type="text"/>
+</div>
+<button onclick="submitBooking()">Reservierung abschicken</button>
+</div>
+</div>
+</div>
+<script>
     const booking = JSON.parse(sessionStorage.getItem("buchung") || "{}");
 
     function formatSummary(data) {
