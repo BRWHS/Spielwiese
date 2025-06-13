@@ -11,22 +11,41 @@
       margin: 20px auto;
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
     select, input[type="date"] {
       padding: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1em;
+      flex: 1;
+      min-width: 150px;
     }
     .summary-box {
       max-width: 800px;
-      margin: 40px auto;
+      margin: 40px auto 20px;
       background: #fff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       text-align: center;
       font-size: 1.2em;
+    }
+    .info-box {
+      max-width: 800px;
+      margin: 0 auto;
+      font-size: 0.9em;
+      color: #555;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .info-box h3 {
+      margin-top: 0;
+    }
+    .info-box ul {
+      padding-left: 20px;
     }
   </style>
 </head>
@@ -58,9 +77,20 @@
 
   <div id="summary" class="summary-box">Bitte Filter auswählen...</div>
 
+  <div class="info-box">
+    <h3>ℹ️ Hinweise zur Auswertung</h3>
+    <ul>
+      <li><strong>Umsatz</strong>: Summe aller <code>rate_price</code>-Einträge im gewählten Zeitraum.</li>
+      <li><strong>Buchungen</strong>: Anzahl aller Reservierungen.</li>
+      <li><strong>Roomnights</strong>: Übernachtungen im gewählten Zeitraum, unabhängig vom Buchungsdatum.</li>
+      <li><strong>Ø Rate pro Nacht</strong>: Zimmerumsatz / Anzahl verkaufter Zimmer.</li>
+      <li>Alle Daten stammen live aus der Supabase-Tabelle <code>bookings</code>.</li>
+    </ul>
+  </div>
+
   <script>
     let eintraege = [];
-let uniqueHotels = new Set();
+    let uniqueHotels = new Set();
 
     async function ladeReservierungen() {
       try {
@@ -74,12 +104,9 @@ let uniqueHotels = new Set();
         if (!res.ok) throw new Error(`Status: ${res.status}`);
 
         eintraege = await res.json();
-
-        // Dynamische Hotelnamen extrahieren
         uniqueHotels = new Set(eintraege.map(e => e.hotel_name).filter(Boolean));
         const select = document.getElementById("hotelSelect");
         select.innerHTML = '<option>Alle</option>' + [...uniqueHotels].sort().map(h => `<option>${h}</option>`).join('');
-        console.log("Geladene Daten:", eintraege);
         aktualisiereAuswertung();
       } catch (err) {
         console.error("Fehler beim Laden:", err);
@@ -127,23 +154,15 @@ let uniqueHotels = new Set();
         ergebnis = `📆 Buchungen: ${gefiltert.length}`;
 
       } else if (typ === "roomnights") {
-        const sum = gefiltert.reduce((acc, e) => {
-          return acc + berechneRoomnightsInZeitraum(e.arrival, e.departure);
-        }, 0);
+        const sum = gefiltert.reduce((acc, e) => acc + berechneRoomnightsInZeitraum(e.arrival, e.departure), 0);
         ergebnis = `🛏️ Roomnights: ${sum}`;
 
       } else if (typ === "avg-rate") {
-        let totalRoomnights = 0;
-        let totalRevenue = 0;
-        for (const e of gefiltert) {
-          const rn = berechneRoomnightsInZeitraum(e.arrival, e.departure);
-          const revenue = parseFloat(e.rate_price) || 0;
-          totalRoomnights += rn;
-          totalRevenue += revenue;
-        }
-        if (totalRoomnights > 0) {
-          const avgRate = totalRevenue / totalRoomnights;
-          ergebnis = `📊 Ø Rate pro Nacht: ${avgRate.toFixed(2)} €`;
+        const totalRevenue = gefiltert.reduce((acc, e) => acc + (parseFloat(e.rate_price) || 0), 0);
+        const anzahlZimmer = gefiltert.length;
+        if (anzahlZimmer > 0) {
+          const avgRate = totalRevenue / anzahlZimmer;
+          ergebnis = `📊 Ø Rate pro Nacht: ${avgRate.toFixed(2)} € (Umsatz ÷ verkaufte Zimmer)`;
         } else {
           ergebnis = "📊 Ø Rate pro Nacht: —";
         }
