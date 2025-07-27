@@ -1,131 +1,191 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>hasco – Hospitality System Consulting</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary: #0057a0;
       --darkblue: #002c54;
-      --lightgray: #f4f7fa;
-      --muted: #7a7a7a;
+      --bg: #f2f5f9;
+      --text: #1a1a1a;
+      --muted: #8a8a8a;
+      --accent: #e3edf8;
+      --radius: 12px;
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
-    body {
+
+    html, body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--lightgray);
-      color: #1a1a1a;
-      line-height: 1.6;
+      background-color: var(--bg);
+      color: var(--text);
+      scroll-behavior: smooth;
     }
+
     header {
       background: linear-gradient(135deg, var(--darkblue), var(--primary));
       color: white;
+      padding: 4rem 2rem 6rem;
       text-align: center;
-      padding: 5rem 2rem 3rem;
       position: relative;
+      overflow: hidden;
     }
-    header img {
+
+    header::after {
+      content: "";
+      position: absolute;
+      bottom: -30px;
+      left: 0;
+      width: 100%;
       height: 80px;
+      background: var(--bg);
+      border-top-left-radius: 100% 30px;
+      border-top-right-radius: 100% 30px;
+    }
+
+    header img {
+      height: 90px;
       margin-bottom: 1.5rem;
     }
+
     header h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
+      font-size: 3rem;
+      font-weight: 700;
       margin-bottom: 1rem;
     }
+
     header p {
       font-size: 1.2rem;
-      max-width: 700px;
+      max-width: 800px;
       margin: 0 auto;
+      line-height: 1.6;
     }
+
     .section {
-      max-width: 1100px;
-      margin: 4rem auto;
-      padding: 0 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
     }
+
     .section h2 {
-      font-size: 2rem;
-      color: var(--primary);
-      margin-bottom: 1rem;
+      font-size: 2.2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--darkblue);
     }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
     }
+
     .card {
       background: white;
-      border-radius: 10px;
       padding: 2rem;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
     }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 28px rgba(0, 0, 0, 0.08);
+    }
+
     .card h3 {
-      color: var(--darkblue);
+      color: var(--primary);
       margin-bottom: 0.5rem;
     }
+
     .systems {
-      color: var(--muted);
       font-size: 0.9rem;
-      margin-top: 0.5rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
     }
-    .project-toggle {
-      display: block;
+
+    .accordion {
+      max-width: 700px;
       margin: 2rem auto;
+    }
+
+    .accordion button {
+      width: 100%;
+      text-align: left;
+      padding: 1rem 1.5rem;
       background: var(--primary);
       color: white;
-      padding: 1rem 2rem;
       border: none;
-      border-radius: 6px;
-      font-size: 1rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border-radius: var(--radius);
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s ease;
     }
-    .project-toggle:hover {
-      background: #003e6b;
+
+    .accordion button:hover {
+      background: var(--darkblue);
     }
-    .project-flow {
+
+    .accordion-content {
       display: none;
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 2rem;
+      padding: 1.5rem;
       margin-top: 1rem;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
     }
-    .project-flow ol {
-      margin-left: 1.5rem;
+
+    .accordion-content ol {
+      padding-left: 1.5rem;
     }
+
     .contact {
-      background-color: #eaf3fa;
-      padding: 2rem;
-      border-left: 5px solid var(--primary);
-      margin-top: 3rem;
-      border-radius: 8px;
+      background: var(--accent);
+      padding: 3rem 2rem;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-top: 4rem;
     }
+
+    .contact h2 {
+      margin-bottom: 1rem;
+    }
+
+    .contact p {
+      font-size: 1.1rem;
+    }
+
     footer {
       text-align: center;
+      padding: 2rem;
+      color: var(--muted);
       font-size: 0.9rem;
-      color: #888;
-      margin: 4rem 0 1rem;
     }
+
     a {
       color: var(--primary);
       text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAeCAYAAABHxjfqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AQRDjcTzUOfbgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAPSURBVGje7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAgLfCAAEygAAF0d0sZAAAAAElFTkSuQmCC" alt="hasco Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAeCAYAAABHxjfqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AQRDjcTzUOfbgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAPSURBVGje7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAgLfCAAEygAAF0d0sZAAAAAElFTkSuQmCC" alt="hasco Logo" />
     <h1>Smart. Modular. Implementiert.</h1>
-    <p>Hasco ist Ihr unabhängiger Hospitality-Implementierungspartner. Wir bringen Systeme wie PMS, Channelmanager, RMS, CRM und Guest Journeys zum Laufen – fachlich, technisch, operativ.</p>
+    <p>Ihr Implementierungspartner für digitale Hospitality-Systeme: PMS, CM, RMS, CRM, Schnittstellen & Schulung.</p>
   </header>
 
   <section class="section">
@@ -133,48 +193,53 @@
     <div class="cards">
       <div class="card">
         <h3>Channelmanager Setup</h3>
-        <p>Auswahl, Einrichtung und Anbindung inkl. IBE, OTA-Mapping und Schnittstellenkonfiguration.</p>
-        <div class="systems">HNS, SiteMinder, DIRS21, RateTiger</div>
+        <p>Beratung, Auswahl, Einrichtung inkl. IBE-Anbindung, OTA-Setup & Portalmapping.</p>
+        <div class="systems">z. B. HNS, SiteMinder, DIRS21, SynXis</div>
       </div>
       <div class="card">
         <h3>PMS Setup & Go-Live</h3>
-        <p>Von Stammdaten über Ratenstruktur bis zur GDS-Anbindung.</p>
-        <div class="systems">OPERA Cloud, apaleo, protel, Guestline, Sihot, Mews</div>
+        <p>Stammdaten, Ratenstruktur, GDS-Anbindung, Benutzer & Workflows.</p>
+        <div class="systems">z. B. OPERA Cloud, apaleo, protel, Guestline</div>
       </div>
       <div class="card">
         <h3>Multi-System Management</h3>
-        <p>Verknüpfung von PMS mit RMS, Messaging, CRM & Türsystemen.</p>
-        <div class="systems">Duetto, RoomPriceGenie, Straiv, Salto KS</div>
+        <p>Integration von RMS, CRM, Gästekommunikation & Türsystemen via API.</p>
+        <div class="systems">z. B. Duetto, RoomPriceGenie, Straiv, Salto KS</div>
       </div>
       <div class="card">
         <h3>Schulung & SOP</h3>
-        <p>Trainings für Ihr Team + Erstellung betriebsfertiger Workflows.</p>
+        <p>Systemtraining für Teams + Erstellung praxisnaher Standardprozesse.</p>
       </div>
       <div class="card">
         <h3>Custom API Integration</h3>
-        <p>Individuelle Schnittstellen zwischen PMS, CRM, Webtools, Reports u. a.</p>
+        <p>Verbindungen zwischen Tools, Systemen & Plattformen – individuell abgestimmt.</p>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <button class="project-toggle" onclick="toggleProjectFlow()">Projektablauf anzeigen</button>
-    <div class="project-flow" id="flow">
-      <ol>
-        <li>Unverbindliches Erstgespräch & Kennenlernen</li>
-        <li>Systemanalyse, Aufwandsberechnung & Zeiteinschätzung</li>
-        <li>Projektkonzept: Zeitplan, Zuständigkeiten, Tools</li>
-        <li>Technische Umsetzung & Drittanbieterkoordination</li>
-        <li>Team-Schulung & Systemübergabe</li>
-        <li>Optional: Support & Weiterentwicklung (ab 250 €/Monat)</li>
-      </ol>
+    <h2>Projektablauf</h2>
+    <div class="accordion">
+      <button onclick="toggleAccordion()">Ablauf anzeigen</button>
+      <div class="accordion-content" id="accordion-content">
+        <ol>
+          <li>Unverbindliches Erstgespräch & Kennenlernen</li>
+          <li>Systemanalyse, Aufwandsberechnung & Zeiteinschätzung</li>
+          <li>Projektplanung: Zeitplan, Rollen, Tools</li>
+          <li>Technische Umsetzung & Drittanbieterkoordination</li>
+          <li>Team-Schulung, Übergabe & SOP-Dokumentation</li>
+          <li>Optional: monatlicher Support & Weiterentwicklung</li>
+        </ol>
+      </div>
     </div>
   </section>
 
   <section class="section contact">
-    <h2>Kontakt</h2>
-    <p>📞 <strong>+49 151 65207285</strong><br>
-       ✉️ <a href="mailto:info@hasco-hospitality.demo">info@hasco-hospitality.demo</a></p>
+    <h2>Kontakt aufnehmen</h2>
+    <p>
+      📞 <strong>+49 151 65207285</strong><br />
+      ✉️ <a href="mailto:info@hasco-hospitality.demo">info@hasco-hospitality.demo</a>
+    </p>
   </section>
 
   <footer>
@@ -182,9 +247,9 @@
   </footer>
 
   <script>
-    function toggleProjectFlow() {
-      const flow = document.getElementById('flow');
-      flow.style.display = flow.style.display === 'block' ? 'none' : 'block';
+    function toggleAccordion() {
+      const box = document.getElementById("accordion-content");
+      box.style.display = box.style.display === "block" ? "none" : "block";
     }
   </script>
 </body>
