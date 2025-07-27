@@ -6,6 +6,13 @@
   <title>hasco – Hospitality System Consulting</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #0057a0;
+      --darkblue: #002c54;
+      --lightgray: #f4f7fa;
+      --muted: #7a7a7a;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -13,23 +20,24 @@
     }
     body {
       font-family: 'Inter', sans-serif;
-      line-height: 1.6;
-      background-color: #f4f7fa;
+      background-color: var(--lightgray);
       color: #1a1a1a;
+      line-height: 1.6;
     }
     header {
-      background-color: #002c54;
-      color: #fff;
-      padding: 4rem 2rem;
+      background: linear-gradient(135deg, var(--darkblue), var(--primary));
+      color: white;
       text-align: center;
-      background-image: linear-gradient(to right, #002c54, #0057a0);
+      padding: 5rem 2rem 3rem;
+      position: relative;
     }
     header img {
-      max-height: 80px;
-      margin-bottom: 1rem;
+      height: 80px;
+      margin-bottom: 1.5rem;
     }
     header h1 {
       font-size: 2.8rem;
+      font-weight: 600;
       margin-bottom: 1rem;
     }
     header p {
@@ -39,29 +47,57 @@
     }
     .section {
       max-width: 1100px;
-      margin: 3rem auto;
+      margin: 4rem auto;
       padding: 0 2rem;
     }
     .section h2 {
       font-size: 2rem;
-      color: #003e6b;
+      color: var(--primary);
       margin-bottom: 1rem;
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
     }
     .card {
       background: white;
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      border-left: 5px solid #0057a0;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      border-left: 5px solid var(--primary);
     }
     .card h3 {
+      color: var(--darkblue);
       margin-bottom: 0.5rem;
-      color: #002c54;
+    }
+    .systems {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .project-toggle {
+      display: block;
+      margin: 2rem auto;
+      background: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .project-toggle:hover {
+      background: #003e6b;
+    }
+    .project-flow {
+      display: none;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-top: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
     }
     .project-flow ol {
       margin-left: 1.5rem;
@@ -69,24 +105,25 @@
     .contact {
       background-color: #eaf3fa;
       padding: 2rem;
-      border-left: 5px solid #0057a0;
+      border-left: 5px solid var(--primary);
       margin-top: 3rem;
+      border-radius: 8px;
     }
     footer {
       text-align: center;
       font-size: 0.9rem;
       color: #888;
-      margin: 3rem 0 1rem;
+      margin: 4rem 0 1rem;
     }
     a {
-      color: #0057a0;
+      color: var(--primary);
       text-decoration: none;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="logo-placeholder.png" alt="hasco Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAeCAYAAABHxjfqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AQRDjcTzUOfbgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAPSURBVGje7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAgLfCAAEygAAF0d0sZAAAAAElFTkSuQmCC" alt="hasco Logo">
     <h1>Smart. Modular. Implementiert.</h1>
     <p>Hasco ist Ihr unabhängiger Hospitality-Implementierungspartner. Wir bringen Systeme wie PMS, Channelmanager, RMS, CRM und Guest Journeys zum Laufen – fachlich, technisch, operativ.</p>
   </header>
@@ -96,47 +133,59 @@
     <div class="cards">
       <div class="card">
         <h3>Channelmanager Setup</h3>
-        <p>Auswahl, Einrichtung und Anbindung inkl. IBE, OTA-Mapping und Schnittstellenkonfiguration. Systeme: HNS, SiteMinder, DIRS21, RateTiger u. a.</p>
+        <p>Auswahl, Einrichtung und Anbindung inkl. IBE, OTA-Mapping und Schnittstellenkonfiguration.</p>
+        <div class="systems">HNS, SiteMinder, DIRS21, RateTiger</div>
       </div>
       <div class="card">
         <h3>PMS Setup & Go-Live</h3>
-        <p>Von Stammdaten über Ratenstruktur bis zur GDS-Anbindung. Systeme: OPERA Cloud, apaleo, protel, Guestline, Sihot, Mews etc.</p>
+        <p>Von Stammdaten über Ratenstruktur bis zur GDS-Anbindung.</p>
+        <div class="systems">OPERA Cloud, apaleo, protel, Guestline, Sihot, Mews</div>
       </div>
       <div class="card">
         <h3>Multi-System Management</h3>
-        <p>Verknüpfung von PMS mit RMS, Messaging, CRM & Türsystemen (z. B. Duetto, Straiv, Salto KS). API-Test, Schnittstellenprüfung & Prozessvernetzung inklusive.</p>
+        <p>Verknüpfung von PMS mit RMS, Messaging, CRM & Türsystemen.</p>
+        <div class="systems">Duetto, RoomPriceGenie, Straiv, Salto KS</div>
       </div>
       <div class="card">
         <h3>Schulung & SOP</h3>
-        <p>Systemtrainings für Ihr Team + Erstellung betriebsfertiger Workflows: Ratepflege, OTA-Kontrolle, No-Show-Prozesse u. v. m.</p>
+        <p>Trainings für Ihr Team + Erstellung betriebsfertiger Workflows.</p>
       </div>
       <div class="card">
         <h3>Custom API Integration</h3>
-        <p>Entwicklung individueller Verbindungen zwischen PMS, CRM, Channelmanager, Reporting & Webtools – je nach Use Case & Systemarchitektur.</p>
+        <p>Individuelle Schnittstellen zwischen PMS, CRM, Webtools, Reports u. a.</p>
       </div>
     </div>
   </section>
 
-  <section class="section project-flow">
-    <h2>So läuft ein Projekt mit hasco</h2>
-    <ol>
-      <li>Unverbindliches Erstgespräch & Kennenlernen</li>
-      <li>Systemanalyse, Aufwandsberechnung & Zeiteinschätzung</li>
-      <li>Projektkonzeption: Zeitplan, Zuständigkeiten, Tools</li>
-      <li>Technische Umsetzung & Drittanbieterkoordination</li>
-      <li>Team-Schulung & Systemübergabe</li>
-      <li>Optional: Betreuung & Weiterentwicklung (ab 250 €/Monat)</li>
-    </ol>
+  <section class="section">
+    <button class="project-toggle" onclick="toggleProjectFlow()">Projektablauf anzeigen</button>
+    <div class="project-flow" id="flow">
+      <ol>
+        <li>Unverbindliches Erstgespräch & Kennenlernen</li>
+        <li>Systemanalyse, Aufwandsberechnung & Zeiteinschätzung</li>
+        <li>Projektkonzept: Zeitplan, Zuständigkeiten, Tools</li>
+        <li>Technische Umsetzung & Drittanbieterkoordination</li>
+        <li>Team-Schulung & Systemübergabe</li>
+        <li>Optional: Support & Weiterentwicklung (ab 250 €/Monat)</li>
+      </ol>
+    </div>
   </section>
 
   <section class="section contact">
     <h2>Kontakt</h2>
     <p>📞 <strong>+49 151 65207285</strong><br>
-    ✉️ <a href="mailto:info@hasco-hospitality.demo">info@hasco-hospitality.demo</a></p>
+       ✉️ <a href="mailto:info@hasco-hospitality.demo">info@hasco-hospitality.demo</a></p>
   </section>
 
   <footer>
     &copy; 2025 hasco Hospitality Consulting – Johannes Kämpf
   </footer>
+
+  <script>
+    function toggleProjectFlow() {
+      const flow = document.getElementById('flow');
+      flow.style.display = flow.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
 </body>
 </html>
