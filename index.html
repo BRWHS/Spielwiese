@@ -57,10 +57,11 @@
   </div>
 <script>
 (() => {
-  // ======= ENGINE CORE =======
+  // ======= ENGINE CORE (robust) =======
   const canvas = document.getElementById('game');
   const cx = canvas.getContext('2d');
-  cx.imageSmoothingEnabled = false; // verhindert weiches Skalieren → weniger Flimmern
+  cx.imageSmoothingEnabled = false;
+
   const HUD = {
     coins: document.getElementById('coins'),
     coinmax: document.getElementById('coinmax'),
@@ -74,20 +75,20 @@
     jump: document.getElementById('jump')
   };
 
-  // Physics tuning – feels like "own Mario" (valley-flow)
+  // ---- Constants
   const TILE = 48;
   const GRAVITY = 2000;
   const MAX_FALL = 1400;
-  const ACCEL = 2600;       // ground accel
-  const AIR_ACCEL = 1800;   // air control
-  const FRICTION = 2200;    // ground friction
-  const MAX_SPEED = 360;    // run speed
+  const ACCEL = 2600;
+  const AIR_ACCEL = 1800;
+  const FRICTION = 2200;
+  const MAX_SPEED = 360;
   const JUMP_VELOCITY = 820;
-  const COYOTE_TIME = 0.12;     // grace after leaving ground
-  const JUMP_BUFFER = 0.12;     // grace before landing
+  const COYOTE_TIME = 0.12;
+  const JUMP_BUFFER = 0.12;
   const CAMERA_LERP = 0.14;
 
-  // Tilemap legend: # = dirt/stone ground, - = platform, ^ = spikes, * = coin, E = enemy, G=goal, P=player
+  // ---- Level (all rows equal length!)
   const LEVEL = [
     "................................................................................",
     "...............................*.................E.............*...............",
@@ -100,23 +101,26 @@
     "#######################..###############..###########..########################"
   ];
 
-  // Derived world
+  // ensure equal widths (safety)
+  const WIDTH = LEVEL[0].length;
+  for (let r of LEVEL) { if (r.length !== WIDTH) { throw new Error('LEVEL rows must be equal length'); } }
+
   const world = {
-    w: LEVEL[0].length * TILE,
+    w: WIDTH * TILE,
     h: LEVEL.length * TILE,
     solidAt(x, y) { const c = charAtWorld(x, y); return c === '#' || c === '-'; },
     hurtAt(x, y) { return charAtWorld(x, y) === '^'; }
   };
 
-  function charAtGrid(gx, gy){ if (gy < 0 || gy >= LEVEL.length) return '.'; if (gx < 0 || gx >= LEVEL[gy].length) return '.'; return LEVEL[gy][gx]; }
+  function charAtGrid(gx, gy){ if (gy < 0 || gy >= LEVEL.length) return '.'; if (gx < 0 || gx >= WIDTH) return '.'; return LEVEL[gy][gx]; }
   function charAtWorld(x, y){ return charAtGrid(Math.floor(x / TILE), Math.floor(y / TILE)); }
   function findChar(ch){ for (let y=0; y<LEVEL.length; y++){ const x = LEVEL[y].indexOf(ch); if (x !== -1) return {x, y}; } return null; }
 
   // Entities
   const coins = []; const enemies = [];
-  let playerStart = findChar('P') || {x:1, y:6};
+  const playerStart = findChar('P') || {x:1, y:6};
   for (let y=0; y<LEVEL.length; y++){
-    for (let x=0; x<LEVEL[y].length; x++){
+    for (let x=0; x<WIDTH; x++){
       const c = LEVEL[y][x];
       if (c === '*') coins.push({x:(x+.5)*TILE,y:(y+.5)*TILE,r:12,alive:true,t:Math.random()*6});
       if (c === 'E') enemies.push({x:(x+.5)*TILE,y:(y+.5)*TILE,vx:(Math.random()>.5?1:-1)*90,w:34,h:40,alive:true});
@@ -124,47 +128,31 @@
   }
   HUD.coinmax.textContent = coins.length;
 
-  const player = {
-    x: (playerStart.x + .2) * TILE,
-    y: (playerStart.y - .1) * TILE,
-    w: 28, h: 42,
-    vx: 0, vy: 0,
-    onGround: false,
-    coyote: 0,
-    jumpBuf: 0,
-    lives: 3,
-    inv: 0,
-    coins: 0
-  };
-
+  const player = { x: (playerStart.x + .2) * TILE, y: (playerStart.y - .1) * TILE, w: 28, h: 42, vx: 0, vy: 0, onGround: false, coyote: 0, jumpBuf: 0, lives: 3, inv: 0, coins: 0 };
   const camera = { x: 0, y: 0 };
 
-  // Input (desktop)
+  // ---- Input
   const keys = new Set();
   addEventListener('keydown', e => {
     if(['ArrowLeft','ArrowRight','ArrowUp',' ','KeyA','KeyD','KeyW','KeyR'].includes(e.code)) e.preventDefault();
     keys.add(e.code);
   });
   addEventListener('keyup', e => { keys.delete(e.code); });
-
-  // Input (mobile)
   let mLeft=false, mRight=false, mJump=false;
-  const attachPress = (el, setter) => { if(!el) return; const on=()=>setter(true), off=()=>setter(false); el.addEventListener('touchstart', e=>{e.preventDefault(); on();},{passive:false}); el.addEventListener('touchend', off); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); };
-  attachPress(BTN.left, v=>mLeft=v); attachPress(BTN.right, v=>mRight=v); attachPress(BTN.jump, v=>mJump=v);
+  const press = (el, setter) => { if(!el) return; const on=()=>setter(true), off=()=>setter(false); el.addEventListener('touchstart', e=>{e.preventDefault(); on();},{passive:false}); el.addEventListener('touchend', off); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); };
+  press(BTN.left, v=>mLeft=v); press(BTN.right, v=>mRight=v); press(BTN.jump, v=>mJump=v);
   BTN.restart.addEventListener('click', reset);
 
-  // Safe reset
+  // ---- Reset
   function reset(){
     Object.assign(player, { x:(playerStart.x+.2)*TILE, y:(playerStart.y-.1)*TILE, vx:0, vy:0, onGround:false, coyote:0, jumpBuf:0, inv:0, coins:0, lives:3 });
     coins.forEach(c=> c.alive = true);
-    enemies.forEach(e=> { e.alive = true; e.vx = Math.sign(e.vx)||1 * 90; });
-    HUD.coins.textContent = 0; HUD.lives.textContent = player.lives;
-    bannerT=0; bannerMsg='';
+    enemies.forEach(e=> { e.alive = true; e.vx = (e.vx>=0?1:-1) * 90; });
+    HUD.coins.textContent = 0; HUD.lives.textContent = player.lives; bannerT=0; bannerMsg='';
   }
 
-  // Collision against tiles – returns resolution vector and ground info
+  // ---- Collision
   function rectVsTiles(x, y, w, h){
-    // Minimal-translation-vector pro Achse (kein Aufsummieren) + korrekte Vorzeichen
     const minX = Math.floor((x - w/2)/TILE), maxX = Math.floor((x + w/2)/TILE);
     const minY = Math.floor((y - h/2)/TILE), maxY = Math.floor((y + h/2)/TILE);
     let resX = 0, resY = 0, hitGround = false;
@@ -177,11 +165,11 @@
         const dx = x - tx, px = (w/2 + TILE/2) - Math.abs(dx);
         const dy = y - ty, py = (h/2 + TILE/2) - Math.abs(dy);
         if (px > 0 && py > 0){
-          if (px < py){ // resolve along X
-            const cand = (dx < 0 ? +px : -px); // subtracting cand moves OUT of tile
+          if (px < py){
+            const cand = (dx < 0 ? +px : -px);
             if (Math.abs(cand) < bestAbsX){ bestAbsX = Math.abs(cand); resX = cand; }
-          } else { // resolve along Y
-            const cand = (dy < 0 ? +py : -py); // dy<0 => player ÜBER Tile → nach OBEN (positive resY, da wir später subtrahieren)
+          } else {
+            const cand = (dy < 0 ? +py : -py);
             if (Math.abs(cand) < bestAbsY){ bestAbsY = Math.abs(cand); resY = cand; hitGround = (dy < 0); }
           }
         }
@@ -189,106 +177,68 @@
     }
     return {resX, resY, hitGround};
   }
-            else { resY += (dy < 0 ? -py : py); if (dy < 0) hitGround = true; }
-          }
-        }
-      }
-    }
-    return {resX, resY, hitGround};
-  }
 
-  // Loop
-  // --- Fixed timestep to kill jitter
-  const STEP = 1/60; // 60 Hz
+  // ---- Loop (fixed timestep)
+  const STEP = 1/60;
   let last = performance.now();
-  let acc = 0;
-  let fpsSamp = 60, fps = 60, running = true;
+  let acc = 0; let fpsSamp = 60, fps = 60, running = true;
   function loop(now){
     if (!running){ requestAnimationFrame(loop); return; }
-    let frame = (now - last) / 1000; last = now;
-    if (frame > 0.25) frame = 0.25; // huge tab switch deltas are clamped
-    acc += frame;
+    let frame = (now - last) / 1000; last = now; if (frame > 0.25) frame = 0.25; acc += frame;
     while (acc >= STEP){ update(STEP); acc -= STEP; }
-    fpsSamp = fpsSamp * 0.9 + (1/frame) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
+    fpsSamp = fpsSamp * 0.9 + (1/Math.max(frame, STEP)) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
     draw();
     requestAnimationFrame(loop);
   }
   addEventListener('blur', ()=> running=false);
-  addEventListener('focus', ()=> { running=true; last=performance.now(); }); });
+  addEventListener('focus', ()=> { running=true; last=performance.now(); });
 
+  // ---- Update
   function update(dt){
-    // ----- Input state
     const left = keys.has('ArrowLeft') || keys.has('KeyA') || mLeft;
     const right = keys.has('ArrowRight') || keys.has('KeyD') || mRight;
     const jumpKey = keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || mJump;
     if (keys.has('KeyR')) reset();
 
-    // ----- Horizontal accel/friction
     const target = (right - left) * MAX_SPEED;
     const accel = player.onGround ? ACCEL : AIR_ACCEL;
     const diff = target - player.vx;
     const step = Math.sign(diff) * accel * dt;
     if (Math.abs(step) > Math.abs(diff)) player.vx = target; else player.vx += step;
-    // friction when no input
-    if (!left && !right && player.onGround){
-      const f = Math.min(Math.abs(player.vx), FRICTION*dt);
-      player.vx -= Math.sign(player.vx)*f;
-    }
+    if (!left && !right && player.onGround){ const f = Math.min(Math.abs(player.vx), FRICTION*dt); player.vx -= Math.sign(player.vx)*f; }
 
-    // ----- Vertical
     player.vy += GRAVITY * dt; if (player.vy > MAX_FALL) player.vy = MAX_FALL;
 
-    // Coyote + jump buffer
     if (player.onGround) player.coyote = COYOTE_TIME; else player.coyote = Math.max(0, player.coyote - dt);
     if (jumpKey) player.jumpBuf = JUMP_BUFFER; else player.jumpBuf = Math.max(0, player.jumpBuf - dt);
-    if (player.jumpBuf > 0 && player.coyote > 0){
-      player.vy = -JUMP_VELOCITY; player.onGround = false; player.coyote = 0; player.jumpBuf = 0;
-    }
+    if (player.jumpBuf > 0 && player.coyote > 0){ player.vy = -JUMP_VELOCITY; player.onGround = false; player.coyote = 0; player.jumpBuf = 0; }
 
-    // Integrate X
+    // X
     player.x += player.vx * dt;
     let col = rectVsTiles(player.x, player.y, player.w, player.h);
     if (col.resX){ player.x -= col.resX; player.vx = 0; }
 
-    // Integrate Y
+    // Y
     player.y += player.vy * dt;
     col = rectVsTiles(player.x, player.y, player.w, player.h);
     if (col.resY){
       player.y -= col.resY;
-      if (col.hitGround){
-        player.onGround = true; player.vy = 0;
-        player.y -= 0.01; // tiny skin oben, verhindert Re-Penetration
-      } else {
-        player.vy = 0;
-      }
-    } else {
-      player.onGround = false;
-    }
+      if (col.hitGround){ player.onGround = true; player.vy = 0; player.y -= 0.01; }
+      else { player.vy = 0; }
+    } else { player.onGround = false; }
 
-    // Bounds (fall death)
     if (player.y > world.h + 200) loseLife();
 
-    // Coins
     for (const c of coins){ if (!c.alive) continue; c.t += dt*6; if (Math.abs(player.x - c.x) < (player.w/2 + c.r) && Math.abs(player.y - c.y) < (player.h/2 + c.r)){ c.alive=false; player.coins++; HUD.coins.textContent = player.coins; } }
 
-    // Enemies
-    for (const e of enemies){ if (!e.alive) continue; e.x += e.vx * dt; const aheadX = e.x + Math.sign(e.vx) * (e.w/2 + 2); const footY = e.y + e.h/2 + 1; const turn = world.solidAt(aheadX, e.y) || !world.solidAt(aheadX, footY); if (turn) e.vx *= -1;
-      const hit = Math.abs(player.x - e.x) < (player.w/2 + e.w/2) && Math.abs(player.y - e.y) < (player.h/2 + e.h/2);
-      if (hit){ if (player.vy > 120){ e.alive=false; player.vy = -JUMP_VELOCITY*0.7; } else if (player.inv<=0){ damage(); } }
-    }
+    for (const e of enemies){ if (!e.alive) continue; e.x += e.vx * dt; const aheadX = e.x + Math.sign(e.vx) * (e.w/2 + 2); const footY = e.y + e.h/2 + 1; const turn = world.solidAt(aheadX, e.y) || !world.solidAt(aheadX, footY); if (turn) e.vx *= -1; const hit = Math.abs(player.x - e.x) < (player.w/2 + e.w/2) && Math.abs(player.y - e.y) < (player.h/2 + e.h/2); if (hit){ if (player.vy > 120){ e.alive=false; player.vy = -JUMP_VELOCITY*0.7; } else if (player.inv<=0){ damage(); } } }
 
-    // Spikes
-    const feetX = player.x, feetY = player.y + player.h/2; if (world.hurtAt(feetX, feetY) && player.inv<=0) damage();
-
-    // Goal
     const goal = findGoalCenter(); if (goal && Math.hypot(player.x-goal.x, player.y-goal.y) < 38) win();
 
-    // Camera – mild look-ahead
     const look = Math.sign(player.vx) * 90;
     const targetX = clamp(player.x - canvas.width/2 + look, 0, world.w - canvas.width);
     camera.x += (targetX - camera.x) * CAMERA_LERP;
-    // Snap camera to integer pixels to avoid subpixel shimmer
-    camera.x = Math.round(camera.x);
+    camera.x = Math.round(camera.x); // integer camera to avoid shimmer
     camera.y = 0;
 
     if (player.inv > 0) player.inv -= dt;
@@ -299,87 +249,42 @@
   function damage(){ player.inv = 1.1; player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Verloren! Drücke R für Neustart'); reset(); } else { player.vy = -JUMP_VELOCITY*0.55; } }
   function loseLife(){ player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Game Over! Drücke R'); reset(); } else { player.x=(playerStart.x+.2)*TILE; player.y=(playerStart.y-.1)*TILE; player.vx=0; player.vy=0; } }
 
+  // ---- Rendering
   let bannerT = 0, bannerMsg = '';
   function showBanner(msg){ bannerMsg = msg; bannerT = 2.6; }
   function win(){ showBanner('Geschafft! Münzen: '+player.coins+'/'+coins.length+' – R für Neustart'); }
 
-  // ======= RENDERING =======
+  function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name); }
+  function drawTile(x, y, c){ cx.fillStyle = c === '#' ? '#3d2b1f' : '#4b5563'; cx.fillRect(x, y, TILE, TILE); if (c === '#'){ cx.fillStyle = getVar('--grass'); cx.fillRect(x, y, TILE, 10); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(x, y+10, TILE, 2); } else { cx.fillStyle = 'rgba(255,255,255,0.1)'; cx.fillRect(x, y, TILE, 6); } }
+  function drawSpikes(x,y){ cx.fillStyle = '#ef4444'; for (let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(x + i*(TILE/4), y + TILE); cx.lineTo(x + i*(TILE/4) + TILE/8, y + TILE/2); cx.lineTo(x + i*(TILE/4) + TILE/4, y + TILE); cx.fill(); } }
+  function drawGoal(x,y){ cx.fillStyle = '#d1d5db'; cx.fillRect(x+TILE*0.78, y+TILE*0.1, 4, TILE*0.8); cx.fillStyle = getVar('--flag'); cx.beginPath(); cx.moveTo(x+TILE*0.78+4, y+TILE*0.12); cx.lineTo(x+TILE*0.78+4+TILE*0.36, y+TILE*0.18); cx.lineTo(x+TILE*0.78+4, y+TILE*0.24); cx.closePath(); cx.fill(); cx.fillStyle = getVar('--goal'); cx.fillRect(x+TILE*0.18, y+TILE*0.2, TILE*0.42, TILE*0.6); }
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){ const rr = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rr, y); ctx.arcTo(x+w, y, x+w, y+h, rr); ctx.arcTo(x+w, y+h, x, y+h, rr); ctx.arcTo(x, y+h, x, y, rr); ctx.arcTo(x, y, x+w, y, rr); ctx.closePath(); if (fill) ctx.fill(); if (stroke) ctx.stroke(); }
+
+  function drawParallax(){ cx.save(); const bands = [ {y:120, a:0.15, col:'rgba(255,255,255,0.02)'}, {y:220, a:0.25, col:'rgba(255,255,255,0.03)'} ]; for (const b of bands){ cx.fillStyle = b.col; const offs = - (Math.floor(camera.x*b.a) % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } } cx.translate(- (Math.floor(camera.x*0.25)) % 480, 0); const hill = (x, y, w, h) => { cx.beginPath(); cx.moveTo(x, y+h); cx.quadraticCurveTo(x+w*0.25, y, x+w*0.5, y+h*0.4); cx.quadraticCurveTo(x+w*0.75, y+h*0.8, x+w, y+h); cx.closePath(); }; cx.fillStyle = 'rgba(37,68,127,0.25)'; for (let i=-1;i<6;i++){ hill(i*480, 360, 480, 140); cx.fill(); } cx.restore(); }
+
   function draw(){
     cx.save();
     cx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Sky gradient already via CSS; draw parallax mountains/valleys
     drawParallax();
-
-    cx.translate(-camera.x|0, -camera.y|0);
-
-    // Tiles (grass/dirt & platforms/spikes/goal)
+    cx.translate(-Math.floor(camera.x), 0);
     for (let y=0; y<LEVEL.length; y++){
-      for (let x=0; x<LEVEL[y].length; x++){
+      for (let x=0; x<WIDTH; x++){
         const c = LEVEL[y][x]; const px = x*TILE, py = y*TILE;
         if (c === '#' || c === '-') drawTile(px, py, c);
         if (c === '^') drawSpikes(px, py);
         if (c === 'G') drawGoal(px, py);
       }
     }
-
-    // Coins
     for (const c of coins){ if (!c.alive) continue; const bob = Math.sin(c.t)*4; cx.fillStyle = getVar('--coin'); cx.beginPath(); cx.arc(c.x, c.y + bob, c.r, 0, Math.PI*2); cx.fill(); cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.beginPath(); cx.arc(c.x+4, c.y-4 + bob, c.r*0.5, 0, Math.PI*2); cx.fill(); }
-
-    // Enemies – valley critters
     for (const e of enemies){ if (!e.alive) continue; cx.fillStyle = getVar('--enemy'); cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, 6); }
-
-    // Player – rounder, glossy cap
     const flicker = (player.inv>0 && Math.floor(performance.now()/100)%2===0);
-    if (!flicker){
-      cx.fillStyle = getVar('--player');
-      roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, player.h, 6, true, false);
-      cx.fillStyle = 'rgba(255,255,255,0.18)';
-      roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, 6, 6, true, false);
-    }
+    if (!flicker){ cx.fillStyle = getVar('--player'); roundRect(cx, player.x - player.w/2 - Math.floor(camera.x), player.y - player.h/2, player.w, player.h, 6, true, false); cx.fillStyle = 'rgba(255,255,255,0.18)'; roundRect(cx, player.x - player.w/2 - Math.floor(camera.x), player.y - player.h/2, player.w, 6, 6, true, false); }
 
-    // UI banner
-    if (bannerT > 0){ bannerT -= 1/60; cx.resetTransform(); cx.fillStyle = 'rgba(0,0,0,0.55)'; const bw = canvas.width * .74, bh = 64; cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh); cx.strokeStyle = 'rgba(255,255,255,0.2)'; cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh); cx.fillStyle = '#e5f1ff'; cx.font = '20px ui-sans-serif, system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(bannerMsg, canvas.width/2, 30+bh/2); }
-
-    cx.restore();
+    if (bannerT > 0){ bannerT -= STEP; cx.restore(); cx.fillStyle = 'rgba(0,0,0,0.55)'; const bw = canvas.width * .74, bh = 64; cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh); cx.strokeStyle = 'rgba(255,255,255,0.2)'; cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh); cx.fillStyle = '#e5f1ff'; cx.font = '20px ui-sans-serif, system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(bannerMsg, canvas.width/2, 30+bh/2); }
+    else { cx.restore(); }
   }
 
-  function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name); }
-  function drawTile(x, y, c){
-    // body
-    cx.fillStyle = c === '#' ? '#3d2b1f' : '#4b5563';
-    cx.fillRect(x, y, TILE, TILE);
-    // top grass / platform line
-    if (c === '#'){
-      cx.fillStyle = getVar('--grass'); cx.fillRect(x, y, TILE, 10);
-      cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(x, y+10, TILE, 2);
-    } else {
-      cx.fillStyle = 'rgba(255,255,255,0.1)'; cx.fillRect(x, y, TILE, 6);
-    }
-  }
-  function drawSpikes(x,y){ cx.fillStyle = '#ef4444'; for (let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(x + i*(TILE/4), y + TILE); cx.lineTo(x + i*(TILE/4) + TILE/8, y + TILE/2); cx.lineTo(x + i*(TILE/4) + TILE/4, y + TILE); cx.fill(); } }
-  function drawGoal(x,y){
-    // flag pole + flag
-    cx.fillStyle = '#d1d5db'; cx.fillRect(x+TILE*0.78, y+TILE*0.1, 4, TILE*0.8);
-    cx.fillStyle = getVar('--flag'); cx.beginPath(); cx.moveTo(x+TILE*0.78+4, y+TILE*0.12); cx.lineTo(x+TILE*0.78+4+TILE*0.36, y+TILE*0.18); cx.lineTo(x+TILE*0.78+4, y+TILE*0.24); cx.closePath(); cx.fill();
-    // goal base
-    cx.fillStyle = getVar('--goal'); cx.fillRect(x+TILE*0.18, y+TILE*0.2, TILE*0.42, TILE*0.6);
-  }
-  function roundRect(ctx, x, y, w, h, r, fill, stroke){ const rr = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rr, y); ctx.arcTo(x+w, y, x+w, y+h, rr); ctx.arcTo(x+w, y+h, x, y+h, rr); ctx.arcTo(x, y+h, x, y, rr); ctx.arcTo(x, y, x+w, y, rr); ctx.closePath(); if (fill) ctx.fill(); if (stroke) ctx.stroke(); }
-
-  function drawParallax(){
-    cx.save();
-    // distant ridges
-    const bands = [ {h:120, y:120, a:0.15, col:'rgba(255,255,255,0.02)'}, {h:160, y:220, a:0.25, col:'rgba(255,255,255,0.03)'} ];
-    for (const b of bands){ cx.fillStyle = b.col; const offs = - (Math.floor(camera.x*b.a) % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } }
-    // soft hills
-    const hill = (x, y, w, h) => { cx.beginPath(); cx.moveTo(x, y+h); cx.quadraticCurveTo(x+w*0.25, y, x+w*0.5, y+h*0.4); cx.quadraticCurveTo(x+w*0.75, y+h*0.8, x+w, y+h); cx.closePath(); };
-    cx.translate(- (Math.floor(camera.x*0.25)) % 480, 0);
-    cx.fillStyle = 'rgba(37,68,127,0.25)'; for (let i=-1;i<6;i++){ hill(i*480, 360, 480, 140); cx.fill(); }
-    cx.restore();
-  }
-
-  // Boot
+  // ---- Start
   reset(); requestAnimationFrame(loop);
 })();
 </script>
