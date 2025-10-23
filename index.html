@@ -164,18 +164,31 @@
 
   // Collision against tiles – returns resolution vector and ground info
   function rectVsTiles(x, y, w, h){
+    // Minimal-translation-vector pro Achse (kein Aufsummieren) + korrekte Vorzeichen
     const minX = Math.floor((x - w/2)/TILE), maxX = Math.floor((x + w/2)/TILE);
     const minY = Math.floor((y - h/2)/TILE), maxY = Math.floor((y + h/2)/TILE);
     let resX = 0, resY = 0, hitGround = false;
+    let bestAbsX = Infinity, bestAbsY = Infinity;
     for (let gy=minY; gy<=maxY; gy++){
       for (let gx=minX; gx<=maxX; gx++){
         const c = charAtGrid(gx, gy);
-        if (c === '#' || c === '-'){
-          const tx = gx*TILE + TILE/2, ty = gy*TILE + TILE/2;
-          const dx = x - tx, px = (w/2 + TILE/2) - Math.abs(dx);
-          const dy = y - ty, py = (h/2 + TILE/2) - Math.abs(dy);
-          if (px > 0 && py > 0){
-            if (px < py){ resX += (dx < 0 ? -px : px); }
+        if (c !== '#' && c !== '-') continue;
+        const tx = gx*TILE + TILE/2, ty = gy*TILE + TILE/2;
+        const dx = x - tx, px = (w/2 + TILE/2) - Math.abs(dx);
+        const dy = y - ty, py = (h/2 + TILE/2) - Math.abs(dy);
+        if (px > 0 && py > 0){
+          if (px < py){ // resolve along X
+            const cand = (dx < 0 ? +px : -px); // subtracting cand moves OUT of tile
+            if (Math.abs(cand) < bestAbsX){ bestAbsX = Math.abs(cand); resX = cand; }
+          } else { // resolve along Y
+            const cand = (dy < 0 ? +py : -py); // dy<0 => player ÜBER Tile → nach OBEN (positive resY, da wir später subtrahieren)
+            if (Math.abs(cand) < bestAbsY){ bestAbsY = Math.abs(cand); resY = cand; hitGround = (dy < 0); }
+          }
+        }
+      }
+    }
+    return {resX, resY, hitGround};
+  }
             else { resY += (dy < 0 ? -py : py); if (dy < 0) hitGround = true; }
           }
         }
@@ -240,8 +253,17 @@
     // Integrate Y
     player.y += player.vy * dt;
     col = rectVsTiles(player.x, player.y, player.w, player.h);
-    if (col.resY){ player.y -= col.resY; if (col.hitGround){ player.onGround = true; player.vy = 0; } else { player.vy = 0; } }
-    else { player.onGround = false; }
+    if (col.resY){
+      player.y -= col.resY;
+      if (col.hitGround){
+        player.onGround = true; player.vy = 0;
+        player.y -= 0.01; // tiny skin oben, verhindert Re-Penetration
+      } else {
+        player.vy = 0;
+      }
+    } else {
+      player.onGround = false;
+    }
 
     // Bounds (fall death)
     if (player.y > world.h + 200) loseLife();
