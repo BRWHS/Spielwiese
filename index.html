@@ -1,479 +1,305 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>V1 vs V2 vs V1.5 - Visual Comparison</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gaming Valley – Mini Jump & Run</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      /* Gaming-Valley Palette */
+      --sky-0: #0b1020;   /* night indigo */
+      --sky-1: #142240;   /* dark ridge */
+      --sky-2: #1c2c54;   /* mid */
+      --sky-3: #1f366a;   /* far */
+      --sky-4: #25447f;   /* near */
+      --fg: #e8f0ff;
+      --ui: #0b1220;
+      --ui-border: #1c2742;
+      --grass: #7ee787;
+      --dirt: #4a3424;
+      --stone: #4b5563;
+      --accent: #7dd3fc;
+      --coin: #ffd166;
+      --enemy: #ff6b6b;
+      --player: #7aa2ff;
+      --goal: #22c55e;
+      --flag: #f97316;
     }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 40px 20px;
-      color: #111;
-    }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    
-    h1 {
-      text-align: center;
-      font-size: 48px;
-      color: white;
-      margin-bottom: 16px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    
-    .subtitle {
-      text-align: center;
-      font-size: 20px;
-      color: rgba(255,255,255,0.9);
-      margin-bottom: 48px;
-    }
-    
-    .comparison-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-    
-    .version-card {
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .version-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 6px;
-    }
-    
-    .v1::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .v2::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .v15::before { background: linear-gradient(90deg, #10b981, #059669); }
-    
-    .version-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-    
-    .version-title {
-      font-size: 32px;
-      font-weight: 800;
-    }
-    
-    .version-emoji {
-      font-size: 48px;
-    }
-    
-    .version-status {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
-    }
-    
-    .status-production { background: #fef3c7; color: #92400e; }
-    .status-failed { background: #fee2e2; color: #991b1b; }
-    .status-recommended { background: #d1fae5; color: #065f46; }
-    
-    .metrics {
-      margin-bottom: 24px;
-    }
-    
-    .metric {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .metric:last-child {
-      border-bottom: none;
-    }
-    
-    .metric-label {
-      font-weight: 600;
-      color: #6b7280;
-    }
-    
-    .metric-value {
-      font-size: 20px;
-      font-weight: 800;
-    }
-    
-    .metric-bar {
-      height: 24px;
-      background: #e5e7eb;
-      border-radius: 12px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .metric-fill {
-      height: 100%;
-      transition: width 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      color: white;
-    }
-    
-    .fill-orange { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .fill-red { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .fill-green { background: linear-gradient(90deg, #10b981, #059669); }
-    
-    .feature-list {
-      list-style: none;
-    }
-    
-    .feature-list li {
-      padding: 8px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .feature-check { color: #10b981; font-size: 18px; }
-    .feature-cross { color: #ef4444; font-size: 18px; }
-    
-    .cta-section {
-      background: white;
-      border-radius: 16px;
-      padding: 48px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    
-    .cta-section h2 {
-      font-size: 36px;
-      margin-bottom: 16px;
-    }
-    
-    .cta-section p {
-      font-size: 18px;
-      color: #6b7280;
-      margin-bottom: 32px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    .btn {
-      display: inline-block;
-      padding: 16px 32px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 18px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-      transition: transform 0.2s;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-    }
-    
-    .timeline {
-      background: white;
-      border-radius: 16px;
-      padding: 48px;
-      margin-bottom: 40px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    
-    .timeline h2 {
-      text-align: center;
-      font-size: 32px;
-      margin-bottom: 40px;
-    }
-    
-    .timeline-item {
-      display: flex;
-      gap: 24px;
-      margin-bottom: 32px;
-      position: relative;
-    }
-    
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: 23px;
-      top: 48px;
-      bottom: -32px;
-      width: 2px;
-      background: #e5e7eb;
-    }
-    
-    .timeline-item:last-child::before {
-      display: none;
-    }
-    
-    .timeline-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .icon-start { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .icon-fail { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .icon-solution { background: linear-gradient(135deg, #10b981, #059669); }
-    
-    .timeline-content {
-      flex: 1;
-    }
-    
-    .timeline-content h3 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-    
-    .timeline-content p {
-      color: #6b7280;
-      line-height: 1.6;
-    }
-    
-    @media (max-width: 1024px) {
-      .comparison-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--sky-0); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    #wrap { display: grid; place-items: center; height: 100%; gap: .75rem; padding: .75rem; }
+    canvas { width: min(100vw, 960px); height: calc(min(100vw, 960px) * 9 / 16); aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid var(--ui-border); background: linear-gradient(180deg, var(--sky-4), var(--sky-2) 40%, var(--sky-1) 70%, var(--sky-0)); box-shadow: 0 20px 50px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.04); image-rendering: pixelated; }
+    .hud { display:flex; gap: .6rem; align-items:center; justify-content:center; flex-wrap: wrap; }
+    .pill { background: var(--ui); border:1px solid var(--ui-border); color: var(--fg); padding:.35rem .6rem; border-radius: 999px; font-size: .9rem; }
+    .btn { cursor:pointer; user-select:none; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#0b1220; border:1px solid #1e293b; padding:.18rem .42rem; border-radius:6px; }
+    .mobile { display:none; gap:.5rem; }
+    .mobile button { background:#0b1220; color:var(--fg); border:1px solid #1e293b; border-radius:10px; padding:.6rem .9rem; min-width:3rem; font-size:1rem; }
+    @media (max-width: 700px) { .mobile { display:flex; } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🔍 V1 vs V2 vs V1.5</h1>
-    <p class="subtitle">Was ist schiefgelaufen und wie retten wir das Projekt?</p>
-    
-    <!-- Timeline -->
-    <div class="timeline">
-      <h2>Die Geschichte</h2>
-      
-      <div class="timeline-item">
-        <div class="timeline-icon icon-start">🚀</div>
-        <div class="timeline-content">
-          <h3>V1 - Das funktionierende System</h3>
-          <p>Ein vollständiges Hotel-Management-System mit 64 Features. Funktioniert perfekt, sieht aber etwas altmodisch aus. User sind zufrieden, aber wünschen sich moderneres Design.</p>
-        </div>
-      </div>
-      
-      <div class="timeline-item">
-        <div class="timeline-icon icon-fail">💥</div>
-        <div class="timeline-content">
-          <h3>V2 - Der gescheiterte Rewrite</h3>
-          <p>Versuch, V1 zu modernisieren. Resultat: Schönes Design, aber 87.5% der Features fehlen. User können ihre Arbeit nicht mehr machen. Projekt-Disaster!</p>
-        </div>
-      </div>
-      
-      <div class="timeline-item">
-        <div class="timeline-icon icon-solution">✨</div>
-        <div class="timeline-content">
-          <h3>V1.5 - Die perfekte Lösung</h3>
-          <p>Kombination aus V1 (alle Features) + V2 (modernes Design) = Das beste aus beiden Welten. In 5-7 Stunden umsetzbar!</p>
-        </div>
-      </div>
+  <div id="wrap">
+    <canvas id="game" width="960" height="540" aria-label="Gaming Valley – 2D Jump & Run"></canvas>
+    <div class="hud">
+      <span class="pill">Bewegung <span class="kbd">A/D</span> oder <span class="kbd">←/→</span></span>
+      <span class="pill">Sprung <span class="kbd">W</span>/<span class="kbd">Leertaste</span></span>
+      <span class="pill btn" id="restart">↺ Neustart (<span class="kbd">R</span>)</span>
+      <span class="pill">Münzen: <b id="coins">0</b>/<span id="coinmax">0</span></span>
+      <span class="pill">Leben: <b id="lives">3</b></span>
+      <span class="pill">FPS: <b id="fps">60</b></span>
     </div>
-    
-    <!-- Comparison Grid -->
-    <div class="comparison-grid">
-      <!-- V1 Card -->
-      <div class="version-card v1">
-        <div class="version-header">
-          <div class="version-title">V1</div>
-          <div class="version-emoji">🏢</div>
-        </div>
-        <div class="version-status status-production">Production</div>
-        
-        <div class="metrics">
-          <div class="metric">
-            <span class="metric-label">Features</span>
-            <span class="metric-value">64</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-orange" style="width: 100%;">100%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Code</span>
-            <span class="metric-value">9.052</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-orange" style="width: 100%;">100%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Design</span>
-            <span class="metric-value">4/10</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-orange" style="width: 40%;">40%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Users</span>
-            <span class="metric-value">😐</span>
-          </div>
-        </div>
-        
-        <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 16px;">Top Features</h4>
-        <ul class="feature-list">
-          <li><span class="feature-check">✓</span> Reporting & Export</li>
-          <li><span class="feature-check">✓</span> Availability-Management</li>
-          <li><span class="feature-check">✓</span> User-Management</li>
-          <li><span class="feature-check">✓</span> Rate-Management</li>
-          <li><span class="feature-check">✓</span> Channel-Integration</li>
-          <li><span class="feature-check">✓</span> i18n (DE/EN)</li>
-        </ul>
-      </div>
-      
-      <!-- V2 Card -->
-      <div class="version-card v2">
-        <div class="version-header">
-          <div class="version-title">V2</div>
-          <div class="version-emoji">💔</div>
-        </div>
-        <div class="version-status status-failed">Failed Rewrite</div>
-        
-        <div class="metrics">
-          <div class="metric">
-            <span class="metric-label">Features</span>
-            <span class="metric-value">8</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-red" style="width: 12.5%;">12.5%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Code</span>
-            <span class="metric-value">1.800</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-red" style="width: 20%;">20%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Design</span>
-            <span class="metric-value">9/10</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-red" style="width: 90%;">90%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Users</span>
-            <span class="metric-value">😡</span>
-          </div>
-        </div>
-        
-        <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 16px;">Missing Features</h4>
-        <ul class="feature-list">
-          <li><span class="feature-cross">✕</span> Reporting & Export</li>
-          <li><span class="feature-cross">✕</span> Availability-Management</li>
-          <li><span class="feature-cross">✕</span> User-Management</li>
-          <li><span class="feature-cross">✕</span> Rate-Management</li>
-          <li><span class="feature-cross">✕</span> Channel-Integration</li>
-          <li><span class="feature-cross">✕</span> i18n (DE/EN)</li>
-        </ul>
-      </div>
-      
-      <!-- V1.5 Card -->
-      <div class="version-card v15">
-        <div class="version-header">
-          <div class="version-title">V1.5</div>
-          <div class="version-emoji">🎯</div>
-        </div>
-        <div class="version-status status-recommended">Recommended</div>
-        
-        <div class="metrics">
-          <div class="metric">
-            <span class="metric-label">Features</span>
-            <span class="metric-value">64</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-green" style="width: 100%;">100%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Code</span>
-            <span class="metric-value">9.200</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-green" style="width: 100%;">100%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Design</span>
-            <span class="metric-value">9/10</span>
-          </div>
-          <div class="metric-bar">
-            <div class="metric-fill fill-green" style="width: 90%;">90%</div>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Users</span>
-            <span class="metric-value">😍</span>
-          </div>
-        </div>
-        
-        <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 16px;">Best of Both</h4>
-        <ul class="feature-list">
-          <li><span class="feature-check">✓</span> All V1 Features</li>
-          <li><span class="feature-check">✓</span> Modern V2 Design</li>
-          <li><span class="feature-check">✓</span> Toast-Notifications</li>
-          <li><span class="feature-check">✓</span> Dark Theme</li>
-          <li><span class="feature-check">✓</span> Smooth Animations</li>
-          <li><span class="feature-check">✓</span> 5-7h Implementation</li>
-        </ul>
-      </div>
-    </div>
-    
-    <!-- CTA Section -->
-    <div class="cta-section">
-      <h2>🚀 Die Lösung ist klar: V1.5</h2>
-      <p>
-        In nur 5-7 Stunden kombinieren wir alle Features von V1 mit dem modernen Design von V2.
-        Das Resultat: Ein perfektes Hotel-Management-System, das gut aussieht UND funktioniert!
-      </p>
-      <a href="V1.5_ACTION_PLAN.md" class="btn">📋 Action Plan ansehen</a>
-      <div style="margin-top: 24px; display: flex; gap: 16px; justify-content: center;">
-        <a href="V2_PROBLEM_ANALYSIS.md" style="color: #6b7280; text-decoration: underline;">Detaillierte Problem-Analyse</a>
-        <a href="EXECUTIVE_SUMMARY.md" style="color: #6b7280; text-decoration: underline;">Executive Summary</a>
-      </div>
+    <div class="mobile">
+      <button id="left">◀</button>
+      <button id="jump">⤒</button>
+      <button id="right">▶</button>
     </div>
   </div>
+<script>
+(() => {
+  // ======= ENGINE CORE (robust) =======
+  const canvas = document.getElementById('game');
+  const cx = canvas.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+
+  const HUD = {
+    coins: document.getElementById('coins'),
+    coinmax: document.getElementById('coinmax'),
+    lives: document.getElementById('lives'),
+    fps: document.getElementById('fps')
+  };
+  const BTN = {
+    restart: document.getElementById('restart'),
+    left: document.getElementById('left'),
+    right: document.getElementById('right'),
+    jump: document.getElementById('jump')
+  };
+
+  // ---- Constants
+  const TILE = 48;
+  const GRAVITY = 2000;
+  const MAX_FALL = 1400;
+  const ACCEL = 2600;
+  const AIR_ACCEL = 1800;
+  const FRICTION = 2200;
+  const MAX_SPEED = 360;
+  const JUMP_VELOCITY = 820;
+  const COYOTE_TIME = 0.12;
+  const JUMP_BUFFER = 0.12;
+  const CAMERA_LERP = 0.14;
+
+  // ---- Level (all rows equal length!)
+  const LEVEL = [
+    "................................................................................",
+    "...............................*.................E.............*...............",
+    "..................---...............................----......................",
+    ".............*..................---......*.........................---........",
+    "......---..................*................................................G.",
+    "....................E.........................---...........*.................",
+    "..P.....*.................---...........E............................*........",
+    "#######################..###############..###########..########################",
+    "#######################..###############..###########..########################"
+  ];
+  // Normalize variable row lengths
+  const WIDTH = Math.max(...LEVEL.map(r => r.length));
+  const MAP = LEVEL.map(r => r.padEnd(WIDTH, '.'));
+
+  // ensure equal widths (safety)
+  const WIDTH = LEVEL[0].length;
+  for (let r of LEVEL) { if (r.length !== WIDTH) { throw new Error('LEVEL rows must be equal length'); } }
+
+  const world = {
+    w: WIDTH * TILE,
+    h: MAP.length * TILE,
+    solidAt(x, y) { const c = charAtWorld(x, y); return c === '#' || c === '-'; },
+    hurtAt(x, y) { return charAtWorld(x, y) === '^'; }
+  };
+
+  function charAtGrid(gx, gy){ if (gy < 0 || gy >= LEVEL.length) return '.'; if (gx < 0 || gx >= WIDTH) return '.'; return LEVEL[gy][gx]; }
+  function charAtWorld(x, y){ return charAtGrid(Math.floor(x / TILE), Math.floor(y / TILE)); }
+  function findChar(ch){ for (let y=0; y<MAP.length; y++){ const x = LEVEL[y].indexOf(ch); if (x !== -1) return {x, y}; } return null; }
+
+  // Entities
+  const coins = []; const enemies = [];
+  const playerStart = findChar('P') || {x:1, y:6};
+  for (let y=0; y<MAP.length; y++){
+    for (let x=0; x<WIDTH; x++){
+      const c = MAP[y][x];
+      if (c === '*') coins.push({x:(x+.5)*TILE,y:(y+.5)*TILE,r:12,alive:true,t:Math.random()*6});
+      if (c === 'E') enemies.push({x:(x+.5)*TILE,y:(y+.5)*TILE,vx:(Math.random()>.5?1:-1)*90,w:34,h:40,alive:true});
+    }
+  }
+  HUD.coinmax.textContent = coins.length;
+
+  const player = { x: (playerStart.x + .2) * TILE, y: (playerStart.y - .1) * TILE, w: 28, h: 42, vx: 0, vy: 0, onGround: false, coyote: 0, jumpBuf: 0, lives: 3, inv: 0, coins: 0 };
+  const camera = { x: 0, y: 0 };
+
+  // ---- Input
+  const keys = new Set();
+  addEventListener('keydown', e => {
+    if(['ArrowLeft','ArrowRight','ArrowUp',' ','KeyA','KeyD','KeyW','KeyR'].includes(e.code)) e.preventDefault();
+    keys.add(e.code);
+  });
+  addEventListener('keyup', e => { keys.delete(e.code); });
+  let mLeft=false, mRight=false, mJump=false;
+  const press = (el, setter) => { if(!el) return; const on=()=>setter(true), off=()=>setter(false); el.addEventListener('touchstart', e=>{e.preventDefault(); on();},{passive:false}); el.addEventListener('touchend', off); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); };
+  press(BTN.left, v=>mLeft=v); press(BTN.right, v=>mRight=v); press(BTN.jump, v=>mJump=v);
+  BTN.restart.addEventListener('click', reset);
+
+  // ---- Reset
+  function reset(){
+    Object.assign(player, { x:(playerStart.x+.2)*TILE, y:(playerStart.y-.1)*TILE, vx:0, vy:0, onGround:false, coyote:0, jumpBuf:0, inv:0, coins:0, lives:3 });
+    coins.forEach(c=> c.alive = true);
+    enemies.forEach(e=> { e.alive = true; e.vx = (e.vx>=0?1:-1) * 90; });
+    HUD.coins.textContent = 0; HUD.lives.textContent = player.lives; bannerT=0; bannerMsg='';
+  }
+
+  // ---- Collision
+  function rectVsTiles(x, y, w, h){
+    const minX = Math.floor((x - w/2)/TILE), maxX = Math.floor((x + w/2)/TILE);
+    const minY = Math.floor((y - h/2)/TILE), maxY = Math.floor((y + h/2)/TILE);
+    let resX = 0, resY = 0, hitGround = false;
+    let bestAbsX = Infinity, bestAbsY = Infinity;
+    for (let gy=minY; gy<=maxY; gy++){
+      for (let gx=minX; gx<=maxX; gx++){
+        const c = charAtGrid(gx, gy);
+        if (c !== '#' && c !== '-') continue;
+        const tx = gx*TILE + TILE/2, ty = gy*TILE + TILE/2;
+        const dx = x - tx, px = (w/2 + TILE/2) - Math.abs(dx);
+        const dy = y - ty, py = (h/2 + TILE/2) - Math.abs(dy);
+        if (px > 0 && py > 0){
+          if (px < py){
+            const cand = (dx < 0 ? +px : -px);
+            if (Math.abs(cand) < bestAbsX){ bestAbsX = Math.abs(cand); resX = cand; }
+          } else {
+            const cand = (dy < 0 ? +py : -py);
+            if (Math.abs(cand) < bestAbsY){ bestAbsY = Math.abs(cand); resY = cand; hitGround = (dy < 0); }
+          }
+        }
+      }
+    }
+    return {resX, resY, hitGround};
+  }
+
+  // ---- Loop (fixed timestep)
+  const STEP = 1/60;
+  let last = performance.now();
+  let acc = 0; let fpsSamp = 60, fps = 60, running = true;
+  function loop(now){
+    if (!running){ requestAnimationFrame(loop); return; }
+    let frame = (now - last) / 1000; last = now; if (frame > 0.25) frame = 0.25; acc += frame;
+    try {
+      while (acc >= STEP){ update(STEP); acc -= STEP; }
+      fpsSamp = fpsSamp * 0.9 + (1/Math.max(frame, STEP)) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
+      draw();
+    } catch (err){
+      // show fatal error overlay on canvas
+      cx.resetTransform();
+      cx.fillStyle = '#0b0f1a'; cx.fillRect(0,0,canvas.width,canvas.height);
+      cx.fillStyle = '#ff6b6b'; cx.font = '16px ui-monospace, monospace';
+      cx.fillText('Fehler: '+(err && err.message ? err.message : err), 20, 30);
+      console.error(err);
+    }
+    requestAnimationFrame(loop);
+  }
+  addEventListener('blur', ()=> running=false);
+  addEventListener('focus', ()=> { running=true; last=performance.now(); });
+
+  // ---- Update
+  function update(dt){
+    const left = keys.has('ArrowLeft') || keys.has('KeyA') || mLeft;
+    const right = keys.has('ArrowRight') || keys.has('KeyD') || mRight;
+    const jumpKey = keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || mJump;
+    if (keys.has('KeyR')) reset();
+
+    const target = (right - left) * MAX_SPEED;
+    const accel = player.onGround ? ACCEL : AIR_ACCEL;
+    const diff = target - player.vx;
+    const step = Math.sign(diff) * accel * dt;
+    if (Math.abs(step) > Math.abs(diff)) player.vx = target; else player.vx += step;
+    if (!left && !right && player.onGround){ const f = Math.min(Math.abs(player.vx), FRICTION*dt); player.vx -= Math.sign(player.vx)*f; }
+
+    player.vy += GRAVITY * dt; if (player.vy > MAX_FALL) player.vy = MAX_FALL;
+
+    if (player.onGround) player.coyote = COYOTE_TIME; else player.coyote = Math.max(0, player.coyote - dt);
+    if (jumpKey) player.jumpBuf = JUMP_BUFFER; else player.jumpBuf = Math.max(0, player.jumpBuf - dt);
+    if (player.jumpBuf > 0 && player.coyote > 0){ player.vy = -JUMP_VELOCITY; player.onGround = false; player.coyote = 0; player.jumpBuf = 0; }
+
+    // X
+    player.x += player.vx * dt;
+    let col = rectVsTiles(player.x, player.y, player.w, player.h);
+    if (col.resX){ player.x -= col.resX; player.vx = 0; }
+
+    // Y
+    player.y += player.vy * dt;
+    col = rectVsTiles(player.x, player.y, player.w, player.h);
+    if (col.resY){
+      player.y -= col.resY;
+      if (col.hitGround){ player.onGround = true; player.vy = 0; player.y -= 0.01; }
+      else { player.vy = 0; }
+    } else { player.onGround = false; }
+
+    if (player.y > world.h + 200) loseLife();
+
+    for (const c of coins){ if (!c.alive) continue; c.t += dt*6; if (Math.abs(player.x - c.x) < (player.w/2 + c.r) && Math.abs(player.y - c.y) < (player.h/2 + c.r)){ c.alive=false; player.coins++; HUD.coins.textContent = player.coins; } }
+
+    for (const e of enemies){ if (!e.alive) continue; e.x += e.vx * dt; const aheadX = e.x + Math.sign(e.vx) * (e.w/2 + 2); const footY = e.y + e.h/2 + 1; const turn = world.solidAt(aheadX, e.y) || !world.solidAt(aheadX, footY); if (turn) e.vx *= -1; const hit = Math.abs(player.x - e.x) < (player.w/2 + e.w/2) && Math.abs(player.y - e.y) < (player.h/2 + e.h/2); if (hit){ if (player.vy > 120){ e.alive=false; player.vy = -JUMP_VELOCITY*0.7; } else if (player.inv<=0){ damage(); } } }
+
+    const goal = findGoalCenter(); if (goal && Math.hypot(player.x-goal.x, player.y-goal.y) < 38) win();
+
+    const look = Math.sign(player.vx) * 90;
+    const targetX = clamp(player.x - canvas.width/2 + look, 0, world.w - canvas.width);
+    camera.x += (targetX - camera.x) * CAMERA_LERP;
+    camera.x = Math.round(camera.x); // integer camera to avoid shimmer
+    camera.y = 0;
+
+    if (player.inv > 0) player.inv -= dt;
+  }
+
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function findGoalCenter(){ for (let y=0; y<MAP.length; y++){ const x = MAP[y].indexOf('G'); if (x !== -1) return {x:(x+.5)*TILE,y:(y+.5)*TILE}; } return null; }
+  function damage(){ player.inv = 1.1; player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Verloren! Drücke R für Neustart'); reset(); } else { player.vy = -JUMP_VELOCITY*0.55; } }
+  function loseLife(){ player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Game Over! Drücke R'); reset(); } else { player.x=(playerStart.x+.2)*TILE; player.y=(playerStart.y-.1)*TILE; player.vx=0; player.vy=0; } }
+
+  // ---- Rendering
+  let bannerT = 0, bannerMsg = '';
+  function showBanner(msg){ bannerMsg = msg; bannerT = 2.6; }
+  function win(){ showBanner('Geschafft! Münzen: '+player.coins+'/'+coins.length+' – R für Neustart'); }
+
+  function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name); }
+  function drawTile(x, y, c){ cx.fillStyle = c === '#' ? '#3d2b1f' : '#4b5563'; cx.fillRect(x, y, TILE, TILE); if (c === '#'){ cx.fillStyle = getVar('--grass'); cx.fillRect(x, y, TILE, 10); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(x, y+10, TILE, 2); } else { cx.fillStyle = 'rgba(255,255,255,0.1)'; cx.fillRect(x, y, TILE, 6); } }
+  function drawSpikes(x,y){ cx.fillStyle = '#ef4444'; for (let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(x + i*(TILE/4), y + TILE); cx.lineTo(x + i*(TILE/4) + TILE/8, y + TILE/2); cx.lineTo(x + i*(TILE/4) + TILE/4, y + TILE); cx.fill(); } }
+  function drawGoal(x,y){ cx.fillStyle = '#d1d5db'; cx.fillRect(x+TILE*0.78, y+TILE*0.1, 4, TILE*0.8); cx.fillStyle = getVar('--flag'); cx.beginPath(); cx.moveTo(x+TILE*0.78+4, y+TILE*0.12); cx.lineTo(x+TILE*0.78+4+TILE*0.36, y+TILE*0.18); cx.lineTo(x+TILE*0.78+4, y+TILE*0.24); cx.closePath(); cx.fill(); cx.fillStyle = getVar('--goal'); cx.fillRect(x+TILE*0.18, y+TILE*0.2, TILE*0.42, TILE*0.6); }
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){ const rr = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rr, y); ctx.arcTo(x+w, y, x+w, y+h, rr); ctx.arcTo(x+w, y+h, x, y+h, rr); ctx.arcTo(x, y+h, x, y, rr); ctx.arcTo(x, y, x+w, y, rr); ctx.closePath(); if (fill) ctx.fill(); if (stroke) ctx.stroke(); }
+
+  function drawParallax(){ cx.save(); const bands = [ {y:120, a:0.15, col:'rgba(255,255,255,0.02)'}, {y:220, a:0.25, col:'rgba(255,255,255,0.03)'} ]; for (const b of bands){ cx.fillStyle = b.col; const offs = - (Math.floor(camera.x*b.a) % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } } cx.translate(- (Math.floor(camera.x*0.25)) % 480, 0); const hill = (x, y, w, h) => { cx.beginPath(); cx.moveTo(x, y+h); cx.quadraticCurveTo(x+w*0.25, y, x+w*0.5, y+h*0.4); cx.quadraticCurveTo(x+w*0.75, y+h*0.8, x+w, y+h); cx.closePath(); }; cx.fillStyle = 'rgba(37,68,127,0.25)'; for (let i=-1;i<6;i++){ hill(i*480, 360, 480, 140); cx.fill(); } cx.restore(); }
+
+  function draw(){
+    if (!Number.isFinite(player.x) || !Number.isFinite(player.y)) { throw new Error('Player position invalid'); }
+    cx.save();
+    cx.clearRect(0,0,canvas.width,canvas.height);
+    drawParallax();
+    cx.translate(-Math.floor(camera.x), 0);
+    for (let y=0; y<MAP.length; y++){
+      for (let x=0; x<WIDTH; x++){
+        const c = MAP[y][x]; const px = x*TILE, py = y*TILE;
+        if (c === '#' || c === '-') drawTile(px, py, c);
+        if (c === '^') drawSpikes(px, py);
+        if (c === 'G') drawGoal(px, py);
+      }
+    }
+    for (const c of coins){ if (!c.alive) continue; const bob = Math.sin(c.t)*4; cx.fillStyle = getVar('--coin'); cx.beginPath(); cx.arc(c.x, c.y + bob, c.r, 0, Math.PI*2); cx.fill(); cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.beginPath(); cx.arc(c.x+4, c.y-4 + bob, c.r*0.5, 0, Math.PI*2); cx.fill(); }
+    for (const e of enemies){ if (!e.alive) continue; cx.fillStyle = getVar('--enemy'); cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, 6); }
+    const flicker = (player.inv>0 && Math.floor(performance.now()/100)%2===0);
+    if (!flicker){ cx.fillStyle = getVar('--player'); roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, player.h, 6, true, false); cx.fillStyle = 'rgba(255,255,255,0.18)'; roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, 6, 6, true, false); }
+
+    if (bannerT > 0){ bannerT -= STEP; cx.restore(); cx.fillStyle = 'rgba(0,0,0,0.55)'; const bw = canvas.width * .74, bh = 64; cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh); cx.strokeStyle = 'rgba(255,255,255,0.2)'; cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh); cx.fillStyle = '#e5f1ff'; cx.font = '20px ui-sans-serif, system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(bannerMsg, canvas.width/2, 30+bh/2); }
+    else { cx.restore(); }
+  }
+
+  // ---- Start
+  reset(); requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
