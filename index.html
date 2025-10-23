@@ -3,27 +3,36 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2D Jump & Run – Mini</title>
+  <title>Gaming Valley – Mini Jump & Run</title>
   <style>
     :root {
-      --bg: #0b1020;
+      /* Gaming-Valley Palette */
+      --sky-0: #0b1020;   /* night indigo */
+      --sky-1: #142240;   /* dark ridge */
+      --sky-2: #1c2c54;   /* mid */
+      --sky-3: #1f366a;   /* far */
+      --sky-4: #25447f;   /* near */
       --fg: #e8f0ff;
+      --ui: #0b1220;
+      --ui-border: #1c2742;
+      --grass: #7ee787;
+      --dirt: #4a3424;
+      --stone: #4b5563;
       --accent: #7dd3fc;
-      --tile: #334155;
-      --platform: #475569;
-      --spike: #ef4444;
-      --coin: #facc15;
-      --enemy: #f472b6;
+      --coin: #ffd166;
+      --enemy: #ff6b6b;
+      --player: #7aa2ff;
       --goal: #22c55e;
-      --player: #60a5fa;
+      --flag: #f97316;
     }
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--sky-0); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
     #wrap { display: grid; place-items: center; height: 100%; gap: .75rem; padding: .75rem; }
-    canvas { background: linear-gradient(#0b1020, #0b1020 60%, #0f172a); width: min(100vw, 960px); height: calc(min(100vw, 960px) * 9 / 16); aspect-ratio: 16 / 9; border: 2px solid #1f2937; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.03); image-rendering: pixelated; }
-    .hud { display:flex; gap: 1rem; align-items:center; justify-content:center; flex-wrap: wrap; }
-    .pill { background:#111827; border:1px solid #1f2937; color: var(--fg); padding:.35rem .6rem; border-radius: 999px; font-size: .9rem; }
+    canvas { width: min(100vw, 960px); height: calc(min(100vw, 960px) * 9 / 16); aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid var(--ui-border); background: linear-gradient(180deg, var(--sky-4), var(--sky-2) 40%, var(--sky-1) 70%, var(--sky-0)); box-shadow: 0 20px 50px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.04); image-rendering: pixelated; }
+    .hud { display:flex; gap: .6rem; align-items:center; justify-content:center; flex-wrap: wrap; }
+    .pill { background: var(--ui); border:1px solid var(--ui-border); color: var(--fg); padding:.35rem .6rem; border-radius: 999px; font-size: .9rem; }
     .btn { cursor:pointer; user-select:none; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#0b1220; border:1px solid #1e293b; padding:.2rem .45rem; border-radius:6px; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#0b1220; border:1px solid #1e293b; padding:.18rem .42rem; border-radius:6px; }
     .mobile { display:none; gap:.5rem; }
     .mobile button { background:#0b1220; color:var(--fg); border:1px solid #1e293b; border-radius:10px; padding:.6rem .9rem; min-width:3rem; font-size:1rem; }
     @media (max-width: 700px) { .mobile { display:flex; } }
@@ -31,10 +40,10 @@
 </head>
 <body>
   <div id="wrap">
-    <canvas id="game" width="960" height="540" aria-label="2D Jump & Run"></canvas>
+    <canvas id="game" width="960" height="540" aria-label="Gaming Valley – 2D Jump & Run"></canvas>
     <div class="hud">
-      <span class="pill">⟵⟶ <span class="kbd">A/D</span> oder <span class="kbd">←/→</span></span>
-      <span class="pill">Sprung <span class="kbd">W</span>/<span class="kbd">Space</span></span>
+      <span class="pill">Bewegung <span class="kbd">A/D</span> oder <span class="kbd">←/→</span></span>
+      <span class="pill">Sprung <span class="kbd">W</span>/<span class="kbd">Leertaste</span></span>
       <span class="pill btn" id="restart">↺ Neustart (<span class="kbd">R</span>)</span>
       <span class="pill">Münzen: <b id="coins">0</b>/<span id="coinmax">0</span></span>
       <span class="pill">Leben: <b id="lives">3</b></span>
@@ -48,6 +57,7 @@
   </div>
 <script>
 (() => {
+  // ======= ENGINE CORE =======
   const canvas = document.getElementById('game');
   const cx = canvas.getContext('2d');
   const HUD = {
@@ -63,62 +73,52 @@
     jump: document.getElementById('jump')
   };
 
-  // --- Level definition (16x9 visible, scrollable world) ---
-  // Legend: '#' ground, '-' platform, '^' spikes, '*' coin, 'E' enemy, 'G' goal, 'P' player start
+  // Physics tuning – feels like "own Mario" (valley-flow)
+  const TILE = 48;
+  const GRAVITY = 2000;
+  const MAX_FALL = 1400;
+  const ACCEL = 2600;       // ground accel
+  const AIR_ACCEL = 1800;   // air control
+  const FRICTION = 2200;    // ground friction
+  const MAX_SPEED = 360;    // run speed
+  const JUMP_VELOCITY = 820;
+  const COYOTE_TIME = 0.12;     // grace after leaving ground
+  const JUMP_BUFFER = 0.12;     // grace before landing
+  const CAMERA_LERP = 0.14;
+
+  // Tilemap legend: # = dirt/stone ground, - = platform, ^ = spikes, * = coin, E = enemy, G=goal, P=player
   const LEVEL = [
-    "........................................................................",
-    "...............................................*.....E..................",
-    "....................---..............*....................---...........",
-    "..............*..................---..............E.....................",
-    "..........---..............*...........................................G",
-    ".................E....................---...................*...........",
-    "....P........*...........---............................*...............",
-    "#######################..####################...#########################",
-    "#######################..####################...#########################"
+    "................................................................................",
+    "...............................*.................E.............*...............",
+    "..................---...............................----......................",
+    ".............*..................---......*.........................---........",
+    "......---..................*................................................G.",
+    "....................E.........................---...........*.................",
+    "..P.....*.................---...........E............................*........",
+    "#######################..###############..###########..########################",
+    "#######################..###############..###########..########################"
   ];
 
-  const TILE = 48; // world units in pixels
-  const GRAVITY = 1800; // px/s^2
-  const MOVE_SPEED = 340; // px/s
-  const JUMP_VELOCITY = 760; // px/s
-  const MAX_FALL = 1200;
-  const CAMERA_LERP = 0.12;
-
+  // Derived world
   const world = {
     w: LEVEL[0].length * TILE,
     h: LEVEL.length * TILE,
-    solidAt(x, y) {
-      const c = charAtWorld(x, y);
-      return c === '#' || c === '-' ;
-    },
-    hurtAt(x, y) { return charAtWorld(x,y) === '^'; },
+    solidAt(x, y) { const c = charAtWorld(x, y); return c === '#' || c === '-'; },
+    hurtAt(x, y) { return charAtWorld(x, y) === '^'; }
   };
 
-  function charAtGrid(gx, gy){
-    if (gy < 0 || gy >= LEVEL.length) return '.';
-    if (gx < 0 || gx >= LEVEL[gy].length) return '.';
-    return LEVEL[gy][gx];
-  }
-  function charAtWorld(x, y){
-    return charAtGrid(Math.floor(x / TILE), Math.floor(y / TILE));
-  }
-  function findChar(ch){
-    for (let y=0; y<LEVEL.length; y++){
-      const x = LEVEL[y].indexOf(ch);
-      if (x !== -1) return {x, y};
-    }
-    return null;
-  }
+  function charAtGrid(gx, gy){ if (gy < 0 || gy >= LEVEL.length) return '.'; if (gx < 0 || gx >= LEVEL[gy].length) return '.'; return LEVEL[gy][gx]; }
+  function charAtWorld(x, y){ return charAtGrid(Math.floor(x / TILE), Math.floor(y / TILE)); }
+  function findChar(ch){ for (let y=0; y<LEVEL.length; y++){ const x = LEVEL[y].indexOf(ch); if (x !== -1) return {x, y}; } return null; }
 
-  const coins = [];
-  const enemies = [];
+  // Entities
+  const coins = []; const enemies = [];
   let playerStart = findChar('P') || {x:1, y:6};
-
   for (let y=0; y<LEVEL.length; y++){
     for (let x=0; x<LEVEL[y].length; x++){
       const c = LEVEL[y][x];
-      if (c === '*') coins.push({x: (x+.5)*TILE, y:(y+.5)*TILE, r: 12, alive:true, t: Math.random()*6});
-      if (c === 'E') enemies.push({x:(x+.5)*TILE, y:(y+.5)*TILE, vx: (Math.random()>.5?1:-1)*80, w:32, h:42, alive:true});
+      if (c === '*') coins.push({x:(x+.5)*TILE,y:(y+.5)*TILE,r:12,alive:true,t:Math.random()*6});
+      if (c === 'E') enemies.push({x:(x+.5)*TILE,y:(y+.5)*TILE,vx:(Math.random()>.5?1:-1)*90,w:34,h:40,alive:true});
     }
   }
   HUD.coinmax.textContent = coins.length;
@@ -129,6 +129,8 @@
     w: 28, h: 42,
     vx: 0, vy: 0,
     onGround: false,
+    coyote: 0,
+    jumpBuf: 0,
     lives: 3,
     inv: 0,
     coins: 0
@@ -136,296 +138,217 @@
 
   const camera = { x: 0, y: 0 };
 
+  // Input (desktop)
   const keys = new Set();
-  addEventListener('keydown', e => { if(['ArrowLeft','ArrowRight','ArrowUp',' ','KeyA','KeyD','KeyW','KeyR'].includes(e.code)){ e.preventDefault(); } keys.add(e.code); });
+  addEventListener('keydown', e => {
+    if(['ArrowLeft','ArrowRight','ArrowUp',' ','KeyA','KeyD','KeyW','KeyR'].includes(e.code)) e.preventDefault();
+    keys.add(e.code);
+  });
   addEventListener('keyup', e => { keys.delete(e.code); });
 
-  // Mobile buttons
+  // Input (mobile)
   let mLeft=false, mRight=false, mJump=false;
-  const press = (el, setter) => {
-    if(!el) return;
-    const on = () => setter(true);
-    const off = () => setter(false);
-    el.addEventListener('touchstart', e => { e.preventDefault(); on(); }, {passive:false});
-    el.addEventListener('touchend', off);
-    el.addEventListener('mousedown', on);
-    el.addEventListener('mouseup', off);
-    el.addEventListener('mouseleave', off);
-  };
-  press(BTN.left, v=>mLeft=v);
-  press(BTN.right, v=>mRight=v);
-  press(BTN.jump, v=>mJump=v);
+  const attachPress = (el, setter) => { if(!el) return; const on=()=>setter(true), off=()=>setter(false); el.addEventListener('touchstart', e=>{e.preventDefault(); on();},{passive:false}); el.addEventListener('touchend', off); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); };
+  attachPress(BTN.left, v=>mLeft=v); attachPress(BTN.right, v=>mRight=v); attachPress(BTN.jump, v=>mJump=v);
   BTN.restart.addEventListener('click', reset);
 
+  // Safe reset
   function reset(){
-    player.x = (playerStart.x + .2) * TILE;
-    player.y = (playerStart.y - .1) * TILE;
-    player.vx = player.vy = 0; player.onGround=false; player.inv=0; player.coins=0; player.lives = 3;
+    Object.assign(player, { x:(playerStart.x+.2)*TILE, y:(playerStart.y-.1)*TILE, vx:0, vy:0, onGround:false, coyote:0, jumpBuf:0, inv:0, coins:0, lives:3 });
     coins.forEach(c=> c.alive = true);
-    enemies.forEach(e=> { e.alive = true; e.vx = Math.sign(e.vx)||1 * 80; });
+    enemies.forEach(e=> { e.alive = true; e.vx = Math.sign(e.vx)||1 * 90; });
     HUD.coins.textContent = 0; HUD.lives.textContent = player.lives;
+    bannerT=0; bannerMsg='';
   }
 
-  // Physics helpers
+  // Collision against tiles – returns resolution vector and ground info
   function rectVsTiles(x, y, w, h){
-    // Returns correction "push out" vector to resolve collisions
     const minX = Math.floor((x - w/2)/TILE), maxX = Math.floor((x + w/2)/TILE);
     const minY = Math.floor((y - h/2)/TILE), maxY = Math.floor((y + h/2)/TILE);
-    let resolveX = 0, resolveY = 0, hitGround = false;
+    let resX = 0, resY = 0, hitGround = false;
     for (let gy=minY; gy<=maxY; gy++){
       for (let gx=minX; gx<=maxX; gx++){
         const c = charAtGrid(gx, gy);
         if (c === '#' || c === '-'){
-          const tx = gx*TILE + TILE/2, ty = gy*TILE + TILE/2; // tile center
+          const tx = gx*TILE + TILE/2, ty = gy*TILE + TILE/2;
           const dx = x - tx, px = (w/2 + TILE/2) - Math.abs(dx);
           const dy = y - ty, py = (h/2 + TILE/2) - Math.abs(dy);
           if (px > 0 && py > 0){
-            if (px < py){
-              resolveX += (dx < 0 ? -px : px);
-            } else {
-              resolveY += (dy < 0 ? -py : py);
-              if (dy < 0) hitGround = true; // standing on top
-            }
+            if (px < py){ resX += (dx < 0 ? -px : px); }
+            else { resY += (dy < 0 ? -py : py); if (dy < 0) hitGround = true; }
           }
         }
       }
     }
-    return {resolveX, resolveY, hitGround};
+    return {resX, resY, hitGround};
   }
 
-  // Game loop
+  // Loop
   let last = performance.now();
-  let fpsSamp = 60, fps = 60;
+  let fpsSamp = 60, fps = 60, running = true;
   function loop(now){
-    const dt = Math.min(1/30, (now - last)/1000);
-    last = now;
-    fpsSamp = fpsSamp * 0.9 + (1/dt) * 0.1; fps = Math.round(fpsSamp);
-    HUD.fps.textContent = fps;
-
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
+    if (!running) { requestAnimationFrame(loop); return; }
+    let dt = (now - last)/1000; last = now;
+    if (dt > 0.05) dt = 0.05; // clamp to avoid spirals when tab inactive
+    fpsSamp = fpsSamp * 0.9 + (1/dt) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
+    update(dt); draw(); requestAnimationFrame(loop);
   }
+  addEventListener('blur', ()=> running=false);
+  addEventListener('focus', ()=> { running=true; last=performance.now(); });
 
   function update(dt){
-    // Input
+    // ----- Input state
     const left = keys.has('ArrowLeft') || keys.has('KeyA') || mLeft;
     const right = keys.has('ArrowRight') || keys.has('KeyD') || mRight;
-    const wantJump = keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || mJump;
+    const jumpKey = keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || mJump;
     if (keys.has('KeyR')) reset();
 
-    player.vx = (right - left) * MOVE_SPEED;
+    // ----- Horizontal accel/friction
+    const target = (right - left) * MAX_SPEED;
+    const accel = player.onGround ? ACCEL : AIR_ACCEL;
+    const diff = target - player.vx;
+    const step = Math.sign(diff) * accel * dt;
+    if (Math.abs(step) > Math.abs(diff)) player.vx = target; else player.vx += step;
+    // friction when no input
+    if (!left && !right && player.onGround){
+      const f = Math.min(Math.abs(player.vx), FRICTION*dt);
+      player.vx -= Math.sign(player.vx)*f;
+    }
 
-    // Gravity
-    player.vy += GRAVITY * dt;
-    if (player.vy > MAX_FALL) player.vy = MAX_FALL;
+    // ----- Vertical
+    player.vy += GRAVITY * dt; if (player.vy > MAX_FALL) player.vy = MAX_FALL;
 
-    // Integrate X then resolve
+    // Coyote + jump buffer
+    if (player.onGround) player.coyote = COYOTE_TIME; else player.coyote = Math.max(0, player.coyote - dt);
+    if (jumpKey) player.jumpBuf = JUMP_BUFFER; else player.jumpBuf = Math.max(0, player.jumpBuf - dt);
+    if (player.jumpBuf > 0 && player.coyote > 0){
+      player.vy = -JUMP_VELOCITY; player.onGround = false; player.coyote = 0; player.jumpBuf = 0;
+    }
+
+    // Integrate X
     player.x += player.vx * dt;
     let col = rectVsTiles(player.x, player.y, player.w, player.h);
-    if (col.resolveX) player.x -= col.resolveX;
+    if (col.resX){ player.x -= col.resX; player.vx = 0; }
 
-    // Y
+    // Integrate Y
     player.y += player.vy * dt;
     col = rectVsTiles(player.x, player.y, player.w, player.h);
-    if (col.resolveY){
-      player.y -= col.resolveY;
-      if (col.hitGround) { player.onGround = true; player.vy = 0; }
-      else { player.vy = 0; }
-    } else {
-      player.onGround = false;
-    }
+    if (col.resY){ player.y -= col.resY; if (col.hitGround){ player.onGround = true; player.vy = 0; } else { player.vy = 0; } }
+    else { player.onGround = false; }
 
-    // Jump
-    if (wantJump && player.onGround){
-      player.vy = -JUMP_VELOCITY;
-      player.onGround = false;
-    }
-
-    // Boundaries
-    if (player.y > world.h + 200){
-      loseLife();
-    }
+    // Bounds (fall death)
+    if (player.y > world.h + 200) loseLife();
 
     // Coins
-    for (const c of coins){
-      if (!c.alive) continue;
-      c.t += dt*6;
-      const dx = Math.abs(player.x - c.x), dy = Math.abs(player.y - c.y);
-      if (dx < (player.w/2 + c.r) && dy < (player.h/2 + c.r)){
-        c.alive = false; player.coins++; HUD.coins.textContent = player.coins;
-      }
-    }
+    for (const c of coins){ if (!c.alive) continue; c.t += dt*6; if (Math.abs(player.x - c.x) < (player.w/2 + c.r) && Math.abs(player.y - c.y) < (player.h/2 + c.r)){ c.alive=false; player.coins++; HUD.coins.textContent = player.coins; } }
 
-    // Enemies – simple walkers bouncing off edges/tiles
-    for (const e of enemies){
-      if (!e.alive) continue;
-      e.x += e.vx * dt;
-      // Turn around at collisions or edges
-      const aheadX = e.x + Math.sign(e.vx) * (e.w/2 + 2);
-      const footY = e.y + e.h/2 + 1;
-      const tileAhead = world.solidAt(aheadX, e.y) || !world.solidAt(aheadX, footY);
-      if (tileAhead) e.vx *= -1;
-
-      // Player collision – stomp to defeat, else hurt
+    // Enemies
+    for (const e of enemies){ if (!e.alive) continue; e.x += e.vx * dt; const aheadX = e.x + Math.sign(e.vx) * (e.w/2 + 2); const footY = e.y + e.h/2 + 1; const turn = world.solidAt(aheadX, e.y) || !world.solidAt(aheadX, footY); if (turn) e.vx *= -1;
       const hit = Math.abs(player.x - e.x) < (player.w/2 + e.w/2) && Math.abs(player.y - e.y) < (player.h/2 + e.h/2);
-      if (hit){
-        if (player.vy > 100){ // stomp
-          e.alive = false; player.vy = -JUMP_VELOCITY*0.7;
-        } else if (player.inv <= 0){
-          damage();
-        }
-      }
+      if (hit){ if (player.vy > 120){ e.alive=false; player.vy = -JUMP_VELOCITY*0.7; } else if (player.inv<=0){ damage(); } }
     }
 
     // Spikes
-    const feetX = player.x, feetY = player.y + player.h/2;
-    if (world.hurtAt(feetX, feetY) && player.inv <= 0) damage();
+    const feetX = player.x, feetY = player.y + player.h/2; if (world.hurtAt(feetX, feetY) && player.inv<=0) damage();
 
     // Goal
-    const goalPos = findGoalCenter();
-    if (goalPos && Math.hypot(player.x - goalPos.x, player.y - goalPos.y) < 38){
-      win();
-    }
+    const goal = findGoalCenter(); if (goal && Math.hypot(player.x-goal.x, player.y-goal.y) < 38) win();
 
-    // Camera follow
-    const targetX = clamp(player.x - canvas.width/3, 0, world.w - canvas.width);
-    camera.x += (targetX - camera.x) * CAMERA_LERP;
-    camera.y = 0; // level is short vertically
+    // Camera – mild look-ahead
+    const look = Math.sign(player.vx) * 90;
+    const targetX = clamp(player.x - canvas.width/2 + look, 0, world.w - canvas.width);
+    camera.x += (targetX - camera.x) * CAMERA_LERP; camera.y = 0;
 
     if (player.inv > 0) player.inv -= dt;
   }
 
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-  function findGoalCenter(){
-    for (let y=0; y<LEVEL.length; y++){
-      const x = LEVEL[y].indexOf('G');
-      if (x !== -1) return {x: (x+.5)*TILE, y:(y+.5)*TILE};
-    }
-    return null;
-  }
-  function damage(){
-    player.inv = 1.2; // invincible for a bit
-    player.lives--; HUD.lives.textContent = player.lives;
-    if (player.lives < 0){
-      showBanner('Verloren! Drücke R für Neustart');
-      reset();
-    } else {
-      // small knockback
-      player.vy = -JUMP_VELOCITY*0.6;
-    }
-  }
-  function loseLife(){
-    player.lives--; HUD.lives.textContent = player.lives;
-    if (player.lives < 0){ showBanner('Game Over! Drücke R'); reset(); }
-    else { player.x = (playerStart.x + .2) * TILE; player.y = (playerStart.y - .1) * TILE; player.vx = 0; player.vy = 0; }
-  }
-  let bannerT = 0, bannerMsg = '';
-  function showBanner(msg){ bannerMsg = msg; bannerT = 2.5; }
-  function win(){
-    showBanner('Geschafft! Münzen: ' + player.coins + '/' + coins.length + ' – R für Neustart');
-  }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function findGoalCenter(){ for (let y=0; y<LEVEL.length; y++){ const x = LEVEL[y].indexOf('G'); if (x !== -1) return {x:(x+.5)*TILE,y:(y+.5)*TILE}; } return null; }
+  function damage(){ player.inv = 1.1; player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Verloren! Drücke R für Neustart'); reset(); } else { player.vy = -JUMP_VELOCITY*0.55; } }
+  function loseLife(){ player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Game Over! Drücke R'); reset(); } else { player.x=(playerStart.x+.2)*TILE; player.y=(playerStart.y-.1)*TILE; player.vx=0; player.vy=0; } }
 
+  let bannerT = 0, bannerMsg = '';
+  function showBanner(msg){ bannerMsg = msg; bannerT = 2.6; }
+  function win(){ showBanner('Geschafft! Münzen: '+player.coins+'/'+coins.length+' – R für Neustart'); }
+
+  // ======= RENDERING =======
   function draw(){
     cx.save();
-    // Clear
     cx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Parallax background
-    cx.fillStyle = '#0b1020';
-    cx.fillRect(0,0,canvas.width,canvas.height);
-    cx.fillStyle = 'rgba(125,211,252,0.06)';
-    for (let i=0;i<6;i++){
-      const y = 40 + i*60;
-      cx.fillRect(- (camera.x*0.2 % 200) + i*120, y, canvas.width+200, 2);
-    }
+    // Sky gradient already via CSS; draw parallax mountains/valleys
+    drawParallax();
 
     cx.translate(-camera.x, -camera.y);
 
-    // Tiles
+    // Tiles (grass/dirt & platforms/spikes/goal)
     for (let y=0; y<LEVEL.length; y++){
       for (let x=0; x<LEVEL[y].length; x++){
-        const c = LEVEL[y][x];
-        const px = x*TILE, py = y*TILE;
-        if (c === '#' || c === '-'){
-          cx.fillStyle = c === '#' ? getComputedStyle(document.documentElement).getPropertyValue('--tile') : getComputedStyle(document.documentElement).getPropertyValue('--platform');
-          cx.fillRect(px, py, TILE, TILE);
-          // top highlight
-          cx.fillStyle = 'rgba(255,255,255,0.08)';
-          cx.fillRect(px, py, TILE, 6);
-        }
-        if (c === '^'){
-          cx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--spike');
-          for (let i=0;i<4;i++){
-            cx.beginPath();
-            cx.moveTo(px + i*(TILE/4), py + TILE);
-            cx.lineTo(px + i*(TILE/4) + TILE/8, py + TILE/2);
-            cx.lineTo(px + i*(TILE/4) + TILE/4, py + TILE);
-            cx.fill();
-          }
-        }
-        if (c === 'G'){
-          cx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--goal');
-          cx.fillRect(px+TILE*0.25, py+TILE*0.2, TILE*0.5, TILE*0.6);
-          cx.fillStyle = 'rgba(255,255,255,0.25)';
-          cx.fillRect(px+TILE*0.25, py+TILE*0.2, TILE*0.5, 8);
-        }
+        const c = LEVEL[y][x]; const px = x*TILE, py = y*TILE;
+        if (c === '#' || c === '-') drawTile(px, py, c);
+        if (c === '^') drawSpikes(px, py);
+        if (c === 'G') drawGoal(px, py);
       }
     }
 
     // Coins
-    for (const c of coins){
-      if (!c.alive) continue;
-      const bob = Math.sin(c.t)*4;
-      cx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--coin');
-      cx.beginPath();
-      cx.arc(c.x, c.y + bob, c.r, 0, Math.PI*2);
-      cx.fill();
-      cx.fillStyle = 'rgba(255,255,255,0.25)';
-      cx.beginPath(); cx.arc(c.x+4, c.y-4 + bob, c.r*0.5, 0, Math.PI*2); cx.fill();
-    }
+    for (const c of coins){ if (!c.alive) continue; const bob = Math.sin(c.t)*4; cx.fillStyle = getVar('--coin'); cx.beginPath(); cx.arc(c.x, c.y + bob, c.r, 0, Math.PI*2); cx.fill(); cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.beginPath(); cx.arc(c.x+4, c.y-4 + bob, c.r*0.5, 0, Math.PI*2); cx.fill(); }
 
-    // Enemies
-    for (const e of enemies){
-      if (!e.alive) continue;
-      cx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--enemy');
-      cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
-      cx.fillStyle = 'rgba(0,0,0,0.25)';
-      cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, 8);
-    }
+    // Enemies – valley critters
+    for (const e of enemies){ if (!e.alive) continue; cx.fillStyle = getVar('--enemy'); cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, 6); }
 
-    // Player
-    cx.save();
+    // Player – rounder, glossy cap
     const flicker = (player.inv>0 && Math.floor(performance.now()/100)%2===0);
     if (!flicker){
-      cx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--player');
-      cx.fillRect(player.x - player.w/2, player.y - player.h/2, player.w, player.h);
+      cx.fillStyle = getVar('--player');
+      roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, player.h, 6, true, false);
       cx.fillStyle = 'rgba(255,255,255,0.18)';
-      cx.fillRect(player.x - player.w/2, player.y - player.h/2, player.w, 6);
+      roundRect(cx, player.x - player.w/2, player.y - player.h/2, player.w, 6, 6, true, false);
     }
-    cx.restore();
 
-    // Banner
-    if (bannerT > 0){
-      bannerT -= 1/60;
-      cx.resetTransform();
-      cx.fillStyle = 'rgba(0,0,0,0.55)';
-      const bw = canvas.width * .72, bh = 64;
-      cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh);
-      cx.strokeStyle = 'rgba(255,255,255,0.2)';
-      cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh);
-      cx.fillStyle = '#e5f1ff';
-      cx.font = '20px ui-sans-serif, system-ui';
-      cx.textAlign = 'center'; cx.textBaseline = 'middle';
-      cx.fillText(bannerMsg, canvas.width/2, 30+bh/2);
-    }
+    // UI banner
+    if (bannerT > 0){ bannerT -= 1/60; cx.resetTransform(); cx.fillStyle = 'rgba(0,0,0,0.55)'; const bw = canvas.width * .74, bh = 64; cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh); cx.strokeStyle = 'rgba(255,255,255,0.2)'; cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh); cx.fillStyle = '#e5f1ff'; cx.font = '20px ui-sans-serif, system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(bannerMsg, canvas.width/2, 30+bh/2); }
 
     cx.restore();
   }
 
-  // Start
-  reset();
-  requestAnimationFrame(loop);
+  function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name); }
+  function drawTile(x, y, c){
+    // body
+    cx.fillStyle = c === '#' ? '#3d2b1f' : '#4b5563';
+    cx.fillRect(x, y, TILE, TILE);
+    // top grass / platform line
+    if (c === '#'){
+      cx.fillStyle = getVar('--grass'); cx.fillRect(x, y, TILE, 10);
+      cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(x, y+10, TILE, 2);
+    } else {
+      cx.fillStyle = 'rgba(255,255,255,0.1)'; cx.fillRect(x, y, TILE, 6);
+    }
+  }
+  function drawSpikes(x,y){ cx.fillStyle = '#ef4444'; for (let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(x + i*(TILE/4), y + TILE); cx.lineTo(x + i*(TILE/4) + TILE/8, y + TILE/2); cx.lineTo(x + i*(TILE/4) + TILE/4, y + TILE); cx.fill(); } }
+  function drawGoal(x,y){
+    // flag pole + flag
+    cx.fillStyle = '#d1d5db'; cx.fillRect(x+TILE*0.78, y+TILE*0.1, 4, TILE*0.8);
+    cx.fillStyle = getVar('--flag'); cx.beginPath(); cx.moveTo(x+TILE*0.78+4, y+TILE*0.12); cx.lineTo(x+TILE*0.78+4+TILE*0.36, y+TILE*0.18); cx.lineTo(x+TILE*0.78+4, y+TILE*0.24); cx.closePath(); cx.fill();
+    // goal base
+    cx.fillStyle = getVar('--goal'); cx.fillRect(x+TILE*0.18, y+TILE*0.2, TILE*0.42, TILE*0.6);
+  }
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){ const rr = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rr, y); ctx.arcTo(x+w, y, x+w, y+h, rr); ctx.arcTo(x+w, y+h, x, y+h, rr); ctx.arcTo(x, y+h, x, y, rr); ctx.arcTo(x, y, x+w, y, rr); ctx.closePath(); if (fill) ctx.fill(); if (stroke) ctx.stroke(); }
+
+  function drawParallax(){
+    cx.save();
+    // distant ridges
+    const bands = [ {h:120, y:120, a:0.15, col:'rgba(255,255,255,0.02)'}, {h:160, y:220, a:0.25, col:'rgba(255,255,255,0.03)'} ];
+    for (const b of bands){ cx.fillStyle = b.col; const offs = -(camera.x*b.a % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } }
+    // soft hills
+    const hill = (x, y, w, h) => { cx.beginPath(); cx.moveTo(x, y+h); cx.quadraticCurveTo(x+w*0.25, y, x+w*0.5, y+h*0.4); cx.quadraticCurveTo(x+w*0.75, y+h*0.8, x+w, y+h); cx.closePath(); };
+    cx.translate(-(camera.x*0.25)%480, 0);
+    cx.fillStyle = 'rgba(37,68,127,0.25)'; for (let i=-1;i<6;i++){ hill(i*480, 360, 480, 140); cx.fill(); }
+    cx.restore();
+  }
+
+  // Boot
+  reset(); requestAnimationFrame(loop);
 })();
 </script>
 </body>
