@@ -100,6 +100,9 @@
     "#######################..###############..###########..########################",
     "#######################..###############..###########..########################"
   ];
+  // Normalize variable row lengths
+  const WIDTH = Math.max(...LEVEL.map(r => r.length));
+  const MAP = LEVEL.map(r => r.padEnd(WIDTH, '.'));
 
   // ensure equal widths (safety)
   const WIDTH = LEVEL[0].length;
@@ -107,21 +110,20 @@
 
   const world = {
     w: WIDTH * TILE,
-    h: LEVEL.length * TILE,
+    h: MAP.length * TILE,
     solidAt(x, y) { const c = charAtWorld(x, y); return c === '#' || c === '-'; },
     hurtAt(x, y) { return charAtWorld(x, y) === '^'; }
   };
 
-  function charAtGrid(gx, gy){ if (gy < 0 || gy >= LEVEL.length) return '.'; if (gx < 0 || gx >= WIDTH) return '.'; return LEVEL[gy][gx]; }
+  function charAtGrid(gx, gy){ if (gy < 0 || gy >= MAP.length) return '.'; if (gx < 0 || gx >= WIDTH) return '.'; return MAP[gy][gx]; }
   function charAtWorld(x, y){ return charAtGrid(Math.floor(x / TILE), Math.floor(y / TILE)); }
-  function findChar(ch){ for (let y=0; y<LEVEL.length; y++){ const x = LEVEL[y].indexOf(ch); if (x !== -1) return {x, y}; } return null; }
+  function findChar(ch){ for for (let y=0; y<MAP.length; y++)t x = MAP[y].indexOf(ch); if (x !== -1) return {x, y}; } return null; }; } return null; }
 
   // Entities
   const coins = []; const enemies = [];
-  const playerStart = findChar('P') || {x:1, y:6};
-  for (let y=0; y<LEVEL.length; y++){
+  const playerStart = findChar('P') || {x:1for (let y=0; y<MAP.length; y++)ngth; y++){
     for (let x=0; x<WIDTH; x++){
-      const c = LEVEL[y][x];
+      MAP[y][x]EVEL[y][x];
       if (c === '*') coins.push({x:(x+.5)*TILE,y:(y+.5)*TILE,r:12,alive:true,t:Math.random()*6});
       if (c === 'E') enemies.push({x:(x+.5)*TILE,y:(y+.5)*TILE,vx:(Math.random()>.5?1:-1)*90,w:34,h:40,alive:true});
     }
@@ -244,8 +246,7 @@
     if (player.inv > 0) player.inv -= dt;
   }
 
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function findGoalCenter(){ for (let y=0; y<LEVEL.length; y++){ const x = LEVEL[y].indexOf('G'); if (x !== -1) return {x:(x+.5)*TILE,y:(y+.5)*TILE}; } return null; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b,function findGoalCenter(){ for (let y=0; y<MAP.length; y++){ const x = MAP[y].indexOf('G'); if (x !== -1) return {x:(x+.5)*TILE,y:(y+.5)*TILE}; } return null; }rn null; }
   function damage(){ player.inv = 1.1; player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Verloren! Drücke R für Neustart'); reset(); } else { player.vy = -JUMP_VELOCITY*0.55; } }
   function loseLife(){ player.lives--; HUD.lives.textContent = player.lives; if (player.lives < 0){ showBanner('Game Over! Drücke R'); reset(); } else { player.x=(playerStart.x+.2)*TILE; player.y=(playerStart.y-.1)*TILE; player.vx=0; player.vy=0; } }
 
@@ -266,10 +267,9 @@
     cx.save();
     cx.clearRect(0,0,canvas.width,canvas.height);
     drawParallax();
-    cx.translate(-Math.floor(camera.x), 0);
-    for (let y=0; y<LEVEL.length; y++){
+    cx.translate(-Math.floor(camera.x)for (let y=0; y<MAP.length; y++)ngth; y++){
       for (let x=0; x<WIDTH; x++){
-        const c = LEVEL[y][x]; const px = x*TILE, py = y*TILE;
+        MAP[y][x]EVEL[y][x]; const px = x*TILE, py = y*TILE;
         if (c === '#' || c === '-') drawTile(px, py, c);
         if (c === '^') drawSpikes(px, py);
         if (c === 'G') drawGoal(px, py);
@@ -278,7 +278,7 @@
     for (const c of coins){ if (!c.alive) continue; const bob = Math.sin(c.t)*4; cx.fillStyle = getVar('--coin'); cx.beginPath(); cx.arc(c.x, c.y + bob, c.r, 0, Math.PI*2); cx.fill(); cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.beginPath(); cx.arc(c.x+4, c.y-4 + bob, c.r*0.5, 0, Math.PI*2); cx.fill(); }
     for (const e of enemies){ if (!e.alive) continue; cx.fillStyle = getVar('--enemy'); cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h); cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, 6); }
     const flicker = (player.inv>0 && Math.floor(performance.now()/100)%2===0);
-    if (!flicker){ cx.fillStyle = getVar('--player'); roundRect(cx, player.x - player.w/2 - Math.floor(camera.x), player.y - player.h/2, player.w, player.h, 6, true, false); cx.fillStyle = 'rgba(255,255,255,0.18)'; roundRect(cx, player.x - player.w/2 - Math.floor(camera.x), player.y - player.h/2, player.w, 6, 6, true, false); }
+    if (!flicker){ cx.fillStyle = getVar('--player'); rounplayer.x - player.w/2(camera.x), player.y - player.h/2, player.w, player.h, 6, true, false); cx.fillStyle = 'rgba(255,255,255,0.18)'; rounplayer.x - player.w/2(camera.x), player.y - player.h/2, player.w, 6, 6, true, false); }
 
     if (bannerT > 0){ bannerT -= STEP; cx.restore(); cx.fillStyle = 'rgba(0,0,0,0.55)'; const bw = canvas.width * .74, bh = 64; cx.fillRect(canvas.width/2 - bw/2, 30, bw, bh); cx.strokeStyle = 'rgba(255,255,255,0.2)'; cx.strokeRect(canvas.width/2 - bw/2, 30, bw, bh); cx.fillStyle = '#e5f1ff'; cx.font = '20px ui-sans-serif, system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(bannerMsg, canvas.width/2, 30+bh/2); }
     else { cx.restore(); }
