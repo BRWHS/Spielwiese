@@ -60,6 +60,7 @@
   // ======= ENGINE CORE =======
   const canvas = document.getElementById('game');
   const cx = canvas.getContext('2d');
+  cx.imageSmoothingEnabled = false; // verhindert weiches Skalieren → weniger Flimmern
   const HUD = {
     coins: document.getElementById('coins'),
     coinmax: document.getElementById('coinmax'),
@@ -184,17 +185,23 @@
   }
 
   // Loop
+  // --- Fixed timestep to kill jitter
+  const STEP = 1/60; // 60 Hz
   let last = performance.now();
+  let acc = 0;
   let fpsSamp = 60, fps = 60, running = true;
   function loop(now){
-    if (!running) { requestAnimationFrame(loop); return; }
-    let dt = (now - last)/1000; last = now;
-    if (dt > 0.05) dt = 0.05; // clamp to avoid spirals when tab inactive
-    fpsSamp = fpsSamp * 0.9 + (1/dt) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
-    update(dt); draw(); requestAnimationFrame(loop);
+    if (!running){ requestAnimationFrame(loop); return; }
+    let frame = (now - last) / 1000; last = now;
+    if (frame > 0.25) frame = 0.25; // huge tab switch deltas are clamped
+    acc += frame;
+    while (acc >= STEP){ update(STEP); acc -= STEP; }
+    fpsSamp = fpsSamp * 0.9 + (1/frame) * 0.1; fps = Math.round(fpsSamp); HUD.fps.textContent = fps;
+    draw();
+    requestAnimationFrame(loop);
   }
   addEventListener('blur', ()=> running=false);
-  addEventListener('focus', ()=> { running=true; last=performance.now(); });
+  addEventListener('focus', ()=> { running=true; last=performance.now(); }); });
 
   function update(dt){
     // ----- Input state
@@ -257,7 +264,10 @@
     // Camera – mild look-ahead
     const look = Math.sign(player.vx) * 90;
     const targetX = clamp(player.x - canvas.width/2 + look, 0, world.w - canvas.width);
-    camera.x += (targetX - camera.x) * CAMERA_LERP; camera.y = 0;
+    camera.x += (targetX - camera.x) * CAMERA_LERP;
+    // Snap camera to integer pixels to avoid subpixel shimmer
+    camera.x = Math.round(camera.x);
+    camera.y = 0;
 
     if (player.inv > 0) player.inv -= dt;
   }
@@ -279,7 +289,7 @@
     // Sky gradient already via CSS; draw parallax mountains/valleys
     drawParallax();
 
-    cx.translate(-camera.x, -camera.y);
+    cx.translate(-camera.x|0, -camera.y|0);
 
     // Tiles (grass/dirt & platforms/spikes/goal)
     for (let y=0; y<LEVEL.length; y++){
@@ -339,10 +349,10 @@
     cx.save();
     // distant ridges
     const bands = [ {h:120, y:120, a:0.15, col:'rgba(255,255,255,0.02)'}, {h:160, y:220, a:0.25, col:'rgba(255,255,255,0.03)'} ];
-    for (const b of bands){ cx.fillStyle = b.col; const offs = -(camera.x*b.a % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } }
+    for (const b of bands){ cx.fillStyle = b.col; const offs = - (Math.floor(camera.x*b.a) % 240); for (let i=-1;i<8;i++){ cx.fillRect(offs + i*240, b.y, 240, 2); } }
     // soft hills
     const hill = (x, y, w, h) => { cx.beginPath(); cx.moveTo(x, y+h); cx.quadraticCurveTo(x+w*0.25, y, x+w*0.5, y+h*0.4); cx.quadraticCurveTo(x+w*0.75, y+h*0.8, x+w, y+h); cx.closePath(); };
-    cx.translate(-(camera.x*0.25)%480, 0);
+    cx.translate(- (Math.floor(camera.x*0.25)) % 480, 0);
     cx.fillStyle = 'rgba(37,68,127,0.25)'; for (let i=-1;i<6;i++){ hill(i*480, 360, 480, 140); cx.fill(); }
     cx.restore();
   }
