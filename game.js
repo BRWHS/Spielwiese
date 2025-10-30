@@ -1,26 +1,25 @@
 // ==========================================
-// CLIPPER vs LIGHTER - Modern 2D Platformer
-// Rayman-Style mit Parallax & echten Plattformen!
+// CLIPPER vs LIGHTER - Pro 2D Platformer
+// Mit handgezeichneten, animierten Charakteren!
 // ==========================================
 
 const CONFIG = {
     canvas: { width: 1200, height: 600 },
     player: {
-        width: 80,
-        height: 120,
-        speed: 5,
+        width: 50,
+        height: 70,
+        speed: 4.5,
         runSpeed: 7,
-        jumpPower: 14,
-        doubleJumpPower: 12,
-        gravity: 0.6,
-        maxFallSpeed: 18,
-        acceleration: 0.8,
-        friction: 0.85
+        jumpPower: 13,
+        doubleJumpPower: 11,
+        gravity: 0.55,
+        maxFallSpeed: 16,
+        acceleration: 0.7,
+        friction: 0.88
     },
     camera: {
-        followSpeed: 0.1,
-        deadZone: 300,
-        offsetY: 100
+        followSpeed: 0.12,
+        deadZone: 250
     }
 };
 
@@ -32,8 +31,8 @@ class Game {
         this.canvas.height = CONFIG.canvas.height;
         
         this.score = 0;
-        this.highScore = parseInt(localStorage.getItem('highScore')) || 0;
-        this.lives = 3;
+        this.highScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
+        this.lives = 5;
         this.isRunning = false;
         
         this.player = null;
@@ -42,47 +41,21 @@ class Game {
         this.collectibles = [];
         this.particles = [];
         
-        // Parallax layers
+        // Parallax
         this.background = {
-            sky: { x: 0, speed: 0 },
-            mountains: { x: 0, speed: 0.1 },
-            hills: { x: 0, speed: 0.3 },
-            trees: { x: 0, speed: 0.5 }
+            mountains: { x: 0, speed: 0.15 },
+            hills: { x: 0, speed: 0.35 },
+            trees: { x: 0, speed: 0.6 }
         };
         
-        this.camera = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        this.camera = { x: 0, y: 0 };
         this.keys = {};
-        
-        // Effects
         this.shake = 0;
         this.flash = 0;
         this.time = 0;
         
-        // Images
-        this.images = {
-            player: new Image(),
-            enemy: new Image()
-        };
-        
-        this.imagesLoaded = 0;
-        this.loadImages();
         this.setupControls();
         this.updateUI();
-    }
-    
-    loadImages() {
-        const onLoad = () => {
-            this.imagesLoaded++;
-            if (this.imagesLoaded === 2) console.log('✅ Assets loaded!');
-        };
-        
-        this.images.player.onload = onLoad;
-        this.images.player.onerror = onLoad;
-        this.images.player.src = 'player.png';
-        
-        this.images.enemy.onload = onLoad;
-        this.images.enemy.onerror = onLoad;
-        this.images.enemy.src = 'enemy.png';
     }
     
     setupControls() {
@@ -92,22 +65,13 @@ class Game {
         window.addEventListener('keydown', e => {
             this.keys[e.key] = true;
             if ([' ', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-            
-            if ((e.key === ' ' || e.key === 'ArrowUp') && this.player) {
-                this.player.jump();
-            }
-            
-            // Run modifier
-            if (e.key === 'Shift') {
-                this.player.isRunning = true;
-            }
+            if ((e.key === ' ' || e.key === 'ArrowUp') && this.player) this.player.jump();
+            if (e.key === 'Shift' && this.player) this.player.isRunning = true;
         });
         
         window.addEventListener('keyup', e => {
             this.keys[e.key] = false;
-            if (e.key === 'Shift' && this.player) {
-                this.player.isRunning = false;
-            }
+            if (e.key === 'Shift' && this.player) this.player.isRunning = false;
         });
     }
     
@@ -126,12 +90,12 @@ class Game {
     
     reset() {
         this.score = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.enemies = [];
         this.platforms = [];
         this.collectibles = [];
         this.particles = [];
-        this.camera = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        this.camera = { x: 0, y: 0 };
         this.player = new Player(this, 200, 100);
         this.shake = 0;
         this.flash = 0;
@@ -140,46 +104,56 @@ class Game {
     }
     
     createLevel() {
-        const platforms = [
-            // Ground platforms
-            { x: 0, y: 500, width: 400, height: 40 },
-            { x: 500, y: 500, width: 300, height: 40 },
-            { x: 900, y: 500, width: 400, height: 40 },
-            { x: 1400, y: 500, width: 400, height: 40 },
-            { x: 1900, y: 500, width: 500, height: 40 },
-            
-            // Floating platforms
-            { x: 600, y: 380, width: 150, height: 20 },
-            { x: 850, y: 320, width: 150, height: 20 },
-            { x: 1100, y: 280, width: 150, height: 20 },
-            { x: 1350, y: 350, width: 150, height: 20 },
-            { x: 1600, y: 400, width: 200, height: 20 },
-            { x: 1900, y: 350, width: 150, height: 20 },
-            { x: 2150, y: 300, width: 150, height: 20 },
-            
-            // Higher platforms
-            { x: 750, y: 200, width: 120, height: 20 },
-            { x: 1200, y: 150, width: 120, height: 20 },
-            { x: 1700, y: 180, width: 120, height: 20 },
+        // Ground platforms
+        for (let i = 0; i < 10; i++) {
+            this.platforms.push(new Platform(i * 300, 500, 350, 40, 'ground'));
+        }
+        
+        // Floating platforms with variety
+        const floatingPlatforms = [
+            { x: 400, y: 400, w: 120, h: 20 },
+            { x: 600, y: 340, w: 140, h: 20 },
+            { x: 850, y: 280, w: 100, h: 20 },
+            { x: 1050, y: 220, w: 120, h: 20 },
+            { x: 1300, y: 300, w: 160, h: 20 },
+            { x: 1550, y: 380, w: 140, h: 20 },
+            { x: 1800, y: 320, w: 120, h: 20 },
+            { x: 2050, y: 260, w: 100, h: 20 },
+            { x: 2250, y: 360, w: 140, h: 20 },
+            { x: 2500, y: 420, w: 160, h: 20 },
         ];
         
-        platforms.forEach(p => {
-            this.platforms.push(new Platform(p.x, p.y, p.width, p.height));
+        floatingPlatforms.forEach(p => {
+            this.platforms.push(new Platform(p.x, p.y, p.w, p.h, 'floating'));
         });
         
-        // Spawn enemies on platforms
-        this.spawnEnemy(700, 340);
-        this.spawnEnemy(1150, 240);
-        this.spawnEnemy(1450, 310);
-        this.spawnEnemy(2000, 310);
+        // High platforms
+        this.platforms.push(new Platform(750, 180, 100, 20, 'floating'));
+        this.platforms.push(new Platform(1400, 140, 100, 20, 'floating'));
+        this.platforms.push(new Platform(2100, 160, 100, 20, 'floating'));
         
-        // Add collectibles
-        for (let i = 0; i < 20; i++) {
-            const platform = platforms[Math.floor(Math.random() * platforms.length)];
-            this.collectibles.push(new Collectible(
-                platform.x + Math.random() * platform.width,
-                platform.y - 60
-            ));
+        // Spawn enemies
+        this.spawnEnemy(650, 300);
+        this.spawnEnemy(1100, 180);
+        this.spawnEnemy(1600, 340);
+        this.spawnEnemy(2100, 220);
+        this.spawnEnemy(2550, 380);
+        
+        // Collectibles (coins)
+        floatingPlatforms.forEach((p, i) => {
+            if (i % 2 === 0) {
+                this.collectibles.push(new Coin(p.x + p.w / 2, p.y - 50));
+            }
+        });
+        
+        // Extra coins on high platforms
+        this.collectibles.push(new Coin(800, 130));
+        this.collectibles.push(new Coin(1450, 90));
+        this.collectibles.push(new Coin(2150, 110));
+        
+        // Trail of coins
+        for (let i = 0; i < 15; i++) {
+            this.collectibles.push(new Coin(500 + i * 150, 250 - Math.sin(i * 0.5) * 80));
         }
     }
     
@@ -198,33 +172,26 @@ class Game {
     }
     
     update() {
-        // Update player
         this.player.update();
-        
-        // Update camera
         this.updateCamera();
-        
-        // Update parallax
         this.updateParallax();
         
-        // Update enemies
+        // Enemies
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             enemy.update();
             
-            // Collision with player
             if (this.checkCollision(this.player, enemy)) {
-                if (this.player.vy > 0 && this.player.y < enemy.y - 20) {
-                    // Player jumped on enemy!
+                if (this.player.vy > 0 && this.player.y + this.player.height * 0.6 < enemy.y + 10) {
                     this.killEnemy(enemy, i);
-                    this.player.vy = -10;
-                } else {
+                    this.player.vy = -9;
+                } else if (this.player.invincible <= 0) {
                     this.hitPlayer();
                 }
             }
         }
         
-        // Update collectibles
+        // Collectibles
         for (let i = this.collectibles.length - 1; i >= 0; i--) {
             const coin = this.collectibles[i];
             coin.update();
@@ -234,41 +201,37 @@ class Game {
                 this.score += 50;
                 this.updateUI();
                 
-                // Coin particles
-                for (let j = 0; j < 10; j++) {
+                for (let j = 0; j < 12; j++) {
+                    const angle = (Math.PI * 2 * j) / 12;
                     this.particles.push(new Particle(
                         coin.x, coin.y,
-                        (Math.random() - 0.5) * 5,
-                        -Math.random() * 5,
-                        '#FFD700'
+                        Math.cos(angle) * 3,
+                        Math.sin(angle) * 3,
+                        '#FFD700', 'star'
                     ));
                 }
             }
         }
         
-        // Update particles
         this.particles = this.particles.filter(p => {
             p.update();
             return p.life > 0;
         });
         
-        // Update effects
-        if (this.shake > 0) this.shake *= 0.9;
+        if (this.shake > 0) this.shake *= 0.88;
         if (this.shake < 0.3) this.shake = 0;
-        if (this.flash > 0) this.flash -= 0.05;
+        if (this.flash > 0) this.flash -= 0.04;
     }
     
     updateCamera() {
-        // Follow player
-        this.camera.targetX = this.player.x - CONFIG.canvas.width / 2 + this.player.width / 2;
-        this.camera.targetY = this.player.y - CONFIG.canvas.height / 2 + CONFIG.camera.offsetY;
+        const targetX = this.player.x - CONFIG.canvas.width / 2;
+        const targetY = Math.max(0, this.player.y - CONFIG.canvas.height / 2 + 50);
         
-        // Smooth follow
-        this.camera.x += (this.camera.targetX - this.camera.x) * CONFIG.camera.followSpeed;
-        this.camera.y += (this.camera.targetY - this.camera.y) * CONFIG.camera.followSpeed;
+        this.camera.x += (targetX - this.camera.x) * CONFIG.camera.followSpeed;
+        this.camera.y += (targetY - this.camera.y) * CONFIG.camera.followSpeed;
         
-        // Clamp camera
-        this.camera.y = Math.max(0, Math.min(this.camera.y, 200));
+        this.camera.x = Math.max(0, this.camera.x);
+        this.camera.y = Math.max(0, Math.min(this.camera.y, 150));
     }
     
     updateParallax() {
@@ -284,34 +247,30 @@ class Game {
         this.ctx.save();
         this.ctx.translate(-this.camera.x + shakeX, -this.camera.y + shakeY);
         
-        // Sky gradient
+        // Sky
         this.ctx.save();
         this.ctx.translate(this.camera.x, this.camera.y);
         const sky = this.ctx.createLinearGradient(0, 0, 0, CONFIG.canvas.height);
-        sky.addColorStop(0, '#87CEEB');
-        sky.addColorStop(0.4, '#B8D8F0');
-        sky.addColorStop(1, '#E6F3FF');
+        sky.addColorStop(0, '#4A90E2');
+        sky.addColorStop(0.5, '#7DAFDA');
+        sky.addColorStop(1, '#B8D8F0');
         this.ctx.fillStyle = sky;
         this.ctx.fillRect(0, 0, CONFIG.canvas.width, CONFIG.canvas.height);
+        
+        // Sun
+        this.ctx.shadowColor = '#FFE5B4';
+        this.ctx.shadowBlur = 40;
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.beginPath();
+        this.ctx.arc(900, 120, 50, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
         this.ctx.restore();
         
         // Parallax layers
-        this.drawParallaxLayer(this.background.mountains.x, '#8B9DC3', [
-            { x: 0, y: 400, w: 300, h: 200 },
-            { x: 250, y: 380, w: 350, h: 220 },
-            { x: 550, y: 420, w: 280, h: 180 },
-            { x: 800, y: 390, w: 320, h: 210 },
-        ]);
-        
-        this.drawParallaxLayer(this.background.hills.x, '#9FCD9F', [
-            { x: 0, y: 450, w: 400, h: 150 },
-            { x: 350, y: 470, w: 300, h: 130 },
-            { x: 600, y: 460, w: 350, h: 140 },
-            { x: 900, y: 480, w: 280, h: 120 },
-        ]);
-        
-        // Trees/Bushes layer
-        this.drawTreeLayer(this.background.trees.x);
+        this.drawMountains();
+        this.drawHills();
+        this.drawTrees();
         
         // Game objects
         this.platforms.forEach(p => p.draw(this.ctx));
@@ -322,69 +281,92 @@ class Game {
         
         this.ctx.restore();
         
-        // Flash effect
+        // Flash
         if (this.flash > 0) {
-            this.ctx.fillStyle = `rgba(255, 50, 50, ${this.flash * 0.4})`;
+            this.ctx.fillStyle = `rgba(255, 50, 50, ${this.flash * 0.35})`;
             this.ctx.fillRect(0, 0, CONFIG.canvas.width, CONFIG.canvas.height);
         }
     }
     
-    drawParallaxLayer(offsetX, color, shapes) {
-        this.ctx.fillStyle = color;
-        shapes.forEach(shape => {
-            const x = shape.x + offsetX;
-            const repeats = Math.ceil(CONFIG.canvas.width * 3 / 1200);
-            
-            for (let i = -1; i < repeats; i++) {
+    drawMountains() {
+        this.ctx.fillStyle = '#6B88A8';
+        const mountains = [
+            { x: 0, y: 400, w: 250, h: 180 },
+            { x: 200, y: 380, w: 300, h: 200 },
+            { x: 450, y: 410, w: 220, h: 170 },
+            { x: 650, y: 390, w: 280, h: 190 }
+        ];
+        
+        mountains.forEach(m => {
+            for (let i = -1; i < 5; i++) {
+                const x = m.x + this.background.mountains.x + i * 900;
                 this.ctx.beginPath();
-                this.ctx.moveTo(x + i * 1200, shape.y + this.camera.y);
-                this.ctx.quadraticCurveTo(
-                    x + shape.w / 2 + i * 1200, 
-                    shape.y - shape.h * 0.3 + this.camera.y,
-                    x + shape.w + i * 1200, 
-                    shape.y + this.camera.y
-                );
-                this.ctx.lineTo(x + shape.w + i * 1200, CONFIG.canvas.height + this.camera.y);
-                this.ctx.lineTo(x + i * 1200, CONFIG.canvas.height + this.camera.y);
+                this.ctx.moveTo(x, m.y + this.camera.y);
+                this.ctx.lineTo(x + m.w / 2, m.y - m.h + this.camera.y);
+                this.ctx.lineTo(x + m.w, m.y + this.camera.y);
+                this.ctx.lineTo(x + m.w, 600 + this.camera.y);
+                this.ctx.lineTo(x, 600 + this.camera.y);
                 this.ctx.fill();
             }
         });
     }
     
-    drawTreeLayer(offsetX) {
-        const trees = [100, 250, 450, 650, 850, 1050, 1250, 1450];
-        this.ctx.fillStyle = '#6B8E3E';
+    drawHills() {
+        this.ctx.fillStyle = '#8BA870';
+        const hills = [
+            { x: 0, y: 460, w: 350, h: 120 },
+            { x: 300, y: 480, w: 300, h: 100 },
+            { x: 550, y: 470, w: 320, h: 110 }
+        ];
+        
+        hills.forEach(h => {
+            for (let i = -1; i < 6; i++) {
+                const x = h.x + this.background.hills.x + i * 900;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, h.y + this.camera.y);
+                this.ctx.quadraticCurveTo(
+                    x + h.w / 2, h.y - h.h + this.camera.y,
+                    x + h.w, h.y + this.camera.y
+                );
+                this.ctx.lineTo(x + h.w, 600 + this.camera.y);
+                this.ctx.lineTo(x, 600 + this.camera.y);
+                this.ctx.fill();
+            }
+        });
+    }
+    
+    drawTrees() {
+        const trees = [50, 180, 350, 520, 690, 850];
         
         trees.forEach(baseX => {
-            const repeats = 3;
-            for (let i = 0; i < repeats; i++) {
-                const x = baseX + offsetX + i * 1600;
-                const y = 480 + this.camera.y;
+            for (let i = 0; i < 5; i++) {
+                const x = baseX + this.background.trees.x + i * 1000;
+                const y = 490 + this.camera.y;
                 
-                // Tree trunk
+                // Trunk
                 this.ctx.fillStyle = '#5C4A3C';
-                this.ctx.fillRect(x - 5, y, 10, 60);
+                this.ctx.fillRect(x - 6, y, 12, 50);
                 
-                // Tree foliage
-                this.ctx.fillStyle = '#6B8E3E';
+                // Foliage
+                this.ctx.fillStyle = '#4A7C3A';
                 this.ctx.beginPath();
-                this.ctx.arc(x, y - 10, 25, 0, Math.PI * 2);
+                this.ctx.arc(x, y - 5, 22, 0, Math.PI * 2);
                 this.ctx.fill();
                 this.ctx.beginPath();
-                this.ctx.arc(x - 15, y, 20, 0, Math.PI * 2);
+                this.ctx.arc(x - 18, y + 5, 18, 0, Math.PI * 2);
                 this.ctx.fill();
                 this.ctx.beginPath();
-                this.ctx.arc(x + 15, y, 20, 0, Math.PI * 2);
+                this.ctx.arc(x + 18, y + 5, 18, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         });
     }
     
     checkCollision(a, b) {
-        return a.x < b.x + b.width * 0.7 &&
-               a.x + a.width * 0.7 > b.x &&
-               a.y < b.y + b.height * 0.7 &&
-               a.y + a.height * 0.7 > b.y;
+        return a.x < b.x + b.width * 0.65 &&
+               a.x + a.width * 0.65 > b.x &&
+               a.y < b.y + b.height * 0.65 &&
+               a.y + a.height * 0.65 > b.y;
     }
     
     killEnemy(enemy, index) {
@@ -392,30 +374,28 @@ class Game {
         this.score += 100;
         this.updateUI();
         
-        // Explosion
-        for (let i = 0; i < 20; i++) {
-            const angle = (Math.PI * 2 * i) / 20;
-            const speed = 2 + Math.random() * 4;
+        for (let i = 0; i < 25; i++) {
+            const angle = (Math.PI * 2 * i) / 25;
+            const speed = 2 + Math.random() * 5;
             this.particles.push(new Particle(
                 enemy.x + enemy.width / 2,
                 enemy.y + enemy.height / 2,
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed,
-                '#FF6B6B'
+                ['#FF6B6B', '#FF4444', '#CC0000'][Math.floor(Math.random() * 3)],
+                'square'
             ));
         }
     }
     
     hitPlayer() {
         this.lives--;
-        this.shake = 15;
+        this.shake = 18;
         this.flash = 1;
-        this.player.invincible = 60;
+        this.player.invincible = 90;
+        this.player.vy = -10;
+        this.player.vx = -this.player.facing * 7;
         this.updateUI();
-        
-        // Knockback
-        this.player.vy = -12;
-        this.player.vx = -this.player.facing * 8;
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -427,7 +407,7 @@ class Game {
         
         if (this.score > this.highScore) {
             this.highScore = this.score;
-            localStorage.setItem('highScore', this.highScore);
+            localStorage.setItem('platformerHighScore', this.highScore);
         }
         
         document.getElementById('finalScore').textContent = this.score;
@@ -442,41 +422,79 @@ class Game {
     }
 }
 
-// Platform class
+// Platform class continues...
+
 class Platform {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, type = 'ground') {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.type = type;
     }
     
     draw(ctx) {
-        // Platform top (grass)
-        const grassGrad = ctx.createLinearGradient(0, this.y - 5, 0, this.y);
-        grassGrad.addColorStop(0, '#7CB342');
-        grassGrad.addColorStop(1, '#689F38');
-        ctx.fillStyle = grassGrad;
-        ctx.fillRect(this.x, this.y - 5, this.width, 5);
-        
-        // Platform body
-        const bodyGrad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
-        bodyGrad.addColorStop(0, '#8B7355');
-        bodyGrad.addColorStop(1, '#6B5644');
-        ctx.fillStyle = bodyGrad;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Platform details
-        ctx.strokeStyle = '#5C4A3C';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < this.width; i += 40) {
-            ctx.strokeRect(this.x + i, this.y, 40, this.height);
+        if (this.type === 'ground') {
+            // Ground platform with grass
+            const grassGrad = ctx.createLinearGradient(0, this.y - 8, 0, this.y);
+            grassGrad.addColorStop(0, '#6FA83A');
+            grassGrad.addColorStop(1, '#5C8A2F');
+            ctx.fillStyle = grassGrad;
+            ctx.fillRect(this.x, this.y - 8, this.width, 8);
+            
+            // Grass blades
+            ctx.strokeStyle = '#4A7C3A';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < this.width; i += 10) {
+                const h = 5 + Math.random() * 8;
+                ctx.beginPath();
+                ctx.moveTo(this.x + i, this.y - 8);
+                ctx.lineTo(this.x + i + 2, this.y - 8 - h);
+                ctx.stroke();
+            }
+            
+            // Dirt
+            const dirtGrad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
+            dirtGrad.addColorStop(0, '#8B6F47');
+            dirtGrad.addColorStop(1, '#6B5537');
+            ctx.fillStyle = dirtGrad;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            // Dirt texture
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            for (let i = 0; i < this.width; i += 30) {
+                for (let j = 0; j < this.height; j += 20) {
+                    ctx.fillRect(this.x + i + Math.random() * 10, this.y + j, 15, 10);
+                }
+            }
+        } else {
+            // Floating platform
+            const platformGrad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
+            platformGrad.addColorStop(0, '#A68B5B');
+            platformGrad.addColorStop(0.5, '#8B7355');
+            platformGrad.addColorStop(1, '#6B5B47');
+            ctx.fillStyle = platformGrad;
+            
+            // Rounded platform
+            ctx.beginPath();
+            ctx.roundRect(this.x, this.y, this.width, this.height, 10);
+            ctx.fill();
+            
+            // Highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(this.x + 5, this.y + 3, this.width - 10, 4);
+            
+            // Border
+            ctx.strokeStyle = '#5C4A3C';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(this.x, this.y, this.width, this.height, 10);
+            ctx.stroke();
         }
     }
 }
 
-// Player class will continue...
-
+// Player with full animations!
 class Player {
     constructor(game, x, y) {
         this.game = game;
@@ -494,18 +512,19 @@ class Player {
         this.invincible = 0;
         
         // Animation
-        this.time = 0;
+        this.animFrame = 0;
+        this.animTimer = 0;
+        this.animSpeed = 0.15;
+        this.state = 'idle'; // idle, run, jump, fall
         this.rotation = 0;
         this.scaleX = 1;
         this.scaleY = 1;
-        this.squash = 1;
     }
     
     update() {
-        this.time += 0.1;
         if (this.invincible > 0) this.invincible--;
         
-        // Horizontal movement
+        // Movement
         const speed = this.isRunning ? CONFIG.player.runSpeed : CONFIG.player.speed;
         
         if (this.game.keys['ArrowLeft']) {
@@ -521,7 +540,6 @@ class Player {
             if (Math.abs(this.vx) < 0.1) this.vx = 0;
         }
         
-        // Apply movement
         this.x += this.vx;
         
         // Gravity
@@ -533,8 +551,8 @@ class Player {
         this.onGround = false;
         
         this.game.platforms.forEach(platform => {
+            // Horizontal collision
             if (this.vx > 0) {
-                // Moving right
                 if (this.x + this.width > platform.x &&
                     this.x + this.width < platform.x + 10 &&
                     this.y + this.height > platform.y + 5 &&
@@ -543,7 +561,6 @@ class Player {
                     this.vx = 0;
                 }
             } else if (this.vx < 0) {
-                // Moving left
                 if (this.x < platform.x + platform.width &&
                     this.x > platform.x + platform.width - 10 &&
                     this.y + this.height > platform.y + 5 &&
@@ -554,34 +571,31 @@ class Player {
             }
             
             // Vertical collision
-            if (this.x + this.width * 0.3 < platform.x + platform.width &&
-                this.x + this.width * 0.7 > platform.x) {
+            if (this.x + this.width * 0.25 < platform.x + platform.width &&
+                this.x + this.width * 0.75 > platform.x) {
                 
-                // Landing on platform
                 if (this.vy > 0 &&
                     this.y + this.height >= platform.y &&
-                    this.y + this.height <= platform.y + 20) {
+                    this.y + this.height <= platform.y + 25) {
                     this.y = platform.y - this.height;
                     this.vy = 0;
                     this.onGround = true;
                     this.canDoubleJump = true;
                     this.hasDoubleJumped = false;
                     
-                    if (this.squash < 0.9) {
-                        // Landing particles
-                        for (let i = 0; i < 5; i++) {
+                    if (this.scaleY < 0.9) {
+                        for (let i = 0; i < 6; i++) {
                             this.game.particles.push(new Particle(
                                 this.x + this.width / 2,
                                 this.y + this.height,
                                 (Math.random() - 0.5) * 4,
                                 -Math.random() * 3,
-                                '#A0826D'
+                                '#B8A690', 'circle'
                             ));
                         }
                     }
                 }
                 
-                // Hitting platform from below
                 if (this.vy < 0 &&
                     this.y <= platform.y + platform.height &&
                     this.y > platform.y) {
@@ -592,7 +606,7 @@ class Player {
         });
         
         // Death plane
-        if (this.y > 700) {
+        if (this.y > 650) {
             this.game.hitPlayer();
             this.x = 200;
             this.y = 100;
@@ -600,47 +614,70 @@ class Player {
             this.vy = 0;
         }
         
-        // Animation
+        // Animation state
         if (this.onGround) {
             if (Math.abs(this.vx) > 0.5) {
-                // Running animation
-                this.rotation = Math.sin(this.time * 15) * 0.05;
-                this.squash = 1 + Math.sin(this.time * 15) * 0.05;
-                
-                // Run particles
-                if (Math.random() > 0.8) {
-                    this.game.particles.push(new Particle(
-                        this.x + this.width / 2,
-                        this.y + this.height,
-                        (Math.random() - 0.5) * 2,
-                        -Math.random() * 2,
-                        '#D4C4B0'
-                    ));
-                }
+                this.state = 'run';
+                this.animSpeed = this.isRunning ? 0.25 : 0.18;
             } else {
-                // Idle animation
-                this.rotation = 0;
-                this.squash = 1 + Math.sin(this.time * 3) * 0.02;
+                this.state = 'idle';
+                this.animSpeed = 0.08;
             }
         } else {
-            // In air
-            this.rotation = this.vx * 0.05 * this.facing;
-            this.squash = this.vy < 0 ? 1.1 : 0.9;
+            this.state = this.vy < 0 ? 'jump' : 'fall';
         }
         
-        // Smooth squash
-        this.scaleY += (this.squash - this.scaleY) * 0.3;
-        this.scaleX = 2 - this.scaleY;
+        // Animation timer
+        this.animTimer += this.animSpeed;
+        if (this.animTimer >= 1) {
+            this.animTimer = 0;
+            this.animFrame++;
+            
+            const maxFrames = {
+                idle: 4,
+                run: 6,
+                jump: 1,
+                fall: 1
+            };
+            
+            if (this.animFrame >= maxFrames[this.state]) {
+                this.animFrame = 0;
+            }
+        }
+        
+        // Squash & stretch
+        if (this.onGround && Math.abs(this.vx) > 0.5) {
+            const bounce = Math.sin(this.animTimer * Math.PI * 2);
+            this.scaleY = 1 + bounce * 0.08;
+            this.scaleX = 2 - this.scaleY;
+        } else if (!this.onGround) {
+            this.scaleY += (this.vy < 0 ? 1.12 : 0.88 - this.scaleY) * 0.3;
+            this.scaleX = 2 - this.scaleY;
+            this.rotation = this.vx * 0.04 * this.facing;
+        } else {
+            this.scaleY += (1 - this.scaleY) * 0.3;
+            this.scaleX += (1 - this.scaleX) * 0.3;
+            this.rotation = 0;
+        }
+        
+        // Run particles
+        if (this.onGround && Math.abs(this.vx) > 2 && Math.random() > 0.75) {
+            this.game.particles.push(new Particle(
+                this.x + this.width / 2,
+                this.y + this.height,
+                (Math.random() - 0.5) * 2,
+                -Math.random() * 2,
+                '#D4C4B0', 'circle'
+            ));
+        }
     }
     
     jump() {
         if (this.onGround) {
-            // First jump
             this.vy = -CONFIG.player.jumpPower;
             this.onGround = false;
             
-            // Jump particles
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 10; i++) {
                 const angle = Math.PI * 0.4 + Math.random() * Math.PI * 0.2;
                 const speed = 2 + Math.random() * 3;
                 this.game.particles.push(new Particle(
@@ -648,24 +685,22 @@ class Player {
                     this.y + this.height,
                     Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
                     -Math.sin(angle) * speed,
-                    '#FFD700'
+                    '#FFD700', 'star'
                 ));
             }
         } else if (this.canDoubleJump && !this.hasDoubleJumped) {
-            // Double jump!
             this.vy = -CONFIG.player.doubleJumpPower;
             this.hasDoubleJumped = true;
             
-            // Double jump particles (more dramatic!)
-            for (let i = 0; i < 15; i++) {
-                const angle = (Math.PI * 2 * i) / 15;
+            for (let i = 0; i < 18; i++) {
+                const angle = (Math.PI * 2 * i) / 18;
                 const speed = 3 + Math.random() * 2;
                 this.game.particles.push(new Particle(
                     this.x + this.width / 2,
                     this.y + this.height / 2,
                     Math.cos(angle) * speed,
                     Math.sin(angle) * speed,
-                    '#00D4FF'
+                    '#00D4FF', 'star'
                 ));
             }
         }
@@ -676,54 +711,142 @@ class Player {
         const cy = this.y + this.height / 2;
         
         // Shadow
-        if (!this.invincible || this.invincible % 6 < 3) {
+        if (!this.invincible || this.invincible % 4 < 2) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
             ctx.beginPath();
-            ctx.ellipse(
-                cx, 
-                this.y + this.height + 5,
-                this.width / 2, 
-                8,
-                0, 0, Math.PI * 2
-            );
+            ctx.ellipse(cx, this.y + this.height + 3, this.width / 2, 6, 0, 0, Math.PI * 2);
             ctx.fill();
         }
         
-        // Character (with invincibility flicker)
-        if (!this.invincible || this.invincible % 4 < 2) {
+        // Character
+        if (!this.invincible || this.invincible % 6 < 3) {
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(this.rotation);
             ctx.scale(this.facing * this.scaleX, this.scaleY);
             
-            // Glow when in air
             if (!this.onGround) {
                 ctx.shadowColor = '#FFD700';
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 10;
             }
             
-            if (this.game.images.player.complete && this.game.images.player.naturalWidth > 0) {
-                ctx.drawImage(
-                    this.game.images.player,
-                    -this.width / 2,
-                    -this.height / 2,
-                    this.width,
-                    this.height
-                );
-            } else {
-                // Fallback
-                ctx.fillStyle = '#E8E8E8';
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 3;
-                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-                ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-            }
+            this.drawCharacter(ctx);
             
             ctx.restore();
         }
     }
+    
+    drawCharacter(ctx) {
+        const frame = this.animFrame;
+        const w = this.width;
+        const h = this.height;
+        
+        // Body
+        ctx.fillStyle = '#4A90E2';
+        ctx.strokeStyle = '#2C5AA0';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-w * 0.3, -h * 0.15, w * 0.6, h * 0.5, 12);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Head
+        ctx.fillStyle = '#FFD4A3';
+        ctx.strokeStyle = '#D4A574';
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.28, w * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Eyes
+        const eyeY = -h * 0.3;
+        ctx.fillStyle = '#000';
+        
+        if (this.state === 'run') {
+            const blink = frame === 2 ? 0.5 : 1;
+            ctx.beginPath();
+            ctx.arc(-w * 0.12, eyeY, 3 * blink, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(w * 0.12, eyeY, 3 * blink, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillRect(-w * 0.15, eyeY - 2, 5, 4);
+            ctx.fillRect(w * 0.1, eyeY - 2, 5, 4);
+        }
+        
+        // Mouth
+        if (this.state === 'jump' || this.state === 'fall') {
+            ctx.beginPath();
+            ctx.arc(0, -h * 0.2, w * 0.15, 0, Math.PI);
+            ctx.stroke();
+        }
+        
+        // Arms
+        const armSwing = this.state === 'run' ? Math.sin(frame * Math.PI / 3) * 0.6 : 0;
+        const armY = this.state === 'jump' ? -0.5 : (this.state === 'fall' ? 0.3 : 0);
+        
+        ctx.fillStyle = '#FFD4A3';
+        ctx.strokeStyle = '#D4A574';
+        
+        // Left arm
+        ctx.save();
+        ctx.translate(-w * 0.3, -h * 0.1);
+        ctx.rotate(-armSwing + armY);
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, h * 0.35, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, h * 0.35, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        
+        // Right arm
+        ctx.save();
+        ctx.translate(w * 0.3, -h * 0.1);
+        ctx.rotate(armSwing + armY);
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, h * 0.35, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, h * 0.35, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        
+        // Legs
+        const legSwing = this.state === 'run' ? Math.sin(frame * Math.PI / 3) * 0.5 : 0;
+        const legY = this.state === 'jump' ? -0.4 : (this.state === 'fall' ? 0.2 : 0);
+        
+        ctx.fillStyle = '#2C5AA0';
+        ctx.strokeStyle = '#1A3A70';
+        
+        // Left leg
+        ctx.save();
+        ctx.translate(-w * 0.15, h * 0.3);
+        ctx.rotate(legSwing + legY);
+        ctx.fillRect(-6, 0, 12, h * 0.3);
+        ctx.strokeRect(-6, 0, 12, h * 0.3);
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(-7, h * 0.28, 14, 8);
+        ctx.restore();
+        
+        // Right leg
+        ctx.save();
+        ctx.translate(w * 0.15, h * 0.3);
+        ctx.rotate(-legSwing + legY);
+        ctx.fillRect(-6, 0, 12, h * 0.3);
+        ctx.strokeRect(-6, 0, 12, h * 0.3);
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(-7, h * 0.28, 14, 8);
+        ctx.restore();
+    }
 }
 
+// Animated Enemy
 class Enemy {
     constructor(game, x, y) {
         this.game = game;
@@ -731,26 +854,36 @@ class Enemy {
         this.y = y;
         this.width = CONFIG.player.width;
         this.height = CONFIG.player.height;
-        this.vx = -2;
+        this.vx = -1.8;
         this.vy = 0;
         this.onGround = false;
+        this.patrolStart = x - 80;
+        this.patrolEnd = x + 80;
+        
+        // Animation
+        this.animFrame = 0;
+        this.animTimer = 0;
+        this.animSpeed = 0.12;
         this.time = Math.random() * 10;
-        this.patrolStart = x - 100;
-        this.patrolEnd = x + 100;
     }
     
     update() {
-        this.time += 0.15;
+        this.time += 0.1;
+        this.animTimer += this.animSpeed;
+        if (this.animTimer >= 1) {
+            this.animTimer = 0;
+            this.animFrame = (this.animFrame + 1) % 4;
+        }
         
-        // Patrol movement
+        // Patrol
         this.x += this.vx;
         
         if (this.x < this.patrolStart) {
             this.x = this.patrolStart;
-            this.vx = 2;
+            this.vx = 1.8;
         } else if (this.x > this.patrolEnd) {
             this.x = this.patrolEnd;
-            this.vx = -2;
+            this.vx = -1.8;
         }
         
         // Gravity
@@ -759,27 +892,26 @@ class Enemy {
         
         // Platform collision
         this.onGround = false;
-        
         this.game.platforms.forEach(platform => {
             if (this.x + this.width * 0.3 < platform.x + platform.width &&
                 this.x + this.width * 0.7 > platform.x &&
                 this.vy > 0 &&
                 this.y + this.height >= platform.y &&
-                this.y + this.height <= platform.y + 20) {
+                this.y + this.height <= platform.y + 25) {
                 this.y = platform.y - this.height;
                 this.vy = 0;
                 this.onGround = true;
             }
         });
         
-        // Trail particles
-        if (Math.random() > 0.9) {
+        // Trail
+        if (Math.random() > 0.88) {
             this.game.particles.push(new Particle(
                 this.x + this.width / 2,
                 this.y + this.height / 2,
-                this.vx * 0.5 + (Math.random() - 0.5),
+                this.vx * 0.3 + (Math.random() - 0.5),
                 (Math.random() - 0.5) * 2,
-                '#FF4444'
+                '#FF4444', 'square'
             ));
         }
     }
@@ -792,76 +924,134 @@ class Enemy {
         // Shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         ctx.beginPath();
-        ctx.ellipse(cx, this.y + this.height + 5, this.width / 2, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, this.y + this.height + 3, this.width / 2, 6, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Character
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.scale(this.vx > 0 ? 1 : -1, 1 + Math.sin(this.time * 5) * 0.05);
+        ctx.scale(this.vx > 0 ? 1 : -1, 1);
         
         // Evil glow
         ctx.shadowColor = '#FF0000';
-        ctx.shadowBlur = 15 + glow * 10;
+        ctx.shadowBlur = 12 + glow * 8;
         
-        if (this.game.images.enemy.complete && this.game.images.enemy.naturalWidth > 0) {
-            // Glow layer
-            ctx.globalAlpha = 0.4 + glow * 0.3;
-            ctx.drawImage(
-                this.game.images.enemy,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
-            
-            // Main
-            ctx.globalAlpha = 1;
-            ctx.drawImage(
-                this.game.images.enemy,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
-        } else {
-            // Fallback
-            ctx.fillStyle = '#4A4A4A';
-            ctx.strokeStyle = '#1A1A1A';
-            ctx.lineWidth = 3;
-            ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-            ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        }
+        const w = this.width;
+        const h = this.height;
+        const frame = this.animFrame;
+        
+        // Body
+        ctx.fillStyle = '#2C2C2C';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-w * 0.3, -h * 0.15, w * 0.6, h * 0.5, 12);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Head
+        ctx.fillStyle = '#3C3C3C';
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.28, w * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Evil eyes (glowing!)
+        const eyeGlow = 0.6 + glow * 0.4;
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = `rgba(255, 0, 0, ${eyeGlow})`;
+        ctx.beginPath();
+        ctx.arc(-w * 0.12, -h * 0.3, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w * 0.12, -h * 0.3, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Evil grin
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.2, w * 0.2, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+        
+        // Arms (menacing)
+        const armSwing = Math.sin(frame * Math.PI / 2) * 0.3;
+        ctx.fillStyle = '#2C2C2C';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        
+        // Left arm
+        ctx.save();
+        ctx.translate(-w * 0.3, -h * 0.1);
+        ctx.rotate(-0.3 + armSwing);
+        ctx.fillRect(-5, 0, 10, h * 0.35);
+        ctx.strokeRect(-5, 0, 10, h * 0.35);
+        ctx.fillStyle = '#1C1C1C';
+        ctx.beginPath();
+        ctx.arc(0, h * 0.35, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        
+        // Right arm (raised menacingly)
+        ctx.save();
+        ctx.translate(w * 0.3, -h * 0.1);
+        ctx.rotate(0.8 - armSwing);
+        ctx.fillRect(-5, 0, 10, h * 0.35);
+        ctx.strokeRect(-5, 0, 10, h * 0.35);
+        ctx.fillStyle = '#1C1C1C';
+        ctx.beginPath();
+        ctx.arc(0, h * 0.35, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        
+        // Legs (stomping)
+        const legSwing = Math.sin(frame * Math.PI / 2) * 0.4;
+        ctx.fillStyle = '#1C1C1C';
+        
+        ctx.save();
+        ctx.translate(-w * 0.15, h * 0.3);
+        ctx.rotate(legSwing);
+        ctx.fillRect(-6, 0, 12, h * 0.3);
+        ctx.strokeRect(-6, 0, 12, h * 0.3);
+        ctx.restore();
+        
+        ctx.save();
+        ctx.translate(w * 0.15, h * 0.3);
+        ctx.rotate(-legSwing);
+        ctx.fillRect(-6, 0, 12, h * 0.3);
+        ctx.strokeRect(-6, 0, 12, h * 0.3);
+        ctx.restore();
         
         ctx.restore();
     }
 }
 
-class Collectible {
+// Animated Coin
+class Coin {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 30;
-        this.height = 30;
+        this.width = 25;
+        this.height = 25;
         this.time = Math.random() * 10;
-        this.collected = false;
     }
     
     update() {
-        this.time += 0.1;
+        this.time += 0.12;
     }
     
     draw(ctx) {
-        const bob = Math.sin(this.time * 3) * 5;
-        const scale = 1 + Math.sin(this.time * 4) * 0.1;
+        const bob = Math.sin(this.time * 3) * 6;
+        const spin = Math.cos(this.time * 4);
         const glow = Math.sin(this.time * 5) * 0.5 + 0.5;
         
         ctx.save();
         ctx.translate(this.x, this.y + bob);
-        ctx.scale(scale, scale);
+        ctx.scale(Math.abs(spin), 1);
         ctx.rotate(this.time * 2);
         
-        // Glow
         ctx.shadowColor = '#FFD700';
         ctx.shadowBlur = 15 + glow * 10;
         
@@ -874,35 +1064,51 @@ class Collectible {
         ctx.fill();
         ctx.stroke();
         
-        // Inner circle
+        // Inner detail
+        ctx.strokeStyle = '#FFA500';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Star in center
         ctx.fillStyle = '#FFA500';
         ctx.beginPath();
-        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        for (let i = 0; i < 5; i++) {
+            const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+            const x = Math.cos(angle) * 4;
+            const y = Math.sin(angle) * 4;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
         ctx.fill();
         
         ctx.restore();
     }
 }
 
+// Particle system
 class Particle {
-    constructor(x, y, vx, vy, color) {
+    constructor(x, y, vx, vy, color, type = 'circle') {
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
         this.color = color;
+        this.type = type;
         this.life = 1;
-        this.size = 2 + Math.random() * 4;
+        this.size = 3 + Math.random() * 4;
         this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.4;
     }
     
     update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.3;
+        this.vy += 0.35;
         this.rotation += this.rotationSpeed;
-        this.life -= 0.02;
+        this.life -= 0.025;
     }
     
     draw(ctx) {
@@ -911,13 +1117,30 @@ class Particle {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         
-        // Gradient particle
-        const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-        grad.addColorStop(0, this.color);
-        grad.addColorStop(1, this.color + '00');
-        
-        ctx.fillStyle = grad;
-        ctx.fillRect(-this.size, -this.size, this.size * 2, this.size * 2);
+        if (this.type === 'star') {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+                const x = Math.cos(angle) * this.size;
+                const y = Math.sin(angle) * this.size;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+        } else if (this.type === 'square') {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        } else {
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+            grad.addColorStop(0, this.color);
+            grad.addColorStop(1, this.color + '00');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
         
         ctx.restore();
     }
