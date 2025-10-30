@@ -3,48 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipper vs Lighter - Jump & Run</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Clipper vs Lighter</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
-        <div class="ui-overlay">
-            <div class="score-panel">
-                <div class="score-item">
-                    <span class="score-label">Score</span>
-                    <span class="score-value" id="score">0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-label">High Score</span>
-                    <span class="score-value" id="highscore">0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-label">Lives</span>
-                    <span class="score-value" id="lives">3</span>
-                </div>
+        <!-- UI Overlay -->
+        <div class="ui">
+            <div class="ui-item">
+                <span class="label">SCORE</span>
+                <span class="value" id="score">0</span>
+            </div>
+            <div class="ui-item">
+                <span class="label">HIGH SCORE</span>
+                <span class="value" id="highscore">0</span>
+            </div>
+            <div class="ui-item">
+                <span class="label">LIVES</span>
+                <span class="value" id="lives">❤️❤️❤️</span>
             </div>
         </div>
+        
+        <!-- Game Canvas -->
         <canvas id="gameCanvas"></canvas>
-        <div class="start-screen" id="startScreen">
-            <div class="start-content">
-                <h1 class="game-title">Clipper vs Lighter</h1>
-                <p class="game-subtitle">Ein Jump & Run Abenteuer</p>
-                <button class="start-button" id="startButton">Spiel Starten</button>
-                <div class="controls-info">
-                    <p><strong>Steuerung:</strong></p>
-                    <p>Leertaste oder ↑ zum Springen</p>
-                    <p>← → zum Bewegen</p>
+        
+        <!-- Start Screen -->
+        <div class="screen" id="startScreen">
+            <div class="screen-content">
+                <h1 class="title">CLIPPER<br><span class="vs">VS</span><br>LIGHTER</h1>
+                <button class="btn" id="startButton">START GAME</button>
+                <div class="controls">
+                    <p><kbd>←</kbd> <kbd>→</kbd> Bewegen</p>
+                    <p><kbd>SPACE</kbd> / <kbd>↑</kbd> Springen</p>
                 </div>
             </div>
         </div>
-        <div class="game-over-screen" id="gameOverScreen">
-            <div class="game-over-content">
-                <h2 class="game-over-title">Game Over</h2>
-                <p class="final-score">Dein Score: <span id="finalScore">0</span></p>
-                <button class="restart-button" id="restartButton">Nochmal Spielen</button>
+        
+        <!-- Game Over Screen -->
+        <div class="screen" id="gameOverScreen">
+            <div class="screen-content">
+                <h2 class="game-over-title">GAME OVER</h2>
+                <p class="final-score">Score: <span id="finalScore">0</span></p>
+                <button class="btn" id="restartButton">NOCHMAL SPIELEN</button>
             </div>
         </div>
     </div>
+    
     <script src="game.js"></script>
 </body>
 </html>
