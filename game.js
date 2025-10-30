@@ -409,7 +409,7 @@ class Game {
     }
 }
 
-// Player Class with Animations
+// Player Class with SKELETAL ANIMATION (Rigging)
 class Player {
     constructor(game, x, y) {
         this.game = game;
@@ -434,6 +434,18 @@ class Player {
         // Visual effects
         this.runParticles = [];
         this.facingRight = true;
+        
+        // SKELETAL ANIMATION - Body parts
+        this.skeleton = {
+            body: { angle: 0, targetAngle: 0 },
+            head: { angle: 0, targetAngle: 0, bobOffset: 0 },
+            leftArm: { angle: -0.3, targetAngle: -0.3, swing: 0 },
+            rightArm: { angle: 0.3, targetAngle: 0.3, swing: 0 },
+            leftLeg: { angle: 0, targetAngle: 0, kick: 0 },
+            rightLeg: { angle: 0, targetAngle: 0, kick: 0 },
+            leftFoot: { angle: 0 },
+            rightFoot: { angle: 0 }
+        };
     }
 
     update() {
@@ -468,19 +480,50 @@ class Player {
             }
         }
         
-        // Update animation
+        // Update SKELETAL animation based on state
         const isMoving = Math.abs(this.x - prevX) > 0.1;
+        
         if (isMoving && this.isOnGround) {
-            this.animationTimer += this.animationSpeed;
-            if (this.animationTimer >= 1) {
-                this.animationTimer = 0;
-                this.animationFrame = (this.animationFrame + 1) % 4;
-            }
+            // RUNNING ANIMATION - Arms and legs move
+            this.animationTimer += this.animationSpeed * 2;
             
-            // Bounce effect while running
-            this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 3;
+            const walkCycle = Math.sin(this.animationTimer * Math.PI * 2);
+            const walkCycleCos = Math.cos(this.animationTimer * Math.PI * 2);
+            
+            // Arms swing opposite to legs
+            this.skeleton.leftArm.swing = walkCycle * 0.8;
+            this.skeleton.rightArm.swing = -walkCycle * 0.8;
+            
+            // Legs kick forward and back
+            this.skeleton.leftLeg.kick = walkCycleCos * 0.6;
+            this.skeleton.rightLeg.kick = -walkCycleCos * 0.6;
+            
+            // Feet angle based on leg position
+            this.skeleton.leftFoot.angle = Math.max(0, this.skeleton.leftLeg.kick * 0.5);
+            this.skeleton.rightFoot.angle = Math.max(0, -this.skeleton.rightLeg.kick * 0.5);
+            
+            // Body bounces slightly
+            this.bounceOffset = Math.abs(Math.sin(this.animationTimer * Math.PI * 2)) * 4;
+            
+            // Head bobs
+            this.skeleton.head.bobOffset = Math.sin(this.animationTimer * Math.PI * 4) * 2;
+            
+        } else if (!this.isOnGround) {
+            // JUMPING ANIMATION - Arms up, legs tucked
+            this.skeleton.leftArm.swing = -1.2;
+            this.skeleton.rightArm.swing = -1.2;
+            this.skeleton.leftLeg.kick = this.velocityY > 0 ? 0.3 : -0.2;
+            this.skeleton.rightLeg.kick = this.velocityY > 0 ? 0.3 : -0.2;
+            this.skeleton.head.bobOffset = -3;
+            
         } else {
-            this.animationFrame = 0;
+            // IDLE ANIMATION - Breathing
+            this.animationTimer += 0.02;
+            this.skeleton.leftArm.swing = Math.sin(this.animationTimer) * 0.1;
+            this.skeleton.rightArm.swing = Math.sin(this.animationTimer + Math.PI) * 0.1;
+            this.skeleton.head.bobOffset = Math.sin(this.animationTimer * 0.5) * 1;
+            this.skeleton.leftLeg.kick = 0;
+            this.skeleton.rightLeg.kick = 0;
             this.bounceOffset = 0;
         }
 
@@ -491,11 +534,10 @@ class Player {
 
         // Squash and stretch effect
         if (!this.isOnGround) {
-            // Stretch when going up, squash when falling
-            this.squashStretch = this.velocityY < 0 ? 1.1 : 0.9;
-            this.rotation = this.velocityY * 0.02; // Slight tilt in air
+            this.squashStretch = this.velocityY < 0 ? 1.15 : 0.85;
+            this.rotation = this.velocityY * 0.015;
         } else {
-            this.squashStretch = 1;
+            this.squashStretch += (1 - this.squashStretch) * 0.3;
             this.rotation = 0;
         }
 
@@ -507,10 +549,8 @@ class Player {
             this.isJumping = false;
             this.isOnGround = true;
             
-            // Landing squash effect
-            if (this.squashStretch < 1) {
-                this.squashStretch = 0.8;
-                // Add landing particles
+            if (this.squashStretch < 0.95) {
+                this.squashStretch = 0.7;
                 for (let i = 0; i < 5; i++) {
                     this.game.particles.push(new Particle(
                         this.x + this.width / 2,
@@ -522,9 +562,6 @@ class Player {
         } else {
             this.isOnGround = false;
         }
-        
-        // Smooth squash stretch back to normal
-        this.squashStretch += (1 - this.squashStretch) * 0.2;
         
         // Update run particles
         this.runParticles = this.runParticles.filter(p => {
@@ -539,7 +576,6 @@ class Player {
             this.isJumping = true;
             this.isOnGround = false;
             
-            // Jump particles
             for (let i = 0; i < 8; i++) {
                 this.game.particles.push(new Particle(
                     this.x + this.width / 2,
@@ -556,24 +592,13 @@ class Player {
         // Draw run particles
         this.runParticles.forEach(p => p.draw(ctx));
         
-        // Calculate draw position with bounce
         const drawX = this.x;
         const drawY = this.y + this.bounceOffset;
         const centerX = drawX + this.width / 2;
         const centerY = drawY + this.height / 2;
         
-        // Apply transformations
-        ctx.translate(centerX, centerY);
-        ctx.rotate(this.rotation);
-        if (!this.facingRight) {
-            ctx.scale(-1, 1);
-        }
-        ctx.scale(1, this.squashStretch);
-        
-        // Draw shadow (not transformed)
-        ctx.restore();
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        // Draw shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
         ctx.ellipse(
             this.x + this.width / 2,
@@ -583,44 +608,140 @@ class Player {
             0, 0, Math.PI * 2
         );
         ctx.fill();
-        ctx.restore();
+
+        // Draw with skeletal animation
+        if (this.game.imagesLoaded && this.game.images.player.complete && this.game.images.player.naturalWidth > 0) {
+            this.drawSkeletalAnimation(ctx, centerX, centerY);
+        } else {
+            ctx.translate(centerX, centerY);
+            ctx.rotate(this.rotation);
+            if (!this.facingRight) ctx.scale(-1, 1);
+            ctx.scale(1, this.squashStretch);
+            this.drawClipperFallback(ctx);
+        }
         
+        ctx.restore();
+    }
+
+    drawSkeletalAnimation(ctx, centerX, centerY) {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(this.rotation);
-        if (!this.facingRight) {
-            ctx.scale(-1, 1);
-        }
+        if (!this.facingRight) ctx.scale(-1, 1);
         ctx.scale(1, this.squashStretch);
-
-        // Draw the character
-        if (this.game.imagesLoaded && this.game.images.player.complete && this.game.images.player.naturalWidth > 0) {
-            // Draw image with animation offset
-            const wobble = Math.sin(this.animationTimer * Math.PI * 2) * 2;
-            ctx.drawImage(
-                this.game.images.player,
-                -this.width / 2 + wobble * 0.5,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
-            
-            // Add glow effect when jumping
-            if (!this.isOnGround) {
-                ctx.shadowColor = '#FFD700';
-                ctx.shadowBlur = 20;
-                ctx.globalAlpha = 0.3;
-                ctx.drawImage(
-                    this.game.images.player,
-                    -this.width / 2,
-                    -this.height / 2,
-                    this.width,
-                    this.height
-                );
-            }
-        } else {
-            this.drawClipperFallback(ctx);
+        
+        const img = this.game.images.player;
+        const w = this.width;
+        const h = this.height;
+        
+        // Body part dimensions (proportions of the lighter character)
+        const bodyW = w * 0.7;
+        const bodyH = h * 0.5;
+        const headH = h * 0.35;
+        const armW = w * 0.15;
+        const armH = h * 0.3;
+        const legW = w * 0.2;
+        const legH = h * 0.35;
+        const footW = w * 0.25;
+        const footH = h * 0.12;
+        
+        // Draw back arm first (layer order)
+        this.drawArm(ctx, img, -bodyW/2, -bodyH/2 + 10, armW, armH, 
+                     this.facingRight ? this.skeleton.rightArm.swing : this.skeleton.leftArm.swing, true);
+        
+        // Draw back leg
+        this.drawLeg(ctx, img, this.facingRight ? bodyW/4 : -bodyW/4, bodyH/2, legW, legH,
+                    this.facingRight ? this.skeleton.rightLeg.kick : this.skeleton.leftLeg.kick,
+                    footW, footH, true);
+        
+        // Draw body (main torso)
+        ctx.save();
+        ctx.translate(0, 0);
+        ctx.drawImage(img, 
+            img.width * 0.2, img.height * 0.35,  // Source crop
+            img.width * 0.6, img.height * 0.4,
+            -bodyW/2, -bodyH/2, bodyW, bodyH);
+        ctx.restore();
+        
+        // Draw head (with bob)
+        ctx.save();
+        ctx.translate(0, -bodyH/2 - headH/2 + this.skeleton.head.bobOffset);
+        
+        // Add glow when jumping
+        if (!this.isOnGround) {
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 15;
         }
+        
+        ctx.drawImage(img,
+            img.width * 0.15, 0,  // Source crop from top of image
+            img.width * 0.7, img.height * 0.35,
+            -bodyW/2, -headH, bodyW, headH);
+        ctx.restore();
+        
+        // Draw front leg
+        this.drawLeg(ctx, img, this.facingRight ? -bodyW/4 : bodyW/4, bodyH/2, legW, legH,
+                    this.facingRight ? this.skeleton.leftLeg.kick : this.skeleton.rightLeg.kick,
+                    footW, footH, false);
+        
+        // Draw front arm
+        this.drawArm(ctx, img, bodyW/2, -bodyH/2 + 10, armW, armH,
+                    this.facingRight ? this.skeleton.leftArm.swing : this.skeleton.rightArm.swing, false);
+        
+        ctx.restore();
+    }
+
+    drawArm(ctx, img, x, y, w, h, angle, isBack) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        // Draw arm from bottom part of sprite
+        const sourceX = isBack ? img.width * 0.1 : img.width * 0.8;
+        ctx.drawImage(img,
+            sourceX, img.height * 0.5,
+            img.width * 0.15, img.height * 0.3,
+            -w/2, 0, w, h);
+        
+        // Hand
+        ctx.save();
+        ctx.translate(0, h);
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = '#E8E8E8';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.restore();
+    }
+
+    drawLeg(ctx, img, x, y, w, h, angle, footW, footH, isBack) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        // Draw leg
+        const sourceX = isBack ? img.width * 0.2 : img.width * 0.7;
+        ctx.drawImage(img,
+            sourceX, img.height * 0.75,
+            img.width * 0.2, img.height * 0.25,
+            -w/2, 0, w, h);
+        
+        // Foot
+        ctx.save();
+        ctx.translate(0, h);
+        ctx.rotate(isBack ? this.skeleton.rightFoot.angle : this.skeleton.leftFoot.angle);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, footW/2, footH/2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#E8E8E8';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
         
         ctx.restore();
     }
@@ -746,7 +867,7 @@ class Player {
     }
 }
 
-// Enemy Class
+// Enemy Class with SKELETAL ANIMATION
 class Enemy {
     constructor(game, x, y) {
         this.game = game;
@@ -759,7 +880,7 @@ class Enemy {
         // Animation properties
         this.animationFrame = 0;
         this.animationTimer = 0;
-        this.animationSpeed = 0.2;
+        this.animationSpeed = 0.25;
         this.bounceOffset = 0;
         this.rotation = 0;
         this.scale = 1;
@@ -767,26 +888,46 @@ class Enemy {
         // Visual effects
         this.trailParticles = [];
         this.glowIntensity = 0;
+        
+        // SKELETAL ANIMATION for evil movement
+        this.skeleton = {
+            body: { angle: 0, wobble: 0 },
+            head: { angle: 0, tilt: 0 },
+            leftArm: { angle: -0.5, menace: 0 },
+            rightArm: { angle: 0.8, menace: 0 },  // Raised threatening
+            leftLeg: { angle: 0, stomp: 0 },
+            rightLeg: { angle: 0, stomp: 0 }
+        };
     }
 
     update() {
         this.x -= this.speed;
         
-        // Animation
+        // Evil STOMPING animation
         this.animationTimer += this.animationSpeed;
-        if (this.animationTimer >= 1) {
-            this.animationTimer = 0;
-            this.animationFrame = (this.animationFrame + 1) % 4;
-        }
         
-        // Bounce effect
-        this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 4;
+        const stompCycle = Math.sin(this.animationTimer * Math.PI * 2);
+        const stompCycleCos = Math.cos(this.animationTimer * Math.PI * 2);
+        
+        // Aggressive stomping legs
+        this.skeleton.leftLeg.stomp = stompCycleCos * 0.7;
+        this.skeleton.rightLeg.stomp = -stompCycleCos * 0.7;
+        
+        // Menacing arm movements
+        this.skeleton.leftArm.menace = Math.sin(this.animationTimer * Math.PI) * 0.4;
+        this.skeleton.rightArm.menace = Math.cos(this.animationTimer * Math.PI * 1.5) * 0.3;
+        
+        // Body wobble (threatening)
+        this.skeleton.body.wobble = Math.sin(this.animationTimer * Math.PI * 2) * 0.08;
+        
+        // Head tilt (evil)
+        this.skeleton.head.tilt = Math.sin(this.animationTimer * Math.PI) * 0.1;
+        
+        // Bounce effect (stomping)
+        this.bounceOffset = Math.abs(Math.sin(this.animationTimer * Math.PI * 2)) * 6;
         
         // Pulsing glow
         this.glowIntensity = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
-        
-        // Slight wobble
-        this.rotation = Math.sin(this.animationTimer * Math.PI) * 0.05;
         
         // Add evil trail particles
         if (Math.random() > 0.8) {
@@ -816,7 +957,7 @@ class Enemy {
         const centerY = drawY + this.height / 2;
         
         // Draw shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.beginPath();
         ctx.ellipse(
             this.x + this.width / 2,
@@ -826,40 +967,160 @@ class Enemy {
             0, 0, Math.PI * 2
         );
         ctx.fill();
-        
-        // Apply transformations
-        ctx.translate(centerX, centerY);
-        ctx.rotate(this.rotation);
-        ctx.scale(this.scale, this.scale);
 
-        // Draw the character with glow
+        // Draw with skeletal animation
         if (this.game.imagesLoaded && this.game.images.enemy.complete && this.game.images.enemy.naturalWidth > 0) {
-            // Draw glow
-            ctx.shadowColor = '#FF0000';
-            ctx.shadowBlur = 20 + this.glowIntensity * 15;
-            ctx.globalAlpha = 0.6;
-            ctx.drawImage(
-                this.game.images.enemy,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
-            
-            // Draw main image
-            ctx.globalAlpha = 1;
-            ctx.shadowBlur = 10;
-            ctx.drawImage(
-                this.game.images.enemy,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
+            this.drawSkeletalAnimation(ctx, centerX, centerY);
         } else {
+            ctx.translate(centerX, centerY);
+            ctx.rotate(this.skeleton.body.wobble);
             this.drawLighterFallback(ctx);
         }
         
+        ctx.restore();
+    }
+
+    drawSkeletalAnimation(ctx, centerX, centerY) {
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(this.skeleton.body.wobble);
+        
+        const img = this.game.images.enemy;
+        const w = this.width;
+        const h = this.height;
+        
+        // Body part dimensions
+        const bodyW = w * 0.7;
+        const bodyH = h * 0.5;
+        const headH = h * 0.35;
+        const armW = w * 0.15;
+        const armH = h * 0.3;
+        const legW = w * 0.22;
+        const legH = h * 0.35;
+        const footW = w * 0.28;
+        const footH = h * 0.13;
+        
+        // Evil red aura
+        ctx.shadowColor = '#FF0000';
+        ctx.shadowBlur = 25 + this.glowIntensity * 20;
+        
+        // Draw back arm (menacing)
+        this.drawEvilArm(ctx, img, -bodyW/2 - 5, -bodyH/2 + 5, armW, armH,
+                        -0.5 + this.skeleton.leftArm.menace, true);
+        
+        // Draw back leg (stomping)
+        this.drawEvilLeg(ctx, img, bodyW/4, bodyH/2, legW, legH,
+                        this.skeleton.rightLeg.stomp, footW, footH, true);
+        
+        // Draw body (main torso) with evil glow
+        ctx.save();
+        ctx.translate(0, 0);
+        ctx.shadowBlur = 15 + this.glowIntensity * 10;
+        ctx.drawImage(img,
+            img.width * 0.2, img.height * 0.35,
+            img.width * 0.6, img.height * 0.4,
+            -bodyW/2, -bodyH/2, bodyW, bodyH);
+        ctx.restore();
+        
+        // Draw head (with menacing tilt and GLOWING EYES)
+        ctx.save();
+        ctx.translate(0, -bodyH/2 - headH/2);
+        ctx.rotate(this.skeleton.head.tilt);
+        
+        // Intense red glow for head
+        ctx.shadowColor = '#FF0000';
+        ctx.shadowBlur = 30 + this.glowIntensity * 25;
+        
+        ctx.drawImage(img,
+            img.width * 0.15, 0,
+            img.width * 0.7, img.height * 0.35,
+            -bodyW/2, -headH, bodyW, headH);
+            
+        // Extra glow layer for the eyes
+        ctx.globalAlpha = 0.3 + this.glowIntensity * 0.3;
+        ctx.drawImage(img,
+            img.width * 0.15, 0,
+            img.width * 0.7, img.height * 0.35,
+            -bodyW/2, -headH, bodyW, headH);
+        ctx.globalAlpha = 1;
+        
+        ctx.restore();
+        
+        // Draw front leg (stomping)
+        this.drawEvilLeg(ctx, img, -bodyW/4, bodyH/2, legW, legH,
+                        this.skeleton.leftLeg.stomp, footW, footH, false);
+        
+        // Draw front arm (raised menacingly)
+        this.drawEvilArm(ctx, img, bodyW/2 + 5, -bodyH/2 - 5, armW, armH * 1.1,
+                        0.8 + this.skeleton.rightArm.menace, false);
+        
+        ctx.restore();
+    }
+
+    drawEvilArm(ctx, img, x, y, w, h, angle, isBack) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        // Draw arm with dark tone
+        const sourceX = isBack ? img.width * 0.05 : img.width * 0.85;
+        ctx.shadowColor = '#8B0000';
+        ctx.shadowBlur = 10;
+        ctx.drawImage(img,
+            sourceX, img.height * 0.5,
+            img.width * 0.15, img.height * 0.3,
+            -w/2, 0, w, h);
+        
+        // Clenched fist (darker)
+        ctx.save();
+        ctx.translate(0, h);
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#3A3A3A';
+        ctx.fill();
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.restore();
+    }
+
+    drawEvilLeg(ctx, img, x, y, w, h, angle, footW, footH, isBack) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        // Draw leg with dark tone
+        const sourceX = isBack ? img.width * 0.15 : img.width * 0.75;
+        ctx.shadowColor = '#8B0000';
+        ctx.shadowBlur = 8;
+        ctx.drawImage(img,
+            sourceX, img.height * 0.75,
+            img.width * 0.2, img.height * 0.25,
+            -w/2, 0, w, h);
+        
+        // Heavy foot (stomping)
+        ctx.save();
+        ctx.translate(0, h);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, footW/2, footH/2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#4A4A4A';
+        ctx.fill();
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Add stomp effect when leg is down
+        if (Math.abs(angle) < 0.2) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#8B0000';
+            ctx.beginPath();
+            ctx.arc(0, 0, footW/2 + 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        ctx.restore();
         ctx.restore();
     }
 
