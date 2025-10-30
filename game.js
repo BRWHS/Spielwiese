@@ -25,6 +25,23 @@ const CONFIG = {
     }
 };
 
+// Polyfill for roundRect (not available in all browsers)
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+    };
+}
+
 // Game State
 class Game {
     constructor() {
@@ -70,31 +87,49 @@ class Game {
         };
 
         let loadedCount = 0;
+        let errorCount = 0;
         const totalImages = Object.keys(this.images).length;
 
-        const checkAllLoaded = () => {
+        const checkAllLoaded = (success = true) => {
             loadedCount++;
+            if (!success) errorCount++;
+            
             if (loadedCount === totalImages) {
-                this.imagesLoaded = true;
-                console.log('All images loaded successfully');
+                this.imagesLoaded = (errorCount === 0);
+                if (errorCount > 0) {
+                    console.log('⚠️ Some images failed to load. Using styled fallback graphics.');
+                } else {
+                    console.log('✅ All images loaded successfully!');
+                }
             }
         };
 
         // Load player image (Spielfigur.png)
-        this.images.player.onload = checkAllLoaded;
+        this.images.player.onload = () => checkAllLoaded(true);
         this.images.player.onerror = () => {
-            console.error('Failed to load player image');
-            checkAllLoaded();
+            console.warn('⚠️ Player image not found. Using fallback graphics.');
+            checkAllLoaded(false);
         };
+        // Try different possible paths
         this.images.player.src = 'Spielfigur.png';
 
         // Load enemy image (enemie.png)
-        this.images.enemy.onload = checkAllLoaded;
+        this.images.enemy.onload = () => checkAllLoaded(true);
         this.images.enemy.onerror = () => {
-            console.error('Failed to load enemy image');
-            checkAllLoaded();
+            console.warn('⚠️ Enemy image not found. Using fallback graphics.');
+            checkAllLoaded(false);
         };
         this.images.enemy.src = 'enemie.png';
+
+        // Set timeout to continue even if images don't load
+        setTimeout(() => {
+            if (loadedCount < totalImages) {
+                console.log('⏱️ Image loading timeout. Using fallback graphics.');
+                while (loadedCount < totalImages) {
+                    checkAllLoaded(false);
+                }
+            }
+        }, 3000);
     }
 
     setupEventListeners() {
@@ -371,18 +406,19 @@ class Player {
     }
 
     draw(ctx) {
-        if (this.game.imagesLoaded && this.game.images.player.complete) {
-            // Draw shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.ellipse(
-                this.x + this.width / 2,
-                CONFIG.platform.groundLevel + 5,
-                this.width / 2,
-                10,
-                0, 0, Math.PI * 2
-            );
-            ctx.fill();
+        // Draw shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+            this.x + this.width / 2,
+            CONFIG.platform.groundLevel + 5,
+            this.width / 2,
+            10,
+            0, 0, Math.PI * 2
+        );
+        ctx.fill();
 
+        if (this.game.imagesLoaded && this.game.images.player.complete && this.game.images.player.naturalWidth > 0) {
             // Draw player image with smooth rendering
             ctx.drawImage(
                 this.game.images.player,
@@ -392,10 +428,108 @@ class Player {
                 this.height
             );
         } else {
-            // Fallback rectangle
-            ctx.fillStyle = '#4CAF50';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            // Draw stylized Clipper character
+            this.drawClipperFallback(ctx);
         }
+    }
+
+    drawClipperFallback(ctx) {
+        // Main body (lighter case)
+        const bodyGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        bodyGradient.addColorStop(0, '#D3D3D3');
+        bodyGradient.addColorStop(0.3, '#E8E8E8');
+        bodyGradient.addColorStop(0.7, '#C0C0C0');
+        bodyGradient.addColorStop(1, '#A8A8A8');
+        
+        ctx.fillStyle = bodyGradient;
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(this.x + 10, this.y + 20, this.width - 20, this.height - 30, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top (metal cap)
+        ctx.fillStyle = '#A8A8A8';
+        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, 15);
+        ctx.strokeRect(this.x + 10, this.y + 10, this.width - 20, 15);
+
+        // Wheel mechanism
+        ctx.fillStyle = '#666';
+        ctx.beginPath();
+        ctx.arc(this.x + 20, this.y + 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Brand label
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.strokeRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLIPPER', this.x + this.width / 2, this.y + 58);
+
+        // Face
+        // Eyes
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(this.x + 25, this.y + 75, 6, 0, Math.PI * 2);
+        ctx.arc(this.x + 55, this.y + 75, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(this.x + 27, this.y + 73, 2, 0, Math.PI * 2);
+        ctx.arc(this.x + 57, this.y + 73, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Smile
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + 80, 15, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        // Arms
+        ctx.fillStyle = '#333';
+        // Left arm
+        ctx.beginPath();
+        ctx.ellipse(this.x + 5, this.y + 60, 8, 15, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#E8E8E8';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y + 70, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+
+        // Right arm
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.ellipse(this.x + this.width - 5, this.y + 60, 8, 15, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#E8E8E8';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width, this.y + 70, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+
+        // Legs
+        ctx.fillStyle = '#333';
+        ctx.fillRect(this.x + 15, this.y + this.height - 15, 15, 10);
+        ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 15, 10);
+
+        // Feet
+        ctx.fillStyle = '#E8E8E8';
+        ctx.beginPath();
+        ctx.ellipse(this.x + 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(this.x + this.width - 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 }
 
@@ -415,18 +549,19 @@ class Enemy {
     }
 
     draw(ctx) {
-        if (this.game.imagesLoaded && this.game.images.enemy.complete) {
-            // Draw shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.ellipse(
-                this.x + this.width / 2,
-                CONFIG.platform.groundLevel + 5,
-                this.width / 2,
-                10,
-                0, 0, Math.PI * 2
-            );
-            ctx.fill();
+        // Draw shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+            this.x + this.width / 2,
+            CONFIG.platform.groundLevel + 5,
+            this.width / 2,
+            10,
+            0, 0, Math.PI * 2
+        );
+        ctx.fill();
 
+        if (this.game.imagesLoaded && this.game.images.enemy.complete && this.game.images.enemy.naturalWidth > 0) {
             // Draw enemy image with smooth rendering
             ctx.drawImage(
                 this.game.images.enemy,
@@ -436,10 +571,118 @@ class Enemy {
                 this.height
             );
         } else {
-            // Fallback rectangle
-            ctx.fillStyle = '#F44336';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            // Draw stylized evil Lighter character
+            this.drawLighterFallback(ctx);
         }
+    }
+
+    drawLighterFallback(ctx) {
+        // Main body (darker lighter)
+        const bodyGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        bodyGradient.addColorStop(0, '#4A4A4A');
+        bodyGradient.addColorStop(0.3, '#5A5A5A');
+        bodyGradient.addColorStop(0.7, '#3A3A3A');
+        bodyGradient.addColorStop(1, '#2A2A2A');
+        
+        ctx.fillStyle = bodyGradient;
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(this.x + 10, this.y + 20, this.width - 20, this.height - 30, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top (metal cap)
+        ctx.fillStyle = '#5A5A5A';
+        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, 15);
+        ctx.strokeRect(this.x + 10, this.y + 10, this.width - 20, 15);
+
+        // Wheel mechanism
+        ctx.fillStyle = '#3A3A3A';
+        ctx.beginPath();
+        ctx.arc(this.x + 20, this.y + 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Brand label
+        ctx.fillStyle = '#6A6A6A';
+        ctx.fillRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.strokeRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.fillStyle = '#DDD';
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('LIGHTER', this.x + this.width / 2, this.y + 58);
+
+        // Evil Face
+        // Angry eyes (red glow)
+        ctx.fillStyle = '#FF3333';
+        ctx.shadowColor = '#FF0000';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(this.x + 25, this.y + 75, 8, 0, Math.PI * 2);
+        ctx.arc(this.x + 55, this.y + 75, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner pupils
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#8B0000';
+        ctx.beginPath();
+        ctx.arc(this.x + 25, this.y + 75, 4, 0, Math.PI * 2);
+        ctx.arc(this.x + 55, this.y + 75, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Evil grin (showing teeth)
+        ctx.fillStyle = '#1A1A1A';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + 90, 18, 0, Math.PI);
+        ctx.fill();
+
+        // Teeth
+        ctx.fillStyle = '#FFF';
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect(this.x + 24 + i * 8, this.y + 90, 6, 8);
+        }
+
+        // Arms (clenched fists)
+        ctx.fillStyle = '#1A1A1A';
+        // Left arm
+        ctx.beginPath();
+        ctx.ellipse(this.x + 5, this.y + 60, 8, 15, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4A4A4A';
+        ctx.beginPath();
+        ctx.arc(this.x - 2, this.y + 70, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Right arm (raised, threatening)
+        ctx.fillStyle = '#1A1A1A';
+        ctx.beginPath();
+        ctx.ellipse(this.x + this.width - 5, this.y + 50, 8, 15, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4A4A4A';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width + 2, this.y + 60, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.stroke();
+
+        // Legs
+        ctx.fillStyle = '#1A1A1A';
+        ctx.fillRect(this.x + 15, this.y + this.height - 15, 15, 10);
+        ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 15, 10);
+
+        // Feet
+        ctx.fillStyle = '#4A4A4A';
+        ctx.beginPath();
+        ctx.ellipse(this.x + 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(this.x + this.width - 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 }
 
