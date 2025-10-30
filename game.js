@@ -66,6 +66,10 @@ class Game {
         this.lastEnemySpawn = 0;
         this.spawnInterval = CONFIG.enemy.spawnInterval;
         
+        // Visual effects
+        this.screenShake = 0;
+        this.flashEffect = 0;
+        
         this.imagesLoaded = false;
         this.loadImages();
         this.setupEventListeners();
@@ -170,6 +174,8 @@ class Game {
         this.spawnInterval = CONFIG.enemy.spawnInterval;
         this.enemies = [];
         this.particles = [];
+        this.screenShake = 0;
+        this.flashEffect = 0;
         this.player = new Player(this, 150, CONFIG.platform.groundLevel - CONFIG.player.height);
         this.lastEnemySpawn = Date.now();
         this.updateUI();
@@ -232,6 +238,19 @@ class Game {
     }
 
     render() {
+        // Apply screen shake
+        let shakeX = 0;
+        let shakeY = 0;
+        if (this.screenShake > 0) {
+            shakeX = (Math.random() - 0.5) * this.screenShake;
+            shakeY = (Math.random() - 0.5) * this.screenShake;
+            this.screenShake *= 0.9;
+            if (this.screenShake < 0.5) this.screenShake = 0;
+        }
+        
+        this.ctx.save();
+        this.ctx.translate(shakeX, shakeY);
+        
         // Clear canvas with gradient background
         const gradient = this.ctx.createLinearGradient(0, 0, 0, CONFIG.canvas.height);
         gradient.addColorStop(0, '#87CEEB');
@@ -257,6 +276,16 @@ class Game {
 
         // Draw pixelated grass on ground
         this.drawGrass();
+        
+        this.ctx.restore();
+        
+        // Flash effect (not affected by shake)
+        if (this.flashEffect > 0) {
+            this.ctx.fillStyle = `rgba(255, 0, 0, ${this.flashEffect * 0.3})`;
+            this.ctx.fillRect(0, 0, CONFIG.canvas.width, CONFIG.canvas.height);
+            this.flashEffect -= 0.05;
+            if (this.flashEffect < 0) this.flashEffect = 0;
+        }
     }
 
     drawGround() {
@@ -324,8 +353,19 @@ class Game {
         this.lives--;
         this.updateUI();
         
-        // Create explosion particles
+        // Screen shake
+        this.screenShake = 15;
+        
+        // Create massive explosion particles
         this.createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
+        
+        // Flash effect
+        this.flashEffect = 1;
+        
+        // Player knockback
+        this.player.velocityY = -8;
+        this.player.x += (this.player.x < enemy.x) ? -30 : 30;
+        this.player.x = Math.max(0, Math.min(CONFIG.canvas.width - this.player.width, this.player.x));
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -333,8 +373,19 @@ class Game {
     }
 
     createExplosion(x, y) {
+        // Main explosion particles
+        for (let i = 0; i < 30; i++) {
+            const angle = (Math.PI * 2 * i) / 30;
+            const speed = Math.random() * 8 + 4;
+            const particle = new Particle(x, y, '#FF0000');
+            particle.velocityX = Math.cos(angle) * speed;
+            particle.velocityY = Math.sin(angle) * speed;
+            this.particles.push(particle);
+        }
+        
+        // Secondary particles
         for (let i = 0; i < 20; i++) {
-            this.particles.push(new Particle(x, y));
+            this.particles.push(new Particle(x, y, '#FFD700'));
         }
     }
 
@@ -358,7 +409,7 @@ class Game {
     }
 }
 
-// Player Class
+// Player Class with Animations
 class Player {
     constructor(game, x, y) {
         this.game = game;
@@ -369,21 +420,84 @@ class Player {
         this.velocityY = 0;
         this.isJumping = false;
         this.isOnGround = true;
+        
+        // Animation properties
+        this.animationFrame = 0;
+        this.animationTimer = 0;
+        this.animationSpeed = 0.15;
+        this.bounceOffset = 0;
+        this.bounceSpeed = 0.2;
+        this.rotation = 0;
+        this.scale = 1;
+        this.squashStretch = 1;
+        
+        // Visual effects
+        this.runParticles = [];
+        this.facingRight = true;
     }
 
     update() {
+        // Store previous position
+        const prevX = this.x;
+        
         // Horizontal movement
         if (this.game.keys['ArrowLeft']) {
             this.x = Math.max(0, this.x - CONFIG.player.speed);
+            this.facingRight = false;
+            
+            // Add run particles
+            if (this.isOnGround && Math.random() > 0.7) {
+                this.runParticles.push(new RunParticle(
+                    this.x + this.width / 2,
+                    CONFIG.platform.groundLevel,
+                    '#D3D3D3'
+                ));
+            }
         }
         if (this.game.keys['ArrowRight']) {
             this.x = Math.min(CONFIG.canvas.width - this.width, this.x + CONFIG.player.speed);
+            this.facingRight = true;
+            
+            // Add run particles
+            if (this.isOnGround && Math.random() > 0.7) {
+                this.runParticles.push(new RunParticle(
+                    this.x + this.width / 2,
+                    CONFIG.platform.groundLevel,
+                    '#D3D3D3'
+                ));
+            }
+        }
+        
+        // Update animation
+        const isMoving = Math.abs(this.x - prevX) > 0.1;
+        if (isMoving && this.isOnGround) {
+            this.animationTimer += this.animationSpeed;
+            if (this.animationTimer >= 1) {
+                this.animationTimer = 0;
+                this.animationFrame = (this.animationFrame + 1) % 4;
+            }
+            
+            // Bounce effect while running
+            this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 3;
+        } else {
+            this.animationFrame = 0;
+            this.bounceOffset = 0;
         }
 
         // Apply gravity
         this.velocityY += CONFIG.player.gravity;
         this.velocityY = Math.min(this.velocityY, CONFIG.player.maxFallSpeed);
         this.y += this.velocityY;
+
+        // Squash and stretch effect
+        if (!this.isOnGround) {
+            // Stretch when going up, squash when falling
+            this.squashStretch = this.velocityY < 0 ? 1.1 : 0.9;
+            this.rotation = this.velocityY * 0.02; // Slight tilt in air
+        } else {
+            this.squashStretch = 1;
+            this.rotation = 0;
+        }
 
         // Ground collision
         const groundY = CONFIG.platform.groundLevel - this.height;
@@ -392,9 +506,31 @@ class Player {
             this.velocityY = 0;
             this.isJumping = false;
             this.isOnGround = true;
+            
+            // Landing squash effect
+            if (this.squashStretch < 1) {
+                this.squashStretch = 0.8;
+                // Add landing particles
+                for (let i = 0; i < 5; i++) {
+                    this.game.particles.push(new Particle(
+                        this.x + this.width / 2,
+                        this.y + this.height,
+                        '#8B7355'
+                    ));
+                }
+            }
         } else {
             this.isOnGround = false;
         }
+        
+        // Smooth squash stretch back to normal
+        this.squashStretch += (1 - this.squashStretch) * 0.2;
+        
+        // Update run particles
+        this.runParticles = this.runParticles.filter(p => {
+            p.update();
+            return p.life > 0;
+        });
     }
 
     jump() {
@@ -402,130 +538,207 @@ class Player {
             this.velocityY = -CONFIG.player.jumpForce;
             this.isJumping = true;
             this.isOnGround = false;
+            
+            // Jump particles
+            for (let i = 0; i < 8; i++) {
+                this.game.particles.push(new Particle(
+                    this.x + this.width / 2,
+                    this.y + this.height,
+                    '#FFD700'
+                ));
+            }
         }
     }
 
     draw(ctx) {
-        // Draw shadow
+        ctx.save();
+        
+        // Draw run particles
+        this.runParticles.forEach(p => p.draw(ctx));
+        
+        // Calculate draw position with bounce
+        const drawX = this.x;
+        const drawY = this.y + this.bounceOffset;
+        const centerX = drawX + this.width / 2;
+        const centerY = drawY + this.height / 2;
+        
+        // Apply transformations
+        ctx.translate(centerX, centerY);
+        ctx.rotate(this.rotation);
+        if (!this.facingRight) {
+            ctx.scale(-1, 1);
+        }
+        ctx.scale(1, this.squashStretch);
+        
+        // Draw shadow (not transformed)
+        ctx.restore();
+        ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.beginPath();
         ctx.ellipse(
             this.x + this.width / 2,
             CONFIG.platform.groundLevel + 5,
-            this.width / 2,
+            this.width / 2 * (this.isOnGround ? 1 : 0.7),
             10,
             0, 0, Math.PI * 2
         );
         ctx.fill();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(this.rotation);
+        if (!this.facingRight) {
+            ctx.scale(-1, 1);
+        }
+        ctx.scale(1, this.squashStretch);
 
+        // Draw the character
         if (this.game.imagesLoaded && this.game.images.player.complete && this.game.images.player.naturalWidth > 0) {
-            // Draw player image with smooth rendering
+            // Draw image with animation offset
+            const wobble = Math.sin(this.animationTimer * Math.PI * 2) * 2;
             ctx.drawImage(
                 this.game.images.player,
-                this.x,
-                this.y,
+                -this.width / 2 + wobble * 0.5,
+                -this.height / 2,
                 this.width,
                 this.height
             );
+            
+            // Add glow effect when jumping
+            if (!this.isOnGround) {
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 20;
+                ctx.globalAlpha = 0.3;
+                ctx.drawImage(
+                    this.game.images.player,
+                    -this.width / 2,
+                    -this.height / 2,
+                    this.width,
+                    this.height
+                );
+            }
         } else {
-            // Draw stylized Clipper character
             this.drawClipperFallback(ctx);
         }
+        
+        ctx.restore();
     }
 
     drawClipperFallback(ctx) {
-        // Main body (lighter case)
-        const bodyGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        const w = this.width;
+        const h = this.height;
+        const wobble = Math.sin(this.animationTimer * Math.PI * 2) * 2;
+        
+        // Main body with gradient
+        const bodyGradient = ctx.createLinearGradient(0, -h/2, 0, h/2);
         bodyGradient.addColorStop(0, '#D3D3D3');
-        bodyGradient.addColorStop(0.3, '#E8E8E8');
-        bodyGradient.addColorStop(0.7, '#C0C0C0');
+        bodyGradient.addColorStop(0.5, '#E8E8E8');
         bodyGradient.addColorStop(1, '#A8A8A8');
         
         ctx.fillStyle = bodyGradient;
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.roundRect(this.x + 10, this.y + 20, this.width - 20, this.height - 30, 8);
+        ctx.roundRect(-w/2 + 10, -h/2 + 20, w - 20, h - 30, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Top (metal cap)
+        // Top cap
         ctx.fillStyle = '#A8A8A8';
-        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, 15);
-        ctx.strokeRect(this.x + 10, this.y + 10, this.width - 20, 15);
+        ctx.fillRect(-w/2 + 10, -h/2 + 10, w - 20, 15);
+        ctx.strokeRect(-w/2 + 10, -h/2 + 10, w - 20, 15);
 
-        // Wheel mechanism
+        // Wheel
         ctx.fillStyle = '#666';
         ctx.beginPath();
-        ctx.arc(this.x + 20, this.y + 15, 8, 0, Math.PI * 2);
+        ctx.arc(-w/2 + 20, -h/2 + 15, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Brand label
+        // Label
         ctx.fillStyle = '#FFF';
-        ctx.fillRect(this.x + 15, this.y + 45, this.width - 30, 20);
-        ctx.strokeRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.fillRect(-w/2 + 15, -h/2 + 45, w - 30, 20);
+        ctx.strokeRect(-w/2 + 15, -h/2 + 45, w - 30, 20);
         ctx.fillStyle = '#333';
         ctx.font = 'bold 12px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('CLIPPER', this.x + this.width / 2, this.y + 58);
+        ctx.fillText('CLIPPER', 0, -h/2 + 58);
 
-        // Face
-        // Eyes
+        // Animated eyes
+        const blinkPhase = Math.sin(Date.now() * 0.005);
+        const eyeHeight = blinkPhase > 0.95 ? 3 : 6;
+        
         ctx.fillStyle = '#333';
         ctx.beginPath();
-        ctx.arc(this.x + 25, this.y + 75, 6, 0, Math.PI * 2);
-        ctx.arc(this.x + 55, this.y + 75, 6, 0, Math.PI * 2);
+        ctx.ellipse(-w/2 + 25, -h/2 + 75, 6, eyeHeight, 0, 0, Math.PI * 2);
+        ctx.ellipse(-w/2 + 55, -h/2 + 75, 6, eyeHeight, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#FFF';
-        ctx.beginPath();
-        ctx.arc(this.x + 27, this.y + 73, 2, 0, Math.PI * 2);
-        ctx.arc(this.x + 57, this.y + 73, 2, 0, Math.PI * 2);
-        ctx.fill();
+        // Eye highlights
+        if (eyeHeight > 3) {
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(-w/2 + 27, -h/2 + 73, 2, 0, Math.PI * 2);
+            ctx.arc(-w/2 + 57, -h/2 + 73, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-        // Smile
+        // Animated smile
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + 80, 15, 0.2, Math.PI - 0.2);
+        const smileWidth = 15 + wobble;
+        ctx.arc(0, -h/2 + 80, smileWidth, 0.2, Math.PI - 0.2);
         ctx.stroke();
 
-        // Arms
-        ctx.fillStyle = '#333';
+        // Animated arms
+        const armAngle = this.animationFrame * 0.3;
+        
         // Left arm
-        ctx.beginPath();
-        ctx.ellipse(this.x + 5, this.y + 60, 8, 15, -0.3, 0, Math.PI * 2);
+        ctx.fillStyle = '#333';
+        ctx.save();
+        ctx.translate(-w/2 + 5, -h/2 + 60);
+        ctx.rotate(-0.3 + Math.sin(armAngle) * 0.3);
+        ctx.ellipse(0, 0, 8, 15, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+        
         ctx.fillStyle = '#E8E8E8';
         ctx.beginPath();
-        ctx.arc(this.x, this.y + 70, 10, 0, Math.PI * 2);
+        ctx.arc(-w/2, -h/2 + 70, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#333';
         ctx.stroke();
 
         // Right arm
         ctx.fillStyle = '#333';
-        ctx.beginPath();
-        ctx.ellipse(this.x + this.width - 5, this.y + 60, 8, 15, 0.3, 0, Math.PI * 2);
+        ctx.save();
+        ctx.translate(w/2 - 5, -h/2 + 60);
+        ctx.rotate(0.3 + Math.sin(armAngle + Math.PI) * 0.3);
+        ctx.ellipse(0, 0, 8, 15, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+        
         ctx.fillStyle = '#E8E8E8';
         ctx.beginPath();
-        ctx.arc(this.x + this.width, this.y + 70, 10, 0, Math.PI * 2);
+        ctx.arc(w/2, -h/2 + 70, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#333';
         ctx.stroke();
 
-        // Legs
+        // Legs with walk animation
+        const legOffset = this.isOnGround ? Math.sin(this.animationFrame) * 5 : 0;
+        
         ctx.fillStyle = '#333';
-        ctx.fillRect(this.x + 15, this.y + this.height - 15, 15, 10);
-        ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 15, 10);
+        ctx.fillRect(-w/2 + 15 + legOffset, h/2 - 15, 15, 10);
+        ctx.fillRect(w/2 - 30 - legOffset, h/2 - 15, 15, 10);
 
         // Feet
         ctx.fillStyle = '#E8E8E8';
         ctx.beginPath();
-        ctx.ellipse(this.x + 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
-        ctx.ellipse(this.x + this.width - 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(-w/2 + 22 + legOffset, h/2 - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(w/2 - 22 - legOffset, h/2 - 5, 15, 8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 2;
@@ -542,15 +755,68 @@ class Enemy {
         this.width = CONFIG.enemy.width;
         this.height = CONFIG.enemy.height;
         this.speed = CONFIG.enemy.speed * this.game.gameSpeed;
+        
+        // Animation properties
+        this.animationFrame = 0;
+        this.animationTimer = 0;
+        this.animationSpeed = 0.2;
+        this.bounceOffset = 0;
+        this.rotation = 0;
+        this.scale = 1;
+        
+        // Visual effects
+        this.trailParticles = [];
+        this.glowIntensity = 0;
     }
 
     update() {
         this.x -= this.speed;
+        
+        // Animation
+        this.animationTimer += this.animationSpeed;
+        if (this.animationTimer >= 1) {
+            this.animationTimer = 0;
+            this.animationFrame = (this.animationFrame + 1) % 4;
+        }
+        
+        // Bounce effect
+        this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 4;
+        
+        // Pulsing glow
+        this.glowIntensity = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
+        
+        // Slight wobble
+        this.rotation = Math.sin(this.animationTimer * Math.PI) * 0.05;
+        
+        // Add evil trail particles
+        if (Math.random() > 0.8) {
+            this.trailParticles.push(new EnemyTrailParticle(
+                this.x + this.width / 2,
+                this.y + this.height / 2
+            ));
+        }
+        
+        // Update trail particles
+        this.trailParticles = this.trailParticles.filter(p => {
+            p.update();
+            return p.life > 0;
+        });
     }
 
     draw(ctx) {
+        ctx.save();
+        
+        // Draw trail
+        this.trailParticles.forEach(p => p.draw(ctx));
+        
+        // Calculate draw position
+        const drawX = this.x;
+        const drawY = this.y + this.bounceOffset;
+        const centerX = drawX + this.width / 2;
+        const centerY = drawY + this.height / 2;
+        
         // Draw shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
         ctx.ellipse(
             this.x + this.width / 2,
@@ -560,98 +826,133 @@ class Enemy {
             0, 0, Math.PI * 2
         );
         ctx.fill();
+        
+        // Apply transformations
+        ctx.translate(centerX, centerY);
+        ctx.rotate(this.rotation);
+        ctx.scale(this.scale, this.scale);
 
+        // Draw the character with glow
         if (this.game.imagesLoaded && this.game.images.enemy.complete && this.game.images.enemy.naturalWidth > 0) {
-            // Draw enemy image with smooth rendering
+            // Draw glow
+            ctx.shadowColor = '#FF0000';
+            ctx.shadowBlur = 20 + this.glowIntensity * 15;
+            ctx.globalAlpha = 0.6;
             ctx.drawImage(
                 this.game.images.enemy,
-                this.x,
-                this.y,
+                -this.width / 2,
+                -this.height / 2,
+                this.width,
+                this.height
+            );
+            
+            // Draw main image
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 10;
+            ctx.drawImage(
+                this.game.images.enemy,
+                -this.width / 2,
+                -this.height / 2,
                 this.width,
                 this.height
             );
         } else {
-            // Draw stylized evil Lighter character
             this.drawLighterFallback(ctx);
         }
+        
+        ctx.restore();
     }
 
     drawLighterFallback(ctx) {
-        // Main body (darker lighter)
-        const bodyGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        const w = this.width;
+        const h = this.height;
+        
+        // Evil aura
+        ctx.shadowColor = '#FF0000';
+        ctx.shadowBlur = 20 + this.glowIntensity * 15;
+        
+        // Main body
+        const bodyGradient = ctx.createLinearGradient(0, -h/2, 0, h/2);
         bodyGradient.addColorStop(0, '#4A4A4A');
-        bodyGradient.addColorStop(0.3, '#5A5A5A');
-        bodyGradient.addColorStop(0.7, '#3A3A3A');
+        bodyGradient.addColorStop(0.5, '#5A5A5A');
         bodyGradient.addColorStop(1, '#2A2A2A');
         
         ctx.fillStyle = bodyGradient;
         ctx.strokeStyle = '#1A1A1A';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.roundRect(this.x + 10, this.y + 20, this.width - 20, this.height - 30, 8);
+        ctx.roundRect(-w/2 + 10, -h/2 + 20, w - 20, h - 30, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Top (metal cap)
+        // Top cap
         ctx.fillStyle = '#5A5A5A';
-        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, 15);
-        ctx.strokeRect(this.x + 10, this.y + 10, this.width - 20, 15);
+        ctx.fillRect(-w/2 + 10, -h/2 + 10, w - 20, 15);
+        ctx.strokeRect(-w/2 + 10, -h/2 + 10, w - 20, 15);
 
-        // Wheel mechanism
+        // Wheel
         ctx.fillStyle = '#3A3A3A';
         ctx.beginPath();
-        ctx.arc(this.x + 20, this.y + 15, 8, 0, Math.PI * 2);
+        ctx.arc(-w/2 + 20, -h/2 + 15, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Brand label
+        // Label
+        ctx.shadowBlur = 0;
         ctx.fillStyle = '#6A6A6A';
-        ctx.fillRect(this.x + 15, this.y + 45, this.width - 30, 20);
-        ctx.strokeRect(this.x + 15, this.y + 45, this.width - 30, 20);
+        ctx.fillRect(-w/2 + 15, -h/2 + 45, w - 30, 20);
+        ctx.strokeRect(-w/2 + 15, -h/2 + 45, w - 30, 20);
         ctx.fillStyle = '#DDD';
         ctx.font = 'bold 11px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('LIGHTER', this.x + this.width / 2, this.y + 58);
+        ctx.fillText('LIGHTER', 0, -h/2 + 58);
 
-        // Evil Face
-        // Angry eyes (red glow)
+        // Evil glowing eyes
         ctx.fillStyle = '#FF3333';
         ctx.shadowColor = '#FF0000';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15 * this.glowIntensity;
         ctx.beginPath();
-        ctx.arc(this.x + 25, this.y + 75, 8, 0, Math.PI * 2);
-        ctx.arc(this.x + 55, this.y + 75, 8, 0, Math.PI * 2);
+        const eyeGlow = 8 + this.glowIntensity * 3;
+        ctx.arc(-w/2 + 25, -h/2 + 75, eyeGlow, 0, Math.PI * 2);
+        ctx.arc(-w/2 + 55, -h/2 + 75, eyeGlow, 0, Math.PI * 2);
         ctx.fill();
 
         // Inner pupils
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#8B0000';
         ctx.beginPath();
-        ctx.arc(this.x + 25, this.y + 75, 4, 0, Math.PI * 2);
-        ctx.arc(this.x + 55, this.y + 75, 4, 0, Math.PI * 2);
+        ctx.arc(-w/2 + 25, -h/2 + 75, 4, 0, Math.PI * 2);
+        ctx.arc(-w/2 + 55, -h/2 + 75, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Evil grin (showing teeth)
+        // Evil grin
         ctx.fillStyle = '#1A1A1A';
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + 90, 18, 0, Math.PI);
+        ctx.arc(0, -h/2 + 90, 18, 0, Math.PI);
         ctx.fill();
 
         // Teeth
         ctx.fillStyle = '#FFF';
         for (let i = 0; i < 5; i++) {
-            ctx.fillRect(this.x + 24 + i * 8, this.y + 90, 6, 8);
+            ctx.fillRect(-w/2 + 24 + i * 8, -h/2 + 90, 6, 8);
         }
 
-        // Arms (clenched fists)
+        // Animated menacing arms
+        const armWave = Math.sin(this.animationTimer * Math.PI * 2) * 0.3;
+        
+        // Left arm (clenched fist)
+        ctx.shadowBlur = 0;
         ctx.fillStyle = '#1A1A1A';
-        // Left arm
-        ctx.beginPath();
-        ctx.ellipse(this.x + 5, this.y + 60, 8, 15, -0.5, 0, Math.PI * 2);
+        ctx.save();
+        ctx.translate(-w/2 + 5, -h/2 + 60);
+        ctx.rotate(-0.5 + armWave);
+        ctx.ellipse(0, 0, 8, 15, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+        
         ctx.fillStyle = '#4A4A4A';
         ctx.beginPath();
-        ctx.arc(this.x - 2, this.y + 70, 12, 0, Math.PI * 2);
+        ctx.arc(-w/2 - 2, -h/2 + 70, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#1A1A1A';
         ctx.lineWidth = 2;
@@ -659,26 +960,32 @@ class Enemy {
 
         // Right arm (raised, threatening)
         ctx.fillStyle = '#1A1A1A';
-        ctx.beginPath();
-        ctx.ellipse(this.x + this.width - 5, this.y + 50, 8, 15, 0.5, 0, Math.PI * 2);
+        ctx.save();
+        ctx.translate(w/2 - 5, -h/2 + 50);
+        ctx.rotate(0.5 - armWave);
+        ctx.ellipse(0, 0, 8, 15, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+        
         ctx.fillStyle = '#4A4A4A';
         ctx.beginPath();
-        ctx.arc(this.x + this.width + 2, this.y + 60, 12, 0, Math.PI * 2);
+        ctx.arc(w/2 + 2, -h/2 + 60, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#1A1A1A';
         ctx.stroke();
 
-        // Legs
+        // Stomping legs
+        const legStomp = Math.sin(this.animationFrame) * 3;
+        
         ctx.fillStyle = '#1A1A1A';
-        ctx.fillRect(this.x + 15, this.y + this.height - 15, 15, 10);
-        ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 15, 10);
+        ctx.fillRect(-w/2 + 15, h/2 - 15 + legStomp, 15, 10);
+        ctx.fillRect(w/2 - 30, h/2 - 15 - legStomp, 15, 10);
 
         // Feet
         ctx.fillStyle = '#4A4A4A';
         ctx.beginPath();
-        ctx.ellipse(this.x + 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
-        ctx.ellipse(this.x + this.width - 22, this.y + this.height - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(-w/2 + 22, h/2 - 5, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(w/2 - 22, h/2 - 5, 15, 8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#1A1A1A';
         ctx.lineWidth = 2;
@@ -688,7 +995,7 @@ class Enemy {
 
 // Particle Class for effects
 class Particle {
-    constructor(x, y) {
+    constructor(x, y, color = null) {
         this.x = x;
         this.y = y;
         this.velocityX = (Math.random() - 0.5) * 8;
@@ -696,7 +1003,7 @@ class Particle {
         this.life = 1;
         this.decay = Math.random() * 0.02 + 0.01;
         this.size = Math.random() * 6 + 2;
-        this.color = this.randomColor();
+        this.color = color || this.randomColor();
     }
 
     randomColor() {
@@ -718,6 +1025,79 @@ class Particle {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+    }
+}
+
+// Run Particle for player movement
+class RunParticle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.velocityX = (Math.random() - 0.5) * 2;
+        this.velocityY = -Math.random() * 3 - 1;
+        this.life = 1;
+        this.decay = 0.05;
+        this.size = Math.random() * 4 + 2;
+        this.color = color;
+    }
+
+    update() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.velocityY += 0.2;
+        this.life -= this.decay;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life * 0.5;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// Enemy Trail Particle
+class EnemyTrailParticle {
+    constructor(x, y) {
+        this.x = x + (Math.random() - 0.5) * 30;
+        this.y = y + (Math.random() - 0.5) * 40;
+        this.velocityX = Math.random() * 2 + 1;
+        this.velocityY = (Math.random() - 0.5) * 2;
+        this.life = 1;
+        this.decay = 0.02;
+        this.size = Math.random() * 6 + 3;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.2;
+    }
+
+    update() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.rotation += this.rotationSpeed;
+        this.life -= this.decay;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life * 0.6;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        
+        // Draw evil flame/smoke shape
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+        gradient.addColorStop(0, '#FF0000');
+        gradient.addColorStop(0.5, '#8B0000');
+        gradient.addColorStop(1, 'rgba(139, 0, 0, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        
         ctx.restore();
     }
 }
